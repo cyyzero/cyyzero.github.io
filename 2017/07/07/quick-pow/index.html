@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <meta name="description" content="来自《数据结构与算法分析》第二章。
+书上介绍的是第二种递归的算法。之前还见过用位运算的方法，所以特意记录一下。这两种算法都是O(logn)。
+
+递归版本
+  1234567891011int quickpow(int base, unsigned exp)&amp;#123;	if(exp == 0)		r" />
+  
+
+  
+  
+  
+  
+  
+  
+  <title>快速幂 | Pluto Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="来自《数据结构与算法分析》第二章。 书上介绍的是第二种递归的算法。之前还见过用位运算的方法，所以特意记录一下。这两种算法都是O(logn)。  递归版本   1234567891011int quickpow(int base, unsigned exp)&amp;#123;	if(exp == 0)		return 1;	if(exp == 1)		return base;	if(exp % 2)		r">
+<meta name="keywords" content="算法,位运算">
+<meta property="og:type" content="article">
+<meta property="og:title" content="快速幂">
+<meta property="og:url" content="http://yoursite.com/2017/07/07/quick-pow/index.html">
+<meta property="og:site_name" content="Pluto Blog">
+<meta property="og:description" content="来自《数据结构与算法分析》第二章。 书上介绍的是第二种递归的算法。之前还见过用位运算的方法，所以特意记录一下。这两种算法都是O(logn)。  递归版本   1234567891011int quickpow(int base, unsigned exp)&amp;#123;	if(exp == 0)		return 1;	if(exp == 1)		return base;	if(exp % 2)		r">
+<meta property="og:updated_time" content="2018-01-29T14:33:42.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="快速幂">
+<meta name="twitter:description" content="来自《数据结构与算法分析》第二章。 书上介绍的是第二种递归的算法。之前还见过用位运算的方法，所以特意记录一下。这两种算法都是O(logn)。  递归版本   1234567891011int quickpow(int base, unsigned exp)&amp;#123;	if(exp == 0)		return 1;	if(exp == 1)		return base;	if(exp % 2)		r">
+  
+  
+    <link rel="icon" href="/css/images/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+  
+  <!-- baidu webmaster push -->
+  <script src='//push.zhanzhang.baidu.com/push.js'></script>
+</head>
+<body class="home blog custom-background custom-font-enabled single-author">
+  <div id="page" class="hfeed site">
+      <header id="masthead" class="site-header" role="banner">
+    <hgroup>
+      <h1 class="site-title">
+        <a href="/" title="Pluto Blog" rel="home">Pluto Blog</a>
+      </h1>
+      
+        <h2 class="site-description">
+          <a href="/" id="subtitle">失败人士自留地</a>
+        </h2>
+      
+    </hgroup>
+
+    <nav id="site-navigation" class="main-navigation" role="navigation">
+            <button class="menu-toggle">菜单</button>
+            <a class="assistive-text" href="/#content" title="跳至内容">跳至内容</a><!--TODO-->
+            <div class="menu-main-container">
+                <ul id="menu-main" class="nav-menu">
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/">Home</a></li>
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/archives">Archives</a></li>
+                
+                </ul>
+            </div>
+    </nav>
+</header>
+      <div id="main" class="wrapper">
+        <div id="primary" class="site-content"><div id="content" role="main"><article id="post-quick-pow" class="post-quick-pow post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title article-title">
+      快速幂
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/07/07/quick-pow/" data-id="cjd0c6ggx00085377cbc4dpmp" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p>来自《数据结构与算法分析》第二章。</p>
+<p>书上介绍的是第二种<strong>递归</strong>的算法。之前还见过用<strong>位运算</strong>的方法，所以特意记录一下。这两种算法都是O(logn)。</p>
+<ul>
+<li><p><strong>递归版本</strong></p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">int quickpow(int base, unsigned exp)</span><br><span class="line">&#123;</span><br><span class="line">	if(exp == 0)</span><br><span class="line">		return 1;</span><br><span class="line">	if(exp == 1)</span><br><span class="line">		return base;</span><br><span class="line">	if(exp % 2)</span><br><span class="line">		return quickpow(base*base, exp/2)*base;</span><br><span class="line">	else</span><br><span class="line">		return quickpow(base*base, exp/2);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  思路：<br>  $$<br>  X^{n}=<br>  \begin{cases}<br>  1&amp;\mbox{，n=0}\\<br>  X&amp;\mbox{，n=1}\\<br>  {(X^{2})}^{n/2}&amp;\mbox{，n为偶数}\\<br>  X·{(X^{2})}^{(n-1)/2} &amp;\mbox{，n为奇数}<br>  \end{cases}<br>  $$</p>
+</li>
+</ul>
+<hr>
+<ul>
+<li><p><strong>位运算版本</strong></p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">int quickpow(int base, unsigned exp)</span><br><span class="line">&#123;</span><br><span class="line">	int ans = 1;</span><br><span class="line">	while(exp)</span><br><span class="line">	&#123;</span><br><span class="line">		if(exp&amp;1)</span><br><span class="line">			ans *= base;</span><br><span class="line">		base *= base;</span><br><span class="line">		exp &gt;&gt;= 1;</span><br><span class="line">	&#125;</span><br><span class="line">	return ans;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  思路：<br>  先举个例子。当底数为x，指数为5时， $x^{5}$ = $x^{4}$·x。5的二进制为0101，而4=$2^{2}$, 1=$2^{0}$。是不是看出了一点什么？<br>  再来理解这一行</p>
+<blockquote>
+<p>base*=base;</p>
+</blockquote>
+<p>  目的是将base不断累乘，以实现base再每次循环中分别等于$x^{1}$, $x^{2}$, $x^{4}$, $x^{8}$, $x^{16}$……</p>
+<p>  第n次循环中判断exp右数第n位是否为1，如果是的话就将ans乘以base。循环最后将exp右移一位，以便下次循环判断对应bit。</p>
+<p>  再回到那个例子。第一次循环，0101右数第一位是1，ans乘上了x。base累乘为$x^{2}$。0101右移一位变成010。第二次循环，对应bit为0，base累乘到$x^{4}$，0101右移成01。第三次循环，对应bit为1，ans再乘上base，既$x^{4}$。最后一次循环也同理。 最后得到的ans为$x^{5}$。</p>
+</li>
+</ul>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2017/07/07/quick-pow/">
+    <time datetime="2017-07-07T15:08:01.000Z" class="entry-date">
+        2017-07-07
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/位运算/">位运算</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/算法/">算法</a></li></ul>
+
+    </footer>
+</article>
+
+
+    
+<nav class="nav-single">
+    <h3 class="assistive-text">文章导航</h3>
+    
+        <span class="nav-previous"><a href="/2017/07/10/stack-frame/" rel="prev"><span class="meta-nav">←</span> 浅谈栈帧</a></span>
+    
+    
+</nav><!-- .nav-single -->
+
+
+
+
+
+
+
+</div></div>
+        <div id="secondary" class="widget-area" role="complementary">
+  
+    <aside id="search" class="widget widget_search"><form role="search" method="get" accept-charset="utf-8" id="searchform" class="searchform" action="//google.com/search">
+    <div>
+        <input type="text" value="" name="s" id="s" />
+        <input type="submit" id="searchsubmit" value="搜索" />
+    </div>
+</form></aside>
+  
+    
+  
+    
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget-content">
+      <ul>
+        
+          <li>
+            <a href="/2018/01/29/syscall/">当我们谈论系统调用的时候我们在谈论什么</a>
+          </li>
+        
+          <li>
+            <a href="/2017/11/13/plus_and_minus/">c++的ub还真是无处不在啊</a>
+          </li>
+        
+          <li>
+            <a href="/2017/11/04/nullptr_and_NULL/">nullptr vs NULL</a>
+          </li>
+        
+          <li>
+            <a href="/2017/10/30/c++_switch/">c++ switch内部的变量定义</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/05/name-mangling-and-overload/">浅谈name mangling</a>
+          </li>
+        
+      </ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget-content">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget-content tagcloud">
+      <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+    </div>
+  </aside>
+
+  
+</div>
+      </div>
+      <footer id="colophon" role="contentinfo">
+    <p>&copy; 2018 cyyzero
+    All rights reserved.</p>
+    <p>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></p>
+</footer>
+    <script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"1","bdMiniList":false,"bdPic":"","bdStyle":"2","bdSize":"16"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+<script src="/js/navigation.js"></script>
+
+<div id="bg"></div>
+
+  </div>
+</body>
+</html>

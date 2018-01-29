@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <meta name="description" content="很多c++初学者对于引用（reference）的的印象不外乎就是“对象的别名”、“同义词”。而引用作为c++对于c语言的重要扩充，与指针有着千丝万缕、剪不断理还乱的联系。甚至，引用在底层就是(勘误，应该改成“可能”)通过“指针”实现。
+左值引用
+接下来，看一个很简单的小例子：
+123456void " />
+  
+
+  
+  
+  
+  
+  
+  
+  <title>c++引用的实现 | Pluto Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="很多c++初学者对于引用（reference）的的印象不外乎就是“对象的别名”、“同义词”。而引用作为c++对于c语言的重要扩充，与指针有着千丝万缕、剪不断理还乱的联系。甚至，引用在底层就是(勘误，应该改成“可能”)通过“指针”实现。 左值引用 接下来，看一个很简单的小例子： 123456void test()&amp;#123;	int a = 6;	int &amp;amp;b = a;	b = 7;&amp;#12">
+<meta name="keywords" content="c++">
+<meta property="og:type" content="article">
+<meta property="og:title" content="c++引用的实现">
+<meta property="og:url" content="http://yoursite.com/2017/07/13/c++-reference/index.html">
+<meta property="og:site_name" content="Pluto Blog">
+<meta property="og:description" content="很多c++初学者对于引用（reference）的的印象不外乎就是“对象的别名”、“同义词”。而引用作为c++对于c语言的重要扩充，与指针有着千丝万缕、剪不断理还乱的联系。甚至，引用在底层就是(勘误，应该改成“可能”)通过“指针”实现。 左值引用 接下来，看一个很简单的小例子： 123456void test()&amp;#123;	int a = 6;	int &amp;amp;b = a;	b = 7;&amp;#12">
+<meta property="og:updated_time" content="2018-01-29T14:12:18.133Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="c++引用的实现">
+<meta name="twitter:description" content="很多c++初学者对于引用（reference）的的印象不外乎就是“对象的别名”、“同义词”。而引用作为c++对于c语言的重要扩充，与指针有着千丝万缕、剪不断理还乱的联系。甚至，引用在底层就是(勘误，应该改成“可能”)通过“指针”实现。 左值引用 接下来，看一个很简单的小例子： 123456void test()&amp;#123;	int a = 6;	int &amp;amp;b = a;	b = 7;&amp;#12">
+  
+  
+    <link rel="icon" href="/css/images/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+  
+  <!-- baidu webmaster push -->
+  <script src='//push.zhanzhang.baidu.com/push.js'></script>
+</head>
+<body class="home blog custom-background custom-font-enabled single-author">
+  <div id="page" class="hfeed site">
+      <header id="masthead" class="site-header" role="banner">
+    <hgroup>
+      <h1 class="site-title">
+        <a href="/" title="Pluto Blog" rel="home">Pluto Blog</a>
+      </h1>
+      
+        <h2 class="site-description">
+          <a href="/" id="subtitle">失败人士自留地</a>
+        </h2>
+      
+    </hgroup>
+
+    <nav id="site-navigation" class="main-navigation" role="navigation">
+            <button class="menu-toggle">菜单</button>
+            <a class="assistive-text" href="/#content" title="跳至内容">跳至内容</a><!--TODO-->
+            <div class="menu-main-container">
+                <ul id="menu-main" class="nav-menu">
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/">Home</a></li>
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/archives">Archives</a></li>
+                
+                </ul>
+            </div>
+    </nav>
+</header>
+      <div id="main" class="wrapper">
+        <div id="primary" class="site-content"><div id="content" role="main"><article id="post-c++-reference" class="post-c++-reference post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title article-title">
+      c++引用的实现
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/07/13/c++-reference/" data-id="cjd0c6gge00005377ndvyp22a" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p>很多c++初学者对于引用（reference）的的印象不外乎就是“对象的别名”、“同义词”。而引用作为c++对于c语言的重要扩充，与指针有着千丝万缕、剪不断理还乱的联系。甚至，引用在底层<del>就是</del>(勘误，应该改成“<strong>可能</strong>”)通过“指针”实现。</p>
+<p><strong>左值引用</strong></p>
+<p>接下来，看一个很简单的小例子：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> a = <span class="number">6</span>;</span><br><span class="line">	<span class="keyword">int</span> &amp;b = a;</span><br><span class="line">	b = <span class="number">7</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>汇编后的代码节选：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">_Z4testv:</span><br><span class="line">.LFB0:</span><br><span class="line">	pushq	%rbp</span><br><span class="line">	.seh_pushreg	%rbp</span><br><span class="line">	movq	%rsp, %rbp</span><br><span class="line">	.seh_setframe	%rbp, 0</span><br><span class="line">	subq	$16, %rsp</span><br><span class="line">	.seh_stackalloc	16</span><br><span class="line">	.seh_endprologue           #以上几行是test函数栈帧的建立过程</span><br><span class="line">	movl	$6, -12(%rbp)      #保存a</span><br><span class="line">	leaq	-12(%rbp), %rax    #将a的地址存入rax寄存器</span><br><span class="line">	movq	%rax, -8(%rbp)     #保存b，存入的是a的地址</span><br><span class="line">	movq	-8(%rbp), %rax     #将b，即a的地址传入rax寄存器</span><br><span class="line">	movl	$7, (%rax)         #通过b中保存的地址对a赋值</span><br><span class="line">	addq	$16, %rsp          #从以下几行是test函数栈帧的销毁过程</span><br><span class="line">	popq	%rbp</span><br><span class="line">	ret</span><br><span class="line">	.seh_endproc</span><br></pre></td></tr></table></figure>
+<p>可以看到，内存上b存储的其实是a的地址。</p>
+<p><del>在底层，引用是通过指针来实现</del>。引用算的上是c++的一个语法糖。</p>
+<p><strong>右值引用</strong></p>
+<p><del>以上的讲解都是基于c++传统的、用&amp;表示的引用，也就是左值引用。而c++11标准还有个右值引用的概念。那右值引用也还是用指针的实现的吗？要知道，右值引用可是对于临时变量的引用，万一是存储在寄存器中的临时变量呢？要知道，寄存器内的数据可不能寻址…作为一个c++菜鸟，我对右值引用也没有很深的理解…想到这，我不禁冒冷汗，难道我的猜测错了？上面的都得重写？</del></p>
+<p>吓得我赶紧试验一下…</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> a = <span class="number">6</span>;</span><br><span class="line">	<span class="keyword">int</span> &amp;&amp;b = a+<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>汇编之后的节选：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">_Z4testv:</span><br><span class="line">.LFB0:</span><br><span class="line">	pushq	%rbp</span><br><span class="line">	.seh_pushreg	%rbp</span><br><span class="line">	movq	%rsp, %rbp</span><br><span class="line">	.seh_setframe	%rbp, 0</span><br><span class="line">	subq	$32, %rsp</span><br><span class="line">	.seh_stackalloc	32</span><br><span class="line">	.seh_endprologue           #以上是栈帧的建立过程</span><br><span class="line">	movl	$6, -4(%rbp)       #保存a</span><br><span class="line">	movl	-4(%rbp), %eax     #将a存入寄存器eax</span><br><span class="line">	addl	$1, %eax           #eax中数据+1，得到a+1</span><br><span class="line">	movl	%eax, -20(%rbp)    #保存a+1</span><br><span class="line">	leaq	-20(%rbp), %rax    #将保存的a+1的地址传入寄存器eax</span><br><span class="line">	movq	%rax, -16(%rbp)    #保存a+1的地址</span><br><span class="line">	addq	$32, %rsp          #从这以下是这个栈帧的销毁过程</span><br><span class="line">	popq	%rbp</span><br><span class="line">	ret</span><br><span class="line">	.seh_endproc</span><br></pre></td></tr></table></figure>
+<p>可以看到，程序会先将a+1计算结果保存进栈帧，然后把a+1被保存的地址传给b。b保存的还是一个地址。</p>
+<p>当然…我由于c++水品有限，可能这只是我错误的猜想和认识。欢迎指正我的错误所在。 </p>
+<p>ps：“怎么指正错误啊喂，你的博客还不能评论啊啊啊啊啊”  （来自官方的吐槽- -。</p>
+<hr>
+<p>2018.1.29</p>
+<p>update：</p>
+<p>c++标准本身没有规定引用的实现方法。因此引用可能利用指针实现，也可以被优化调(即直接操作被引用的对象)。</p>
+<p>实际上不应该对引用的实现做任何假设。搞清楚它语义上是作为对象的别名就够了。</p>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2017/07/13/c++-reference/">
+    <time datetime="2017-07-13T15:59:56.000Z" class="entry-date">
+        2017-07-13
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+
+    </footer>
+</article>
+
+
+    
+<nav class="nav-single">
+    <h3 class="assistive-text">文章导航</h3>
+    
+        <span class="nav-previous"><a href="/2017/08/05/name-mangling-and-overload/" rel="prev"><span class="meta-nav">←</span> 浅谈name mangling</a></span>
+    
+    
+        <span class="nav-next"><a href="/2017/07/10/stack-frame/" rel="next">浅谈栈帧 <span class="meta-nav">→</span></a></span>
+    
+</nav><!-- .nav-single -->
+
+
+
+
+
+
+
+</div></div>
+        <div id="secondary" class="widget-area" role="complementary">
+  
+    <aside id="search" class="widget widget_search"><form role="search" method="get" accept-charset="utf-8" id="searchform" class="searchform" action="//google.com/search">
+    <div>
+        <input type="text" value="" name="s" id="s" />
+        <input type="submit" id="searchsubmit" value="搜索" />
+    </div>
+</form></aside>
+  
+    
+  
+    
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget-content">
+      <ul>
+        
+          <li>
+            <a href="/2018/01/29/syscall/">当我们谈论系统调用的时候我们在谈论什么</a>
+          </li>
+        
+          <li>
+            <a href="/2017/11/13/plus_and_minus/">c++的ub还真是无处不在啊</a>
+          </li>
+        
+          <li>
+            <a href="/2017/11/04/nullptr_and_NULL/">nullptr vs NULL</a>
+          </li>
+        
+          <li>
+            <a href="/2017/10/30/c++_switch/">c++ switch内部的变量定义</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/05/name-mangling-and-overload/">浅谈name mangling</a>
+          </li>
+        
+      </ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget-content">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget-content tagcloud">
+      <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+    </div>
+  </aside>
+
+  
+</div>
+      </div>
+      <footer id="colophon" role="contentinfo">
+    <p>&copy; 2018 cyyzero
+    All rights reserved.</p>
+    <p>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></p>
+</footer>
+    <script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"1","bdMiniList":false,"bdPic":"","bdStyle":"2","bdSize":"16"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+<script src="/js/navigation.js"></script>
+
+<div id="bg"></div>
+
+  </div>
+</body>
+</html>

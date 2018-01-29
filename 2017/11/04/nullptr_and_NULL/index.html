@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <meta name="description" content="大家都知道,在C语言中,NULL被用来表示空指针常量(null pointer constant),用来与任何指向真实对象的指针区分.
+c99标准里这么描述:
+
+3An integer constant expression with the value 0, or such an expressi" />
+  
+
+  
+  
+  
+  
+  
+  
+  <title>nullptr vs NULL | Pluto Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="大家都知道,在C语言中,NULL被用来表示空指针常量(null pointer constant),用来与任何指向真实对象的指针区分. c99标准里这么描述:  3An integer constant expression with the value 0, or such an expression cast to type void *, is called a null pointer c">
+<meta name="keywords" content="c++">
+<meta property="og:type" content="article">
+<meta property="og:title" content="nullptr vs NULL">
+<meta property="og:url" content="http://yoursite.com/2017/11/04/nullptr_and_NULL/index.html">
+<meta property="og:site_name" content="Pluto Blog">
+<meta property="og:description" content="大家都知道,在C语言中,NULL被用来表示空指针常量(null pointer constant),用来与任何指向真实对象的指针区分. c99标准里这么描述:  3An integer constant expression with the value 0, or such an expression cast to type void *, is called a null pointer c">
+<meta property="og:updated_time" content="2018-01-29T14:13:40.349Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="nullptr vs NULL">
+<meta name="twitter:description" content="大家都知道,在C语言中,NULL被用来表示空指针常量(null pointer constant),用来与任何指向真实对象的指针区分. c99标准里这么描述:  3An integer constant expression with the value 0, or such an expression cast to type void *, is called a null pointer c">
+  
+  
+    <link rel="icon" href="/css/images/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+  
+  <!-- baidu webmaster push -->
+  <script src='//push.zhanzhang.baidu.com/push.js'></script>
+</head>
+<body class="home blog custom-background custom-font-enabled single-author">
+  <div id="page" class="hfeed site">
+      <header id="masthead" class="site-header" role="banner">
+    <hgroup>
+      <h1 class="site-title">
+        <a href="/" title="Pluto Blog" rel="home">Pluto Blog</a>
+      </h1>
+      
+        <h2 class="site-description">
+          <a href="/" id="subtitle">失败人士自留地</a>
+        </h2>
+      
+    </hgroup>
+
+    <nav id="site-navigation" class="main-navigation" role="navigation">
+            <button class="menu-toggle">菜单</button>
+            <a class="assistive-text" href="/#content" title="跳至内容">跳至内容</a><!--TODO-->
+            <div class="menu-main-container">
+                <ul id="menu-main" class="nav-menu">
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/">Home</a></li>
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/archives">Archives</a></li>
+                
+                </ul>
+            </div>
+    </nav>
+</header>
+      <div id="main" class="wrapper">
+        <div id="primary" class="site-content"><div id="content" role="main"><article id="post-nullptr_and_NULL" class="post-nullptr_and_NULL post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title article-title">
+      nullptr vs NULL
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/04/nullptr_and_NULL/" data-id="cjd0c6ggs00045377kpzuelrj" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p>大家都知道,在C语言中,NULL被用来表示空指针常量(null pointer constant),用来与任何指向真实对象的指针区分.</p>
+<p>c99标准里这么描述:</p>
+<blockquote>
+<p>3An integer constant expression with the value 0, or such an expression cast to type void *, is called a null pointer constant.55) If a null pointer constant is converted to a pointer type, the resulting pointer, called a null pointer, is guaranteed to compare unequal to a pointer to any object or function.</p>
+</blockquote>
+<p>而且NULL属于implementation defined,所以编译器一般都把NULL宏定义为常量0(或者0L)或者 (void*)0…</p>
+<p>因为c语言允许void<em> 指针向其他指针类型隐式转化(比如说很常用的malloc函数的返回值就是void</em> ),所以可以通过NULL给任意类型的指针赋null pointer constant.</p>
+<p>但是在c++中就有不同了.c++不支持void<em> 隐式转化为其他指针类型,NULL宏定义成(void</em>)0就没什么意义. 于是,c++中NULL一般宏定义为0. </p>
+<p>但是这么以来,问题就出现了<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">void</span> *)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"arg: pointer"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"arg: int"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> *p  = <span class="literal">NULL</span>;</span><br><span class="line">	f(p);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>编译出错:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">test.cpp:14:8: error: call of overloaded ‘f(NULL)’ is ambiguous</span><br><span class="line">  f(NULL);</span><br><span class="line">        ^</span><br><span class="line">test.cpp:2:6: note: candidate: void f(int*)</span><br><span class="line"> void f(int *)</span><br><span class="line">      ^</span><br><span class="line">test.cpp:7:6: note: candidate: void f(int)</span><br><span class="line"> void f(int )</span><br><span class="line">      ^</span><br></pre></td></tr></table></figure></p>
+<p>因为函数调用的时候两个重载版本都会匹配.</p>
+<p>还有就是模板推断参数类型的时候,也会由于NULL而把指针类型推断成int(当然,如果宏定义是0L就推断成long long),造成编译错误.</p>
+<p>当然,随着c++11版本的出现,引入了一个新的关键字nullptr,c++终于有了正式的null pointer constant.</p>
+<blockquote>
+<p>The keyword nullptr denotes the pointer literal. It is a prvalue of type std::nullptr_t. There exist implicit conversions from nullptr to null pointer value of any pointer type and any pointer to member type. Similar conversions exist for any null pointer constant, which includes values of type std::nullptr_t as well as the macro NULL. </p>
+</blockquote>
+<p>大概意思就是nullptr类型是std::nullptr_t(大概可以理解成true和false之于bool类型的关系),是个纯右值(prvalue).nullptr可以隐式转化成任意指针类型的空指针值(null pointer value).</p>
+<p>再来看一个例子:<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cstddef&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">F</span>, <span class="title">class</span> <span class="title">A</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> <span class="title">Fwd</span>(<span class="title">F</span> <span class="title">f</span>, <span class="title">A</span> <span class="title">a</span>)</span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    f(a);</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">g</span><span class="params">(<span class="keyword">int</span>* i)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Function g called\n"</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    g(<span class="literal">NULL</span>);           <span class="comment">// Fine</span></span><br><span class="line">    g(<span class="number">0</span>);              <span class="comment">// Fine</span></span><br><span class="line"> </span><br><span class="line">    Fwd(g, <span class="literal">nullptr</span>);   <span class="comment">// Fine</span></span><br><span class="line">    Fwd(g, <span class="literal">NULL</span>);      <span class="comment">// ERROR: No function g(int)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>有了nullptr就解决了NULL模板推断的一些问题.</p>
+<p>所以给指针赋值尽量用nullptr…</p>
+<p>ps: 还要就是std::nullptr_t类型的定义比较奇怪= =.  这样真的大丈夫?<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef decltype(nullptr) nullptr_t;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2017/11/04/nullptr_and_NULL/">
+    <time datetime="2017-11-04T02:13:15.000Z" class="entry-date">
+        2017-11-04
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+
+    </footer>
+</article>
+
+
+    
+<nav class="nav-single">
+    <h3 class="assistive-text">文章导航</h3>
+    
+        <span class="nav-previous"><a href="/2017/11/13/plus_and_minus/" rel="prev"><span class="meta-nav">←</span> c++的ub还真是无处不在啊</a></span>
+    
+    
+        <span class="nav-next"><a href="/2017/10/30/c++_switch/" rel="next">c++ switch内部的变量定义 <span class="meta-nav">→</span></a></span>
+    
+</nav><!-- .nav-single -->
+
+
+
+
+
+
+
+</div></div>
+        <div id="secondary" class="widget-area" role="complementary">
+  
+    <aside id="search" class="widget widget_search"><form role="search" method="get" accept-charset="utf-8" id="searchform" class="searchform" action="//google.com/search">
+    <div>
+        <input type="text" value="" name="s" id="s" />
+        <input type="submit" id="searchsubmit" value="搜索" />
+    </div>
+</form></aside>
+  
+    
+  
+    
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget-content">
+      <ul>
+        
+          <li>
+            <a href="/2018/01/29/syscall/">当我们谈论系统调用的时候我们在谈论什么</a>
+          </li>
+        
+          <li>
+            <a href="/2017/11/13/plus_and_minus/">c++的ub还真是无处不在啊</a>
+          </li>
+        
+          <li>
+            <a href="/2017/11/04/nullptr_and_NULL/">nullptr vs NULL</a>
+          </li>
+        
+          <li>
+            <a href="/2017/10/30/c++_switch/">c++ switch内部的变量定义</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/05/name-mangling-and-overload/">浅谈name mangling</a>
+          </li>
+        
+      </ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget-content">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget-content tagcloud">
+      <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+    </div>
+  </aside>
+
+  
+</div>
+      </div>
+      <footer id="colophon" role="contentinfo">
+    <p>&copy; 2018 cyyzero
+    All rights reserved.</p>
+    <p>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></p>
+</footer>
+    <script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"1","bdMiniList":false,"bdPic":"","bdStyle":"2","bdSize":"16"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+<script src="/js/navigation.js"></script>
+
+<div id="bg"></div>
+
+  </div>
+</body>
+</html>

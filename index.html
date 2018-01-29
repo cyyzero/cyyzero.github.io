@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+
+  
+  
+  
+  
+  
+  
+  <title>Pluto Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta property="og:type" content="website">
+<meta property="og:title" content="Pluto Blog">
+<meta property="og:url" content="http://yoursite.com/index.html">
+<meta property="og:site_name" content="Pluto Blog">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Pluto Blog">
+  
+  
+    <link rel="icon" href="/css/images/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+  
+  <!-- baidu webmaster push -->
+  <script src='//push.zhanzhang.baidu.com/push.js'></script>
+</head>
+<body class="home blog custom-background custom-font-enabled single-author">
+  <div id="page" class="hfeed site">
+      <header id="masthead" class="site-header" role="banner">
+    <hgroup>
+      <h1 class="site-title">
+        <a href="/" title="Pluto Blog" rel="home">Pluto Blog</a>
+      </h1>
+      
+        <h2 class="site-description">
+          <a href="/" id="subtitle">失败人士自留地</a>
+        </h2>
+      
+    </hgroup>
+
+    <nav id="site-navigation" class="main-navigation" role="navigation">
+            <button class="menu-toggle">菜单</button>
+            <a class="assistive-text" href="/#content" title="跳至内容">跳至内容</a><!--TODO-->
+            <div class="menu-main-container">
+                <ul id="menu-main" class="nav-menu">
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/">Home</a></li>
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/archives">Archives</a></li>
+                
+                </ul>
+            </div>
+    </nav>
+</header>
+      <div id="main" class="wrapper">
+        <div id="primary" class="site-content"><div id="content" role="main">
+  
+    <article id="post-syscall" class="post-syscall post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title">
+      <a class="article-title" href="/2018/01/29/syscall/">当我们谈论系统调用的时候我们在谈论什么</a>
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/01/29/syscall/" data-id="cjd0c6gh3000d5377bs639p0w" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p>ps:句式“当我们谈论XX时我们在谈论什么”引用自美国作家卡佛(Ramond Carver)的作品《当我们谈论爱情时我们谈论什么》(What We Talk About When We Talk About Love)。当然，我又标题党了，应该换成<strong>浅析IA32 Linux 系统调用过程</strong>比较合适。</p>
+<p>当说到Linux下的系统调用(<strong>System Call</strong>)的时候，程序员都不会陌生。但一般都会联想到fork()，execve()等这些函数。这就是很多人(包括以前我自己)的误区所在了。</p>
+<p>诸如fork() 这些，是c语言函数库(linux下常见如glibc)实现的<strong>外壳(wrapper)函数</strong>，由它们来引发真正的系统调用。从C语言编程的角度来看，调用C语言函数库的外壳函数等同于发起系统调用。也就是说，当我们在代码中使用诸如fork()这类函数时，意味着调用外壳函数，然后由外壳函数去调用系统调用(可能有点绕)。</p>
+<p>区分了狭义上的外壳(wrapper)函数和系统调用后，就能进入本文的主题了:<strong>IA32上Linux系统调用的过程</strong>。(因为其他的不懂…</p>
+<p>首先描述两个概念，<strong>中断(interruption)</strong>和<strong>异常(execption)</strong>。从<a href="https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf" target="_blank" rel="noopener">Intel的手册</a>上找的简单介绍。</p>
+<blockquote>
+<p>The processor provides two mechanisms for interrupting program execution, interrupts and exceptions: </p>
+<p>• An interrupt  is an asynchronous event that is typically triggered by an I/O device.</p>
+<p>• An exception is a synchronous event that is generated when the processor detects one or more predefined conditions while executing an instruction. The IA-32 architecture specifies three classes of exceptions: faults, traps, and aborts. </p>
+</blockquote>
+<p>简单地说，中断和异常是处理器提供的中断程序执行的机制，能引起X86挂起当前指令流的执行并相应事件。在这两种情况下处理器都会保存当前进程的上下文，并将转至一个预先定义的子程序来执行特殊的服务。</p>
+<p>虽说中断和异常概念上有所区别，但在IA32上处理它们却是用了相同的方式。系统为每种类型的中断和异常分配了唯一的一个无符号整型作为一个向量(vector)，即可以理解为索引。然后内核维护的一张叫做<strong>中断描述符表</strong>(interrupt descriptor table， 一般简称为<strong>IDT</strong>)的结构，表中每一项都是某个中断或者异常对应的处理程序的入口地址。然后每次发生了某个中断和异常，就能通过它的向量，就在IDT中找到相应的处理程序并调用。</p>
+<p>具体到汇编语言，就是通过INT指令来实现。INT(interrupt的缩写)指令的作用是引发中断和异常的处理程序，格式形如INT n。</p>
+<p>从<a href="https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf" target="_blank" rel="noopener">Intel的手册</a>上找的INT指令的简单介绍。</p>
+<blockquote>
+<p>The INT n instruction generates a call to the interrupt or exception handler specified with the destination operand The destination operand specifies a vector from 0 to 255, encoded as an 8-bit unsigned intermediate value. Each vector provides an index to a gate descriptor in the IDT. The first 32 vectors are reserved by Intel for system use. Some of these vectors are used for internally generated exceptions.</p>
+</blockquote>
+<p>大意就是INT n用来调用特定的中断或者异常的处理程序。n取值从0x00-0xFF(8位无符号整型)。N就作为上述提到的向量。举一些简单的例子，比如说0x1表示除法上溢或者被零除，0x12表示栈故障(越界或者栈段不存在)，0x14表示缺页…</p>
+<p>当调用处理程序时，系统栈保存处理器的状态。下列事件将发生:</p>
+<ul>
+<li>若转移涉及特权指令改变，则当前栈段寄存器和当前拓展的栈指针(esp)寄存器的内容被压入栈。</li>
+<li>EFLAGS寄存器的当前值压入栈。</li>
+<li>中断(IF)和自陷(TF)两个标志被清除。这就禁止了INTR中断，自陷或单步中断。</li>
+<li>当前代码段(CS)寄存器和当前指令指针寄存器(IP或者EIP)寄存器被压入栈。</li>
+<li>若中断向量伴随错误代码，则错误代码也入栈。</li>
+<li>读取中断向量表对应项的内容，将其装入CS和IP(或EIP)寄存器。控制转移到终端服务子程序继续执行。</li>
+</ul>
+<p>为从中断返回，中断服务程序执行一条IRET指令。这使得所有保存在栈上的值被取回，并由中断点恢复执行。</p>
+<p>铺垫了这么久，又回到了系统调用。没猜错，IA32的Linux上系统调用就是通过INT 0x80调用的。</p>
+<p>下面讲一下具体过程：</p>
+<p>相应中断0x80，内核调用system<em>call()。可以再展开说一下，这里通过各个寄存器用于传递参数，EAX寄存器用于表示系统调用的接口号，比如EAX=1用于退出进程(exit)；EAX=2表示创建进程(fork)；EAX=3表示读取文件或者IO(read)等，每个系统调用都对应内核源代码中的一个函数，他们都是以“sys\</em>”开头的，比如说exit调用对应于内核中的sys_exit函数。你没猜错，和IDT一样，系统也维护着一张系统调用表，通过类似*sys_call_table(0,%eax,4)，的跳转，可以通过eax所记录的系统调用号调用对应的系统调用函数。如果系统调用带有函数参数(一般也是通过寄存器传递)，那么还会检查参数的有效性。随后，该函数会执行必要的任务。接着，将状态返回sys_call()函数。从内核栈中恢复各寄存器值，并将系统调用返回结果置于栈中。最后返回外壳函数，中断结束。</p>
+<p>至此，系统调用算是结束了，但是我们调用的外壳(wrapper)函数还没算完。它还有个扫尾工作。如果返回值表明调用有错误，外壳(wrapper)函数就会设置全局变量errno。最后，外壳(wrapper)函数会返回到调用它的地方，并返回一个整型，以表明系统调用是否成功。</p>
+<p>终于调用结束，大功告成了…</p>
+<p>(取好几本书内容的子集东拼西凑写出来的…真是艰难</p>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2018/01/29/syscall/">
+    <time datetime="2018-01-29T09:59:56.000Z" class="entry-date">
+        2018-01-29
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li></ul>
+
+    </footer>
+</article>
+
+
+
+
+
+
+  
+    <article id="post-plus_and_minus" class="post-plus_and_minus post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title">
+      <a class="article-title" href="/2017/11/13/plus_and_minus/">c++的ub还真是无处不在啊</a>
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/13/plus_and_minus/" data-id="cjd0c6ggt000553771s192w17" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p>最近发现了一个有意思的东西，所以特意分享下。</p>
+<p>问题的引入是如何交换两个整型变量?最简单的就是引入第三个变量,然后完成三次赋值达到交换的目的。<br>然后，也有一些不使用第三个变量达到这个目的的方法。我所知道的有两个，一个是通过位运算的异或（原理是对于任意位模式ｘ^x = 0,在此不展开），还有一个就是通过以下的方法：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">swap</span><span class="params">(Type&amp; x, Type&amp; y)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	x = x+y;</span><br><span class="line">	y = x-y;</span><br><span class="line">	x = x-y;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>（可以看到我这里没有说明具体变量类型，原因往下看就知道了=。=）</p>
+<p>肯定有人一眼就看出了这个方法的问题：x+y有可能会溢出。</p>
+<p>一般程序猿看到溢出就头疼，感觉肯定潜藏着bug，然而事实真是如此吗？</p>
+<p>本篇文章的想要探讨的问题：<strong>这种方法最终结果还能保证交换结果正确吗？</strong></p>
+<p>大家都知道，在计算机的世界中，一切的整型最后都是用二进制来表示。对于有符号整型和无符号整型来说，有着不同的编码规则。</p>
+<p>BTW，现在都是用补码来表示有符号数，而不是国内教材讲半天的原码和反码：）</p>
+<p>所以，对于一个n位的二进制，当它表示一个无符号整型的时候，第i(i取1~n)位的权重就是2^(i-1)。当它表示一个有符号整型的时候，第n位的权重是-2^(n-1)，第i(i取1~k-1)位的权重是2^(i-1)。</p>
+<p>至于用补码来表示有符号数的原因，就是可以在cpu内部运算时不用区分有符号和无符号整型，用同一套加法器就能解决。这里可以自己推理或者实验一下，但弄不明白为什么也没关系，只要记住结论：<strong>有符号整型和无符号整型在cpu上的运算规律相同，即将减去一个减数换成加上它的补码，然后二进制数逐位相加，最高位进位舍弃</strong>（这个很好理解，因为运算时的bit数（高层上就是数据类型）固定）。</p>
+<p>所以，这些运算最后都能看成是一个无符号整型的加法。这是一个取模加法。也就是说发生了截断，最高位进位被舍弃。相当于每次结果对2^k取模。</p>
+<p>这在数学上有定义，模数加法形成了一个阿贝尔群。阿贝尔群的性质就是<strong>可交换</strong>和<strong>可结合</strong>。不懂什么是阿贝尔群没关系，看到可交换和可结合，相信大家心里已经有点数了：用上面那个方法交换变量应该是可行的。<br>我把交换的过程运算详细列出来。<br>| x | y |<br>|—|—|<br>|x+y| y |<br>|x+y| x+y-y |<br>| x+y-x-y+y | x+y-y | </p>
+<p>可以看到根据取模加法<strong>可交换可结合</strong>的特点x最后的结果是x+y-x-y+y=y，y最后的结果x+y-y=x。</p>
+<p>到这里似乎完事大吉,但是心头隐隐有些不安。而且某次在某个群里讨论这个话题的时候也被dalao喷过：-（  所以感觉这个还和语言的标准有关。后来查了下c++对于有符号数无符号数，以及溢出的资料，果然如此…</p>
+<p>对于无符号整型来说：</p>
+<blockquote>
+<p>Unsigned integers, declared unsigned, shall obey the laws of arithmetic modulo 2^n where n is the number of bits in the value representation of that particular size of integer</p>
+</blockquote>
+<p>标准是明确规定无符号整型运算结果会以2^n取模，即使溢出了运算结果也是明确数学定义的（mathematically defined）。也就构成了模数加法，可交换可结合。</p>
+<p>而对于有符号整型：</p>
+<p>C++11, §18.4.1:</p>
+<blockquote>
+<p>The header defines all functions, types, and macros the same as 7.20 in the C standard.</p>
+</blockquote>
+<p>好吧，一切按照c的来：</p>
+<p>C11, §7.20.1.1:</p>
+<blockquote>
+<p>The typedef name intN_t designates a signed integer type with width N, no padding bits, and a two’s complement representation. Thus, int8_t denotes such a signed integer type with a width of exactly 8 bits.</p>
+</blockquote>
+<p>c++11明确规定了有符号类型用了补码表示。但是并没有像无符号类型那样，定义了溢出之后对结果取模。也就是说，有符号类型溢出是未定义的。所以用上面那个方法交换的结果也是未定义。</p>
+<p>最后的结论：在c++中，无符号整型用上述方法可以交换变量，而有符号整型交换后结果未定义。</p>
+<p>ps：不过估计对于大多数编译器实现来说有符号整型交换这么来也是可以的…毕竟cpu运算结果就是那样 orz</p>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2017/11/13/plus_and_minus/">
+    <time datetime="2017-11-13T15:59:56.000Z" class="entry-date">
+        2017-11-13
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+
+    </footer>
+</article>
+
+
+
+
+
+
+  
+    <article id="post-nullptr_and_NULL" class="post-nullptr_and_NULL post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title">
+      <a class="article-title" href="/2017/11/04/nullptr_and_NULL/">nullptr vs NULL</a>
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/04/nullptr_and_NULL/" data-id="cjd0c6ggs00045377kpzuelrj" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p>大家都知道,在C语言中,NULL被用来表示空指针常量(null pointer constant),用来与任何指向真实对象的指针区分.</p>
+<p>c99标准里这么描述:</p>
+<blockquote>
+<p>3An integer constant expression with the value 0, or such an expression cast to type void *, is called a null pointer constant.55) If a null pointer constant is converted to a pointer type, the resulting pointer, called a null pointer, is guaranteed to compare unequal to a pointer to any object or function.</p>
+</blockquote>
+<p>而且NULL属于implementation defined,所以编译器一般都把NULL宏定义为常量0(或者0L)或者 (void*)0…</p>
+<p>因为c语言允许void<em> 指针向其他指针类型隐式转化(比如说很常用的malloc函数的返回值就是void</em> ),所以可以通过NULL给任意类型的指针赋null pointer constant.</p>
+<p>但是在c++中就有不同了.c++不支持void<em> 隐式转化为其他指针类型,NULL宏定义成(void</em>)0就没什么意义. 于是,c++中NULL一般宏定义为0. </p>
+<p>但是这么以来,问题就出现了<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">void</span> *)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"arg: pointer"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"arg: int"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> *p  = <span class="literal">NULL</span>;</span><br><span class="line">	f(p);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>编译出错:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">test.cpp:14:8: error: call of overloaded ‘f(NULL)’ is ambiguous</span><br><span class="line">  f(NULL);</span><br><span class="line">        ^</span><br><span class="line">test.cpp:2:6: note: candidate: void f(int*)</span><br><span class="line"> void f(int *)</span><br><span class="line">      ^</span><br><span class="line">test.cpp:7:6: note: candidate: void f(int)</span><br><span class="line"> void f(int )</span><br><span class="line">      ^</span><br></pre></td></tr></table></figure></p>
+<p>因为函数调用的时候两个重载版本都会匹配.</p>
+<p>还有就是模板推断参数类型的时候,也会由于NULL而把指针类型推断成int(当然,如果宏定义是0L就推断成long long),造成编译错误.</p>
+<p>当然,随着c++11版本的出现,引入了一个新的关键字nullptr,c++终于有了正式的null pointer constant.</p>
+<blockquote>
+<p>The keyword nullptr denotes the pointer literal. It is a prvalue of type std::nullptr_t. There exist implicit conversions from nullptr to null pointer value of any pointer type and any pointer to member type. Similar conversions exist for any null pointer constant, which includes values of type std::nullptr_t as well as the macro NULL. </p>
+</blockquote>
+<p>大概意思就是nullptr类型是std::nullptr_t(大概可以理解成true和false之于bool类型的关系),是个纯右值(prvalue).nullptr可以隐式转化成任意指针类型的空指针值(null pointer value).</p>
+<p>再来看一个例子:<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cstddef&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">F</span>, <span class="title">class</span> <span class="title">A</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> <span class="title">Fwd</span>(<span class="title">F</span> <span class="title">f</span>, <span class="title">A</span> <span class="title">a</span>)</span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    f(a);</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">g</span><span class="params">(<span class="keyword">int</span>* i)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Function g called\n"</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    g(<span class="literal">NULL</span>);           <span class="comment">// Fine</span></span><br><span class="line">    g(<span class="number">0</span>);              <span class="comment">// Fine</span></span><br><span class="line"> </span><br><span class="line">    Fwd(g, <span class="literal">nullptr</span>);   <span class="comment">// Fine</span></span><br><span class="line">    Fwd(g, <span class="literal">NULL</span>);      <span class="comment">// ERROR: No function g(int)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>有了nullptr就解决了NULL模板推断的一些问题.</p>
+<p>所以给指针赋值尽量用nullptr…</p>
+<p>ps: 还要就是std::nullptr_t类型的定义比较奇怪= =.  这样真的大丈夫?<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef decltype(nullptr) nullptr_t;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2017/11/04/nullptr_and_NULL/">
+    <time datetime="2017-11-04T02:13:15.000Z" class="entry-date">
+        2017-11-04
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+
+    </footer>
+</article>
+
+
+
+
+
+
+  
+    <article id="post-c++_switch" class="post-c++_switch post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title">
+      <a class="article-title" href="/2017/10/30/c++_switch/">c++ switch内部的变量定义</a>
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/10/30/c++_switch/" data-id="cjd0c6ggl0001537748e3pkbt" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p>c++中的switch语句大家肯定都很熟悉。switch执行流程是匹配相应的case。很显然，可能会跳过某些case标签，忽略某些代码。那么就带来了一个有意思的话题：<strong>如果被忽略的代码中有变量的定义该怎么办</strong>？</p>
+<p>先来看一个简单的例子：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span>(<span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">	<span class="keyword">int</span> a = <span class="number">10</span>;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后编译就错了：</p>
+<ul>
+<li><code>error: jump to case label [-fpermissive]</code></li>
+<li><code>error: crosses initialization of ‘int a’</code></li>
+</ul>
+<p>编译器的意思是控制流跳过了变量的初始化。乍看之下似乎不太好理解为什么出错。其实如果在case 0标签中要使用的变量a的时候，问题就来了。试图在未初始化的时候使用对象，这显然是行不通的。可能由于举的例子中变量是内置类型，所以不太好理解到问题的严重性，再来看一个例子：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span>(<span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">string</span> s1;</span><br><span class="line">	<span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">s2</span><span class="params">(<span class="string">"hello"</span>)</span></span>;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">	<span class="comment">//可能会使用s1或者s2</span></span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这样就跳过了类的隐式或者显式初始化。</p>
+<p>因此c++规定，不允许跨过变量的初始化语句直接跳转到变量作用域的另一个位置。</p>
+<p>然而，对于内置类型来说，定义的时候并非一定要初始化。<br>比如：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span>(<span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">	<span class="keyword">int</span> a;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">	a = <span class="number">20</span>;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这段代码就不会报错，因为变量并没有初始化。可以从底层来理解。</p>
+<p>首先，switch下的大括号是一个完整的作用域，不要被case标签的缩进所欺骗，认为每个case有一个作用域（除非显示地加大括号）。</p>
+<p>其次，定义变量并不存在“执行动作”，有的只是改变栈指针从而在栈上分配空间。编译器会保证在相应的作用域之中这个变量的空间是被分配了。大部分编译器实现会选择在函数开始把所有局部变量的空间都分配好。但是变量的初始化是有”执行动作“的，比如说<code>int a = 10</code>，就会在栈上某4个字节存入10（假设机器上int占4字节）。再比如某个类初始化，也会调用相应的构造函数。所以控制流程的跳转可能造成某个对象没有正常的初始化就使用。</p>
+<p>所以，就可以回答一开始的问题了。如果被忽略的代码中的定义包含了初始化的过程，就会编译失败。如果是内置类型的定义（不含初始化），那么就能通过编译。</p>
+<p>当然，为了不出现上述的问题，可以直接用大括号将case标签下构成一个单独的作用域。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span>(<span class="number">0</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">std</span>::<span class="built_in">string</span> s;</span><br><span class="line">		<span class="keyword">int</span> a = <span class="number">10</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">	<span class="comment">//显然，这里也不可能再使用对象s或者a</span></span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2017/10/30/c++_switch/">
+    <time datetime="2017-10-30T15:59:56.000Z" class="entry-date">
+        2017-10-30
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+
+    </footer>
+</article>
+
+
+
+
+
+
+  
+    <article id="post-name-mangling-and-overload" class="post-name-mangling-and-overload post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title">
+      <a class="article-title" href="/2017/08/05/name-mangling-and-overload/">浅谈name mangling</a>
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/08/05/name-mangling-and-overload/" data-id="cjd0c6ggq00035377aw7zxtok" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p>很多语言都允许重载函数，这些函数在源代码中有相同的名字，却又不同的参数列表。这用到了一种叫做name mangling的技术。</p>
+<blockquote>
+<p><strong>名字修饰</strong>，又译作<strong>名字粉碎</strong>、<strong>名字重整</strong>，译自英文<strong>name mangling</strong>或<strong>name decoration</strong>，是现代计算机程序设计语言的编译器用于解决由于程序实体的名字必须唯一而导致的问题的一种技术。</p>
+<p>它提供了在函数、结构体、类或其它的数据类型的名字中编码附加信息一种方法，用于从编译器中向链接器传递更多语义信息。</p>
+<p>该需求产生于程序设计语言允许不同的条目使用相同的标识符，包括它们占据不同的命名空间（典型的命名空间是由一个模块、一个类或显式的<em>namespace</em>指示来定义的）或者有不同的签名（例如函数重载）。</p>
+</blockquote>
+<p>接下来主要以c++的<strong>函数重载</strong>为例，来简要介绍一下name mangling。（当然，其他语言中也有name mangling，而且也c++还有很多其他地方需要name mangling，比如namespace，class，template等）。</p>
+<h2 id="name-mangling出现的原因"><a href="#name-mangling出现的原因" class="headerlink" title="name mangling出现的原因"></a>name mangling出现的原因</h2><p>c++源文件经过编译器和汇编器生成可重定位目标文件。链接器生成可执行目标文件。</p>
+<p>不同的系统之间，目标文件的格式都不同，但基本的概念都是相同的。</p>
+<p>每个可重定位目标模块中包含一个叫做符号表（.symtab）的部分。符号表包含了m所定义和引用的符号。一般分为三种：</p>
+<ul>
+<li>在m中定义并且能被其他模块引用的<strong>全局符号</strong>。对应于非静态的函数以及不带static的全局变量。</li>
+<li>在其他模块中定义并且被模块m引用的<strong>全局符号</strong>。这些符号也被称为外部（external）符号，对应于定义在其他模块的函数和变量。</li>
+<li>只被模块m定义和引用的<strong>本地符号</strong>。对应于带static的函数和全局变量。</li>
+</ul>
+<p>要注意到，符号表中不包含对应于本地非静态程序变量的任何符号。因为这些符号在运行时栈中管理，链接器不care。</p>
+<p>（可能有人对上面几段中<strong>模块</strong>一词比较疑惑。一个目标模块（object module）就是一个字节序列，而一个目标文件（object file）就是存储在存储器中的目标模块。）</p>
+<p>而链接器做的主要工作，就是进行<strong>符号解析</strong>和重定位。而链接器解析符号引用的方法是将每个引用与它输入的可重定位目标文件的符号表中的<strong>一个确定的符号定义</strong>联系起来。</p>
+<p>从这里已经可以看出一些倪端了。c++要实现重载，必须让链接器能够区分这些重载函数。而不能像c语言中一样简单的将函数名作为符号。这就必须要用到name mangling。</p>
+<p>ps：关于编译链接的过程我也不是很懂，这方面还需要后续的学习。</p>
+<h2 id="name-mangling的基本方式"><a href="#name-mangling的基本方式" class="headerlink" title="name mangling的基本方式"></a>name mangling的基本方式</h2><p>name mangling的基本原理就是将每个唯一的函数和参数列表组合编码成一个对链接器来说唯一的名字。换句话说，编译器和链接器需要一定的协议来规范符号的组织格式。</p>
+<p>c++中的重载函数区分在于参数数量和某个参数类型的不同。所以区分函数的时候，需要充分考虑参数数量和参数类型这两个语义信息。</p>
+<p>然而，c++并没有规定一个标准的name mangling方式，所以不同的编译器采用的各自的name mangling方式（甚至相同编译器的不同版本，或相同编译器在不同平台上，name mangling规则都截然不同）。所以几乎没有链接器可以链接不同编译器产生的目标代码。</p>
+<p>以下就以gcc为例子来初步了解一下。</p>
+<p>一个简单的例子：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">(<span class="keyword">void</span>)</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">g</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i = f(), j = f(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>编译得到可重定位目标文件，然后用gcc工具链中的<a href="https://sourceware.org/binutils/docs/binutils/nm.html" target="_blank" rel="noopener">nm</a>列出目标文件的符号，可以看到</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">0000000000000000 b .bss</span><br><span class="line">0000000000000000 d .data</span><br><span class="line">0000000000000000 p .pdata</span><br><span class="line">0000000000000000 r .rdata$zzz</span><br><span class="line">0000000000000000 t .text</span><br><span class="line">0000000000000000 r .xdata</span><br><span class="line">000000000000000b T _Z1fi</span><br><span class="line">0000000000000000 T _Z1fv</span><br><span class="line">0000000000000019 T _Z1gv</span><br></pre></td></tr></table></figure>
+<p>这三列分别是 symbol value，symbol type， symbol name。 现在主要关注的就是最后一列的符号名(主要是因为前两个我也不知道是个啥= =。以后再填坑吧)。</p>
+<p>可以看到<code>int f(void)</code> 在符号表中是<code>_Z1fv</code>，<code>int f(int)</code>是<code>_Z1fi</code>，<code>void g(void)</code>是<code>_Z1gv</code>。</p>
+<p>大家也可以从这个简单的例子窥见gcc中name mangling的方式。不过本文只是简单的介绍一下name mangling出现的理由和通用策略，并非意在介绍具体某种编译器的name mangling编码规则，所以不会在这块深入。（啊，其实是因为我也不懂）。</p>
+<p>最后再做一个实验，看一下涉及到namespace和class的name mangling。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> t &#123;</span><br><span class="line">	<span class="class"><span class="keyword">class</span> <span class="title">c</span></span></span><br><span class="line"><span class="class">	&#123;</span></span><br><span class="line">        <span class="keyword">public</span>:</span><br><span class="line">            <span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">	&#125;;</span><br><span class="line">	<span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">	<span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span> </span>&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	t::c objc;</span><br><span class="line">	objc.f();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>nm列出符号表(忽略其他符号)，看一下这几个函数的符号名：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">000000000000000f T _Z1fv</span><br><span class="line">0000000000000000 T _ZN1t1c1fEv</span><br><span class="line">0000000000000006 T _ZN1t1fEi</span><br><span class="line">0000000000000000 T _ZN1t1fEv</span><br></pre></td></tr></table></figure>
+<p>ps：最后的最后，感觉自己还是有很多地方也不是很明白…还得接着学 啊  = =</p>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2017/08/05/name-mangling-and-overload/">
+    <time datetime="2017-08-05T08:18:38.000Z" class="entry-date">
+        2017-08-05
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+
+    </footer>
+</article>
+
+
+
+
+
+
+  
+    <article id="post-c++-reference" class="post-c++-reference post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title">
+      <a class="article-title" href="/2017/07/13/c++-reference/">c++引用的实现</a>
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/07/13/c++-reference/" data-id="cjd0c6gge00005377ndvyp22a" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p>很多c++初学者对于引用（reference）的的印象不外乎就是“对象的别名”、“同义词”。而引用作为c++对于c语言的重要扩充，与指针有着千丝万缕、剪不断理还乱的联系。甚至，引用在底层<del>就是</del>(勘误，应该改成“<strong>可能</strong>”)通过“指针”实现。</p>
+<p><strong>左值引用</strong></p>
+<p>接下来，看一个很简单的小例子：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> a = <span class="number">6</span>;</span><br><span class="line">	<span class="keyword">int</span> &amp;b = a;</span><br><span class="line">	b = <span class="number">7</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>汇编后的代码节选：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">_Z4testv:</span><br><span class="line">.LFB0:</span><br><span class="line">	pushq	%rbp</span><br><span class="line">	.seh_pushreg	%rbp</span><br><span class="line">	movq	%rsp, %rbp</span><br><span class="line">	.seh_setframe	%rbp, 0</span><br><span class="line">	subq	$16, %rsp</span><br><span class="line">	.seh_stackalloc	16</span><br><span class="line">	.seh_endprologue           #以上几行是test函数栈帧的建立过程</span><br><span class="line">	movl	$6, -12(%rbp)      #保存a</span><br><span class="line">	leaq	-12(%rbp), %rax    #将a的地址存入rax寄存器</span><br><span class="line">	movq	%rax, -8(%rbp)     #保存b，存入的是a的地址</span><br><span class="line">	movq	-8(%rbp), %rax     #将b，即a的地址传入rax寄存器</span><br><span class="line">	movl	$7, (%rax)         #通过b中保存的地址对a赋值</span><br><span class="line">	addq	$16, %rsp          #从以下几行是test函数栈帧的销毁过程</span><br><span class="line">	popq	%rbp</span><br><span class="line">	ret</span><br><span class="line">	.seh_endproc</span><br></pre></td></tr></table></figure>
+<p>可以看到，内存上b存储的其实是a的地址。</p>
+<p><del>在底层，引用是通过指针来实现</del>。引用算的上是c++的一个语法糖。</p>
+<p><strong>右值引用</strong></p>
+<p><del>以上的讲解都是基于c++传统的、用&amp;表示的引用，也就是左值引用。而c++11标准还有个右值引用的概念。那右值引用也还是用指针的实现的吗？要知道，右值引用可是对于临时变量的引用，万一是存储在寄存器中的临时变量呢？要知道，寄存器内的数据可不能寻址…作为一个c++菜鸟，我对右值引用也没有很深的理解…想到这，我不禁冒冷汗，难道我的猜测错了？上面的都得重写？</del></p>
+<p>吓得我赶紧试验一下…</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> a = <span class="number">6</span>;</span><br><span class="line">	<span class="keyword">int</span> &amp;&amp;b = a+<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>汇编之后的节选：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">_Z4testv:</span><br><span class="line">.LFB0:</span><br><span class="line">	pushq	%rbp</span><br><span class="line">	.seh_pushreg	%rbp</span><br><span class="line">	movq	%rsp, %rbp</span><br><span class="line">	.seh_setframe	%rbp, 0</span><br><span class="line">	subq	$32, %rsp</span><br><span class="line">	.seh_stackalloc	32</span><br><span class="line">	.seh_endprologue           #以上是栈帧的建立过程</span><br><span class="line">	movl	$6, -4(%rbp)       #保存a</span><br><span class="line">	movl	-4(%rbp), %eax     #将a存入寄存器eax</span><br><span class="line">	addl	$1, %eax           #eax中数据+1，得到a+1</span><br><span class="line">	movl	%eax, -20(%rbp)    #保存a+1</span><br><span class="line">	leaq	-20(%rbp), %rax    #将保存的a+1的地址传入寄存器eax</span><br><span class="line">	movq	%rax, -16(%rbp)    #保存a+1的地址</span><br><span class="line">	addq	$32, %rsp          #从这以下是这个栈帧的销毁过程</span><br><span class="line">	popq	%rbp</span><br><span class="line">	ret</span><br><span class="line">	.seh_endproc</span><br></pre></td></tr></table></figure>
+<p>可以看到，程序会先将a+1计算结果保存进栈帧，然后把a+1被保存的地址传给b。b保存的还是一个地址。</p>
+<p>当然…我由于c++水品有限，可能这只是我错误的猜想和认识。欢迎指正我的错误所在。 </p>
+<p>ps：“怎么指正错误啊喂，你的博客还不能评论啊啊啊啊啊”  （来自官方的吐槽- -。</p>
+<hr>
+<p>2018.1.29</p>
+<p>update：</p>
+<p>c++标准本身没有规定引用的实现方法。因此引用可能利用指针实现，也可以被优化调(即直接操作被引用的对象)。</p>
+<p>实际上不应该对引用的实现做任何假设。搞清楚它语义上是作为对象的别名就够了。</p>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2017/07/13/c++-reference/">
+    <time datetime="2017-07-13T15:59:56.000Z" class="entry-date">
+        2017-07-13
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+
+    </footer>
+</article>
+
+
+
+
+
+
+  
+    <article id="post-stack-frame" class="post-stack-frame post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title">
+      <a class="article-title" href="/2017/07/10/stack-frame/">浅谈栈帧</a>
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/07/10/stack-frame/" data-id="cjd0c6ggz000a5377vafx4in8" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p><strong>本文内容是结合《深入理解计算机系统》第三章以及自己对于栈帧、C语言函数调用实现机制的浅薄理解。如有错误，欢迎指正。</strong> （逃~</p>
+<h2 id="什么是栈帧"><a href="#什么是栈帧" class="headerlink" title="什么是栈帧"></a>什么是栈帧</h2><blockquote>
+<p>C语言中，每个栈帧对应着一个未运行完的函数。栈帧中保存了该函数的返回地址和局部变量。</p>
+</blockquote>
+<p>大多数机器用程序栈来支持过程调用。机器用栈来传递过程参数，存储返回信息，保存寄存器用于以后恢复，以及本地存储。为单个过程分配的那部分栈成为栈帧（stack frame）。</p>
+<p><img src="http://www.myhack58.com/Article/UploadPic/2016-7/201674201749615.jpg" alt="stack frame"></p>
+<p>此图描绘了栈帧的通用结构。最顶端的栈帧用两个指针界定。在IA32机器上寄存器%ebp为帧指针，寄存器%esp为栈顶指针。在64位机器上则分别用%rbp和%rsp寄存器。<strong>以下提到的汇编代码如不特别说明一般指的是在32位机器上的汇编结果。</strong></p>
+<p>假设过程P（调用者）调用Q（被调用者）时，P会在自己栈帧存储Q的参数，另外会将P的返回地址也压入栈中。返回地址就是程序从Q返回时应该继续执行的地方。当调用返回时，这个返回地址会被pop进%eip（指令指针寄存器，同理，在64位上%rip）。</p>
+<h2 id="控制转移指令"><a href="#控制转移指令" class="headerlink" title="控制转移指令"></a>控制转移指令</h2><p>控制转移指令主要有call和leave和ret。</p>
+<ul>
+<li><p>call</p>
+<p>call指令有一个目标，即指令被调用过程起始指令的地址。</p>
+<p>call指令的效果是将返回地址入栈。返回地址也就是当前指令指针寄存器（%eip）中指向的指令的下一个指令的地址。然后指令指针寄存器会存储call的目标，即相当于实现了控制的转移。</p>
+<p>call之后会进入另一个函数。此时会建立新的栈帧。建立过程如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pushl   %ebp</span><br><span class="line">movl    %esp, %ebp</span><br><span class="line">subl    $24, %esp</span><br></pre></td></tr></table></figure>
+<p>首先，保存调用者的%ebp，然后赋予%ebp栈顶的地址，最后，为当前栈帧分配空间（这里举得例子是分配24字节，视实际情况而定），由于栈增长方向为较小地址，所以减去某个值即可分配完成。BTW，GCC分配的空间一般是16字节的整数倍。</p>
+</li>
+<li><p>leave</p>
+<p>leave指令可以使栈做好返回的准备。等价于下面的代码序列：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">movl	%ebp, %esp</span><br><span class="line">pop     %ebp</span><br></pre></td></tr></table></figure>
+<p>将栈顶指针与帧指针同步，然后把当前帧顶，即调用者的帧的最底位置（上一个栈帧的帧底地址）pop给%ebp，实现了调用者帧指针的恢复。</p>
+</li>
+<li><p>ret</p>
+<p>ret的作用就是将call指令时保存的下一个指令的地址，即当前栈顶的数据pop给%eip。此时，调用者%esp也恢复成了调用前的状态。并且指令指针寄存器中的数据也已经变成call指令之后的一条指令的地址。此时，调用完美结束。</p>
+</li>
+</ul>
+<h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><p><strong>以下汇编代码来自64位机器上 gcc编译产生。</strong></p>
+<p>这是一个极其简单的c函数。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Q</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	</span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">P</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	Q(); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这是编译结果的节选：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Q:</span><br><span class="line">	pushq   %rbp</span><br><span class="line">	movq	%rsp, %rbp</span><br><span class="line">	popq	%rbp</span><br><span class="line">	ret</span><br><span class="line">P:</span><br><span class="line">	pushq   %rbp</span><br><span class="line">	movq	%rsp, %rbp</span><br><span class="line">	subq	$32, %rsp</span><br><span class="line">	call	Q</span><br></pre></td></tr></table></figure>
+<p>可以看出符合上面的讲解。P首先建立栈帧，然后调用Q，Q保存P的%rbp，建立自己的栈帧，最后返回P的控制。</p>
+<h2 id="小小进阶"><a href="#小小进阶" class="headerlink" title="小小进阶"></a>小小进阶</h2><p>上面举的实例，以及之前的讲解中都是用的P调用Q的情况。其实P、Q是同一函数也可以啊。蛤蛤，这就拓展到了函数递归了。每次函数调用自身的时候也都是一样的原理。都是先call自身，保存下一条指令地址，接着创建新的栈帧。到达终止条件后，这些栈帧就一个个ret上一个栈帧…毅种循环。蛤蛤，知道为什么没有终止条件的递归容易栈溢出了吧。</p>
+<p>以下是一个大家很熟悉的阶乘的递归例子（<strong>64位机器 gcc编译</strong>）</p>
+<p>这是c代码：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fact</span><span class="params">(<span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">if</span>(n &lt;= <span class="number">1</span>)</span><br><span class="line">		<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">		<span class="keyword">return</span> n*fact(n<span class="number">-1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>以下是汇编节选：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">fact:</span><br><span class="line">	pushq   %rbp</span><br><span class="line">	movq	%rsp, %rbp</span><br><span class="line">	subq	$32, %rsp</span><br><span class="line">	movl	%ecx, 16(%rbp)</span><br><span class="line">	cmpl	$1, 16(%rbp)</span><br><span class="line">	jg	.L2</span><br><span class="line">	movl	$1, %eax</span><br><span class="line">	jmp	.L3</span><br><span class="line">.L2:</span><br><span class="line">	movl	16(%rbp), %eax</span><br><span class="line">	subl	$1, %eax</span><br><span class="line">	movl	%eax, %ecx</span><br><span class="line">	call	fact</span><br><span class="line">	imull   16(%rbp), %eax</span><br><span class="line">.L3:</span><br><span class="line">	addq	$32, %rsp</span><br><span class="line">	popq	%rbp</span><br><span class="line">	ret</span><br></pre></td></tr></table></figure>
+<p>我们可以看到递归调用一个函数本身的结果和调用其它函数是一样的。这种调用机制也适用于更加复杂的情况，比如相互递归调用（P调用Q，Q再调用P）。</p>
+<hr>
+<p>更新（2017.7.18）：</p>
+<p>以上谈的主要是基于X86-32架构的栈帧，而随着X86-64的出现，过程调用有着很大的不同，同时栈帧也不可避免的有一些变化。</p>
+<p><strong>x86-64上的栈帧布局特点:</strong></p>
+<ul>
+<li>参数（最多六个）通过寄存器传递到过程，而不用保存在栈上。</li>
+<li>很多函数不需要栈帧。只有那些不能将所有局部变量都放在寄存器中的函数才需要在栈上分配空间。</li>
+<li>过程的存储空间拓展到了地址低于当前栈指针的存储空间（最多低128byte）。这就可以避免push带来的开销，而且保持栈指针不变。即可以直接通过栈指针定位到存储的数据。</li>
+<li>从上面的描述也可以看出来，帧指针已经没有必要存在了。即<strong>不存在帧指针</strong>。大多数函数在调用开始时分配所需要的整个栈存储，并保持栈指针指向固定的位置。</li>
+</ul>
+<p>每个栈帧的部分就是在栈指针到保存的返回地址之间。X86-64对栈帧使用的减少，并充分发挥寄存器。而且不用帧指针，多了一个可用的寄存器，栈指针兼职了之前帧指针的作用。</p>
+<p>至于其他不同架构上的变化，我就不是很了解了。</p>
+<p>ps：GCC编译的时候提供了一个选项“-fomit-frame-pointer”，用来显式的不使用帧指针。以下是文档说明</p>
+<blockquote>
+<p>Don’t keep the frame pointer in a register for functions that don’t need one. This avoids the instructions to save, set up and restore frame pointers; it also makes an extra register available in many functions. It also makes debugging impossible on some machines.</p>
+<p>On some machines, such as the VAX, this flag has no effect, because the standard calling sequence automatically handles the frame pointer and nothing is saved by pretending it doesn’t exist. The machine-description macro “FRAME_POINTER_REQUIRED” controls whether a target machine supports this flag.</p>
+</blockquote>
+<p>亲测gcc在开启优化的情况下也会省去帧指针。不过缺省情况(不开启优化并且不加“-fomit-frame-pointer”选项)将使用帧指针，建立栈帧的过程与本篇前半段的讲解几乎相同。</p>
+<hr>
+<p>2018.1.29</p>
+<p>update:</p>
+<p>上面主要是根据csapp的内容总结的，实际上函数调用时传递参数和获取返回值的方法，以及对与栈帧的具体用法，还和<strong>调用惯例(calling convention)</strong>。这是ABI的范畴。所以可见c/c++编译的程序要想做到二进制兼容十分困难。</p>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2017/07/10/stack-frame/">
+    <time datetime="2017-07-10T11:50:17.000Z" class="entry-date">
+        2017-07-10
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a></li></ul>
+
+    </footer>
+</article>
+
+
+
+
+
+
+  
+    <article id="post-quick-pow" class="post-quick-pow post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title">
+      <a class="article-title" href="/2017/07/07/quick-pow/">快速幂</a>
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/07/07/quick-pow/" data-id="cjd0c6ggx00085377cbc4dpmp" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p>来自《数据结构与算法分析》第二章。</p>
+<p>书上介绍的是第二种<strong>递归</strong>的算法。之前还见过用<strong>位运算</strong>的方法，所以特意记录一下。这两种算法都是O(logn)。</p>
+<ul>
+<li><p><strong>递归版本</strong></p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">int quickpow(int base, unsigned exp)</span><br><span class="line">&#123;</span><br><span class="line">	if(exp == 0)</span><br><span class="line">		return 1;</span><br><span class="line">	if(exp == 1)</span><br><span class="line">		return base;</span><br><span class="line">	if(exp % 2)</span><br><span class="line">		return quickpow(base*base, exp/2)*base;</span><br><span class="line">	else</span><br><span class="line">		return quickpow(base*base, exp/2);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  思路：<br>  $$<br>  X^{n}=<br>  \begin{cases}<br>  1&amp;\mbox{，n=0}\\<br>  X&amp;\mbox{，n=1}\\<br>  {(X^{2})}^{n/2}&amp;\mbox{，n为偶数}\\<br>  X·{(X^{2})}^{(n-1)/2} &amp;\mbox{，n为奇数}<br>  \end{cases}<br>  $$</p>
+</li>
+</ul>
+<hr>
+<ul>
+<li><p><strong>位运算版本</strong></p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">int quickpow(int base, unsigned exp)</span><br><span class="line">&#123;</span><br><span class="line">	int ans = 1;</span><br><span class="line">	while(exp)</span><br><span class="line">	&#123;</span><br><span class="line">		if(exp&amp;1)</span><br><span class="line">			ans *= base;</span><br><span class="line">		base *= base;</span><br><span class="line">		exp &gt;&gt;= 1;</span><br><span class="line">	&#125;</span><br><span class="line">	return ans;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  思路：<br>  先举个例子。当底数为x，指数为5时， $x^{5}$ = $x^{4}$·x。5的二进制为0101，而4=$2^{2}$, 1=$2^{0}$。是不是看出了一点什么？<br>  再来理解这一行</p>
+<blockquote>
+<p>base*=base;</p>
+</blockquote>
+<p>  目的是将base不断累乘，以实现base再每次循环中分别等于$x^{1}$, $x^{2}$, $x^{4}$, $x^{8}$, $x^{16}$……</p>
+<p>  第n次循环中判断exp右数第n位是否为1，如果是的话就将ans乘以base。循环最后将exp右移一位，以便下次循环判断对应bit。</p>
+<p>  再回到那个例子。第一次循环，0101右数第一位是1，ans乘上了x。base累乘为$x^{2}$。0101右移一位变成010。第二次循环，对应bit为0，base累乘到$x^{4}$，0101右移成01。第三次循环，对应bit为1，ans再乘上base，既$x^{4}$。最后一次循环也同理。 最后得到的ans为$x^{5}$。</p>
+</li>
+</ul>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2017/07/07/quick-pow/">
+    <time datetime="2017-07-07T15:08:01.000Z" class="entry-date">
+        2017-07-07
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/位运算/">位运算</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/算法/">算法</a></li></ul>
+
+    </footer>
+</article>
+
+
+
+
+
+
+  
+  
+
+</div></div>
+        <div id="secondary" class="widget-area" role="complementary">
+  
+    <aside id="search" class="widget widget_search"><form role="search" method="get" accept-charset="utf-8" id="searchform" class="searchform" action="//google.com/search">
+    <div>
+        <input type="text" value="" name="s" id="s" />
+        <input type="submit" id="searchsubmit" value="搜索" />
+    </div>
+</form></aside>
+  
+    
+  
+    
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget-content">
+      <ul>
+        
+          <li>
+            <a href="/2018/01/29/syscall/">当我们谈论系统调用的时候我们在谈论什么</a>
+          </li>
+        
+          <li>
+            <a href="/2017/11/13/plus_and_minus/">c++的ub还真是无处不在啊</a>
+          </li>
+        
+          <li>
+            <a href="/2017/11/04/nullptr_and_NULL/">nullptr vs NULL</a>
+          </li>
+        
+          <li>
+            <a href="/2017/10/30/c++_switch/">c++ switch内部的变量定义</a>
+          </li>
+        
+          <li>
+            <a href="/2017/08/05/name-mangling-and-overload/">浅谈name mangling</a>
+          </li>
+        
+      </ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget-content">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget-content tagcloud">
+      <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+    </div>
+  </aside>
+
+  
+</div>
+      </div>
+      <footer id="colophon" role="contentinfo">
+    <p>&copy; 2018 cyyzero
+    All rights reserved.</p>
+    <p>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></p>
+</footer>
+    <script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"1","bdMiniList":false,"bdPic":"","bdStyle":"2","bdSize":"16"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+<script src="/js/navigation.js"></script>
+
+<div id="bg"></div>
+
+  </div>
+</body>
+</html>
