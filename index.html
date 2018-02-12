@@ -11,14 +11,14 @@
   
   
   
-  <title>Pluto Blog</title>
+  <title>Pluto&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta property="og:type" content="website">
-<meta property="og:title" content="Pluto Blog">
+<meta property="og:title" content="Pluto&#39;s Blog">
 <meta property="og:url" content="http://yoursite.com/index.html">
-<meta property="og:site_name" content="Pluto Blog">
+<meta property="og:site_name" content="Pluto&#39;s Blog">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Pluto Blog">
+<meta name="twitter:title" content="Pluto&#39;s Blog">
   
   
     <link rel="icon" href="/css/images/favicon.ico">
@@ -35,7 +35,7 @@
       <header id="masthead" class="site-header" role="banner">
     <hgroup>
       <h1 class="site-title">
-        <a href="/" title="Pluto Blog" rel="home">Pluto Blog</a>
+        <a href="/" title="Pluto&#39;s Blog" rel="home">Pluto&#39;s Blog</a>
       </h1>
       
         <h2 class="site-description">
@@ -61,6 +61,188 @@
       <div id="main" class="wrapper">
         <div id="primary" class="site-content"><div id="content" role="main">
   
+    <article id="post-effective_modern_cpp_one" class="post-effective_modern_cpp_one post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title">
+      <a class="article-title" href="/2018/02/12/effective_modern_cpp_one/">effective modern c++读书笔记(一)</a>
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective_modern_cpp_one/" data-id="cjdjy08jl00031r774qqj5z8r" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p>ps:第一本看的英文原版…希望这个寒假能看完吧</p>
+<h1 id="Item-1-5"><a href="#Item-1-5" class="headerlink" title="Item 1-5"></a>Item 1-5</h1><ul>
+<li>（建议直接看书，个人认为很重要</li>
+</ul>
+<h1 id="Item-6"><a href="#Item-6" class="headerlink" title="Item 6"></a>Item 6</h1><ul>
+<li>警惕<code>auto</code>被类型推导为某个意想不到的proxy class（ie. vector<bool>::operator[]）</bool></li>
+</ul>
+<h1 id="Item-7"><a href="#Item-7" class="headerlink" title="Item 7"></a>Item 7</h1><ul>
+<li><p>大括号可以用来完成uniform initialization，且不会发生隐式narrowing conversion.</p>
+</li>
+<li><p>一般来说，<code>Object o{xxx};</code>会优先匹配参数是std::initializer_list的构造函数</p>
+</li>
+<li><p>类内非静态成员不能用()初始化</p>
+</li>
+</ul>
+<ul>
+<li><p><code>auto t = {xxx};</code>, t类型被推断为std::initializer_list</p>
+</li>
+<li><p>一组对比</p>
+<ul>
+<li><code>Object o();</code> =&gt; Error</li>
+<li><code>Object o{};</code> =&gt; OK</li>
+</ul>
+</li>
+<li><p>另一组对比</p>
+<ul>
+<li><code>Object o{};</code>调用默认构造函数</li>
+<li><code>Object o{ {}};</code>或者<code>Object o( {});</code>调用参数为空的std::initializer_list的构造函数</li>
+</ul>
+</li>
+</ul>
+<h1 id="Item-8"><a href="#Item-8" class="headerlink" title="Item 8"></a>Item 8</h1><ul>
+<li>0，NULL和nullptr三者，用nullptr表示空指针(之前单独总结过，不多说了)（逃</li>
+</ul>
+<h1 id="Item-9"><a href="#Item-9" class="headerlink" title="Item 9"></a>Item 9</h1><ul>
+<li><p>With a alias template:</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;                          <span class="comment">// MyAllocList&lt;T&gt;</span></span><br><span class="line"><span class="keyword">using</span> MyAllocList = <span class="built_in">std</span>::<span class="built_in">list</span>&lt;T, MyAlloc&lt;T&gt;&gt;; <span class="comment">// is synonym for</span></span><br><span class="line">                                              <span class="comment">// std::list&lt;T,</span></span><br><span class="line">                                              <span class="comment">//     MyAlloc&lt;T&gt;&gt;</span></span><br><span class="line"></span><br><span class="line">MyAllocList&lt;Widget&gt; lw;                       <span class="comment">// client code</span></span><br></pre></td></tr></table></figure>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Widget</span> &#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">MyAllocList&lt;T&gt; <span class="built_in">list</span>;</span><br><span class="line">...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>And with a typedef:</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="comment">// MyAllocList&lt;T&gt;::type</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">MyAllocList</span> &#123;</span></span><br><span class="line"><span class="comment">// is synonym for</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="built_in">std</span>::<span class="built_in">list</span>&lt;T, MyAlloc&lt;T&gt;&gt; type; <span class="comment">// std::list&lt;T,</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">//MyAlloc&lt;T&gt;&gt;</span></span><br><span class="line">MyAllocList&lt;Widget&gt;::type lw;</span><br><span class="line"><span class="comment">// client code</span></span><br></pre></td></tr></table></figure>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Widget</span> &#123;</span></span><br><span class="line"><span class="comment">// Widget&lt;T&gt; contains</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line"><span class="comment">// a MyAllocList&lt;T&gt;</span></span><br><span class="line"><span class="keyword">typename</span> MyAllocList&lt;T&gt;::type <span class="built_in">list</span>;</span><br><span class="line"><span class="comment">// as a data member</span></span><br><span class="line">...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>c++14运用alias template的一点改进</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::remove_const&lt;T&gt;::type</span><br><span class="line"><span class="built_in">std</span>::<span class="keyword">remove_const_t</span>&lt;T&gt;</span><br><span class="line"><span class="comment">// C++11: const T → T</span></span><br><span class="line"><span class="comment">// C++14 equivalent</span></span><br><span class="line"><span class="built_in">std</span>::remove_reference&lt;T&gt;::type</span><br><span class="line"><span class="built_in">std</span>::<span class="keyword">remove_reference_t</span>&lt;T&gt;</span><br><span class="line"><span class="comment">// C++11: T&amp;/T&amp;&amp; → T</span></span><br><span class="line"><span class="comment">// C++14 equivalent</span></span><br><span class="line"><span class="built_in">std</span>::add_lvalue_reference&lt;T&gt;::type</span><br><span class="line"><span class="comment">// C++11: T → T&amp;</span></span><br><span class="line"><span class="built_in">std</span>::<span class="keyword">add_lvalue_reference_t</span>&lt;T&gt;</span><br><span class="line"><span class="comment">// C++14 equivalent</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h1 id="Item10"><a href="#Item10" class="headerlink" title="Item10"></a>Item10</h1><ul>
+<li><p>一般来说，用scoped enums代替unscoped enums。</p>
+<ul>
+<li>scoped emums带来了namespace pollution。</li>
+<li>unscoped enums的成员会隐式转化成整数类型。scoped enums则不会（但可以显式转化）。（这个带来了一点好处。见下 </li>
+</ul>
+</li>
+<li><p>tuple和unscoped enum搭配更佳， 免去记住所有参数序列。否则就得…</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> E&gt;</span><br><span class="line"><span class="function"><span class="keyword">constexpr</span> <span class="keyword">auto</span> <span class="title">toUType</span><span class="params">(E enumerator)</span> noexecpt</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">static_cast</span>&lt;<span class="built_in">std</span>::<span class="keyword">underlying_type_t</span>&lt;E&gt;&gt;(enumerator);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//...</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> val = <span class="built_in">std</span>::get&lt;toUType(UserInFoFields::uiEmail)&gt;(uInfo);</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h1 id="Item-11"><a href="#Item-11" class="headerlink" title="Item 11"></a>Item 11</h1><ul>
+<li><p>c++11前常常将成员函数声明放在private区域而不实现，以防止编译器自动生成。现在有了<code>=delete</code></p>
+</li>
+<li><p><code>=delete</code>不光能用于成员函数。还能通过讲“重载函数”声明为<code>=delete</code>防止函数的参数被隐式转换。</p>
+</li>
+<li><p><code>=delete</code>还能用于阻止template instantiation。</p>
+</li>
+</ul>
+<h1 id="Item-12"><a href="#Item-12" class="headerlink" title="Item 12"></a>Item 12</h1><ul>
+<li><p>override虚函数的时候加上 <code>override</code>关键词。</p>
+</li>
+<li><p>member function reference qualifiers能区分<code>*this</code>的类别（类似于以前的const</p>
+</li>
+</ul>
+<h1 id="Item-13"><a href="#Item-13" class="headerlink" title="Item 13"></a>Item 13</h1><ul>
+<li><p>在c++98的时候，容器的非const对象无法直接获得const_iterator，一般通过强制转化，或者用绑定到一个reference-to-const。</p>
+</li>
+<li><p>在c++98，const_iterator不能用于在插入或者删除的函数指示位置。</p>
+</li>
+<li><p>c++11提供了<code>begin</code>和<code>end</code>函数（包括许多容器的成员函数和非成员函数的通用版本）。但是c++14才提供了（这里指的是non-member版本）<code>cbegin</code>, <code>cend</code>, <code>rbegin</code>, <code>rend</code>和<code>crend</code>。有个用c++11实现<code>cbegin</code>的例子。</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">C</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">auto</span> <span class="title">cbegin</span>(<span class="title">const</span> <span class="title">C</span>&amp; <span class="title">container</span>)-&gt;<span class="title">decltype</span>(<span class="title">std</span>:</span>:begin(container))</span><br><span class="line">&#123;</span><br><span class="line">    retrurn <span class="built_in">std</span>::begin(container)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h1 id="Item-14"><a href="#Item-14" class="headerlink" title="Item 14"></a>Item 14</h1><ul>
+<li><p>exception-neutral函数(指这类函数：它本身不抛出异常，但是它调用的函数可能会抛出异常)不能加noexcept</p>
+</li>
+<li><p>典型地，move operations，swap，memory deallocation函数， destructor都默认noexcept</p>
+</li>
+</ul>
+<h1 id="Item-15"><a href="#Item-15" class="headerlink" title="Item 15"></a>Item 15</h1><ul>
+<li><p>constexpr对象是编译期常量。(不过准确的说，应该<code>translation</code>期间的常量，包括编译<code>compile</code>和链接<code>link</code>)</p>
+</li>
+<li><p>对于constexpr函数来说，有两种情况。这意味着不需要对运行期和编译期执行的函数进行重载</p>
+<ul>
+<li><p>如果所有参数都是编译期常量，函数将在编译期就得到结果。</p>
+</li>
+<li><p>当一个或多个参数不是编译期常量的时候，就和普通函数一样，在运行期执行。</p>
+</li>
+</ul>
+</li>
+<li><p>constexpr是函数接口的一部分，不能随意去除</p>
+</li>
+</ul>
+<h1 id="Item-16"><a href="#Item-16" class="headerlink" title="Item 16"></a>Item 16</h1><ul>
+<li>对于某个需要同步的对象来说，用std::atomic就够了。但是对于多个对象作为一个整体需要同步的时候，往往需要用到mutex。</li>
+</ul>
+<h1 id="Item-17"><a href="#Item-17" class="headerlink" title="Item 17"></a>Item 17</h1><ul>
+<li><p>c++11开始，特殊成员函数有</p>
+<ul>
+<li>defualt constructor 默认构造函数</li>
+<li>destructor 析构函数</li>
+<li>copy constructor 拷贝构造函数</li>
+<li>copy assignment operator 拷贝赋值函数</li>
+<li>move constructor 移动构造函数</li>
+<li>move assignment operator 移动赋值函数</li>
+</ul>
+</li>
+<li><p>对于后两个移动操作有关的函数(构造和赋值)来说，编译器默认生成的版本的行为是对所有非static成员调用执行对应(构造或赋值)的移动操作。对于带有继承的类来说，还会对基类进行对应的移动操作。但是，遇到不支持移动操作的对象，所以会用copy来替代move操作。</p>
+</li>
+<li><p>完成上述操作的核心是将std::move用于相应的对象(即非static成员或者基类部分)，然后根据函数重载规则，会调用相应的copy和move函数。</p>
+</li>
+<li><p>这两个移动操作不是相互独立的。如果声明了其中一个，编译器将不会自动生成另一个。</p>
+</li>
+<li><p>声明了拷贝操作(拷贝构造函数和拷贝赋值函数),那么编译器将不会生成移动操作的版本。反之亦然。</p>
+</li>
+<li><p>c++98开始就有个<code>Rule of Three</code>，即析构函数，拷贝构造函数，拷贝赋值函数三者自定义了任意一个，那一般来说其他两个也得自定义，编译器生成的很可能是错误的行为。</p>
+</li>
+<li><p>总结：下面三个条件都成立，则移动操作将会被编译器生成：</p>
+<ul>
+<li>没有声明拷贝操作</li>
+<li>没有声明移动操作</li>
+<li>没有声明析构函数</li>
+</ul>
+</li>
+<li><p>想让编译器生成可以显示地用<code>=default</code>。尽量别依赖编译器隐式生成的规则，一是能规避复杂规则带来的bug，二是让代码意图明显。</p>
+</li>
+<li><p>成员函数模板不会影响编译器生成这些特殊成员函数。</p>
+</li>
+</ul>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2018/02/12/effective_modern_cpp_one/">
+    <time datetime="2018-02-12T07:36:06.000Z" class="entry-date">
+        2018-02-12
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+
+    </footer>
+</article>
+
+
+
+
+
+
+  
     <article id="post-syscall" class="post-syscall post type-post status-publish format-standard hentry">
     <!---->
 
@@ -76,7 +258,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/01/29/syscall/" data-id="cjd0c6gh3000d5377bs639p0w" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/01/29/syscall/" data-id="cjdjy08jy000f1r77uavpkkv3" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -86,6 +268,7 @@
 <p>当说到Linux下的系统调用(<strong>System Call</strong>)的时候，程序员都不会陌生。但一般都会联想到fork()，execve()等这些函数。这就是很多人(包括以前我自己)的误区所在了。</p>
 <p>诸如fork() 这些，是c语言函数库(linux下常见如glibc)实现的<strong>外壳(wrapper)函数</strong>，由它们来引发真正的系统调用。从C语言编程的角度来看，调用C语言函数库的外壳函数等同于发起系统调用。也就是说，当我们在代码中使用诸如fork()这类函数时，意味着调用外壳函数，然后由外壳函数去调用系统调用(可能有点绕)。</p>
 <p>区分了狭义上的外壳(wrapper)函数和系统调用后，就能进入本文的主题了:<strong>IA32上Linux系统调用的过程</strong>。(因为其他的不懂…</p>
+<hr>
 <p>首先描述两个概念，<strong>中断(interruption)</strong>和<strong>异常(execption)</strong>。从<a href="https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf" target="_blank" rel="noopener">Intel的手册</a>上找的简单介绍。</p>
 <blockquote>
 <p>The processor provides two mechanisms for interrupting program execution, interrupts and exceptions: </p>
@@ -110,9 +293,10 @@
 <li>读取中断向量表对应项的内容，将其装入CS和IP(或EIP)寄存器。控制转移到终端服务子程序继续执行。</li>
 </ul>
 <p>为从中断返回，中断服务程序执行一条IRET指令。这使得所有保存在栈上的值被取回，并由中断点恢复执行。</p>
+<hr>
 <p>铺垫了这么久，又回到了系统调用。没猜错，IA32的Linux上系统调用就是通过INT 0x80调用的。</p>
 <p>下面讲一下具体过程：</p>
-<p>相应中断0x80，内核调用system<em>call()。可以再展开说一下，这里通过各个寄存器用于传递参数，EAX寄存器用于表示系统调用的接口号，比如EAX=1用于退出进程(exit)；EAX=2表示创建进程(fork)；EAX=3表示读取文件或者IO(read)等，每个系统调用都对应内核源代码中的一个函数，他们都是以“sys\</em>”开头的，比如说exit调用对应于内核中的sys_exit函数。你没猜错，和IDT一样，系统也维护着一张系统调用表，通过类似*sys_call_table(0,%eax,4)，的跳转，可以通过eax所记录的系统调用号调用对应的系统调用函数。如果系统调用带有函数参数(一般也是通过寄存器传递)，那么还会检查参数的有效性。随后，该函数会执行必要的任务。接着，将状态返回sys_call()函数。从内核栈中恢复各寄存器值，并将系统调用返回结果置于栈中。最后返回外壳函数，中断结束。</p>
+<p>响应中断0x80，内核调用system_call()。可以再展开说一下，这里通过各个寄存器用于传递参数，EAX寄存器用于表示系统调用的接口号，比如EAX=1用于退出进程(exit)；EAX=2表示创建进程(fork)；EAX=3表示读取文件或者IO(read)等，每个系统调用都对应内核源代码中的一个函数，他们都是以“sys_”开头的，比如说exit调用对应于内核中的sys_exit函数。你没猜错，和IDT一样，系统也维护着一张系统调用表，通过类似*sys_call_table(0,%eax,4)，的跳转，可以通过eax所记录的系统调用号调用对应的系统调用函数。如果系统调用带有函数参数(一般也是通过寄存器传递)，那么还会检查参数的有效性。随后，该函数会执行必要的任务。接着，将状态返回sys_call()函数。从内核栈中恢复各寄存器值，并将系统调用返回结果置于栈中。最后返回外壳函数，中断结束。</p>
 <p>至此，系统调用算是结束了，但是我们调用的外壳(wrapper)函数还没算完。它还有个扫尾工作。如果返回值表明调用有错误，外壳(wrapper)函数就会设置全局变量errno。最后，外壳(wrapper)函数会返回到调用它的地方，并返回一个整型，以表明系统调用是否成功。</p>
 <p>终于调用结束，大功告成了…</p>
 <p>(取好几本书内容的子集东拼西凑写出来的…真是艰难</p>
@@ -155,7 +339,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/13/plus_and_minus/" data-id="cjd0c6ggt000553771s192w17" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/13/plus_and_minus/" data-id="cjdjy08jr00081r775m24ctrp" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -232,7 +416,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/04/nullptr_and_NULL/" data-id="cjd0c6ggs00045377kpzuelrj" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/04/nullptr_and_NULL/" data-id="cjdjy08jo00051r77u6e2lj4s" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -298,7 +482,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/10/30/c++_switch/" data-id="cjd0c6ggl0001537748e3pkbt" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/10/30/c++_switch/" data-id="cjdjy08jg00011r77fhosoq9i" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -359,7 +543,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/08/05/name-mangling-and-overload/" data-id="cjd0c6ggq00035377aw7zxtok" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/08/05/name-mangling-and-overload/" data-id="cjdjy08jm00041r77fo4v16co" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -440,7 +624,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/07/13/c++-reference/" data-id="cjd0c6gge00005377ndvyp22a" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/07/13/c++-reference/" data-id="cjdjy08ja00001r77navkbay4" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -507,7 +691,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/07/10/stack-frame/" data-id="cjd0c6ggz000a5377vafx4in8" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/07/10/stack-frame/" data-id="cjdjy08jw000d1r77s2f7aybb" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -613,7 +797,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/07/07/quick-pow/" data-id="cjd0c6ggx00085377cbc4dpmp" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/07/07/quick-pow/" data-id="cjdjy08ju000a1r77uasr270l" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -687,6 +871,10 @@
       <ul>
         
           <li>
+            <a href="/2018/02/12/effective_modern_cpp_one/">effective modern c++读书笔记(一)</a>
+          </li>
+        
+          <li>
             <a href="/2018/01/29/syscall/">当我们谈论系统调用的时候我们在谈论什么</a>
           </li>
         
@@ -702,10 +890,6 @@
             <a href="/2017/10/30/c++_switch/">c++ switch内部的变量定义</a>
           </li>
         
-          <li>
-            <a href="/2017/08/05/name-mangling-and-overload/">浅谈name mangling</a>
-          </li>
-        
       </ul>
     </div>
   </aside>
@@ -715,7 +899,7 @@
   <aside class="widget">
     <h3 class="widget-title">Tags</h3>
     <div class="widget-content">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </aside>
 
