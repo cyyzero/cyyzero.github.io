@@ -12,7 +12,8 @@
 容易出现dangling pointer
 
 所以，c++11有了智能指针。
-Item 18" />
+
+Item 1" />
   
 
   
@@ -23,17 +24,17 @@ Item 18" />
   
   <title>effective modern c++读书笔记(二) | Pluto&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="智能指针首先，raw pointer有着诸多缺陷  指向对象的不明确(单个对象or数组？) 析构方式的不明确(delete，delete[]还是一个特殊的析构机制，比如调用某个函数) 析构的时机、次数容易出错 容易出现dangling pointer  所以，c++11有了智能指针。 Item 18 资源紧缺的机器上也可以用std::unique_ptr，因为当它使用默认或者stateless l">
+  <meta name="description" content="智能指针首先，raw pointer有着诸多缺陷  指向对象的不明确(单个对象or数组？) 析构方式的不明确(delete，delete[]还是一个特殊的析构机制，比如调用某个函数) 析构的时机、次数容易出错 容易出现dangling pointer  所以，c++11有了智能指针。  Item 18 资源紧缺的机器上也可以用std::unique_ptr，因为当它使用默认或者stateless">
 <meta name="keywords" content="c++">
 <meta property="og:type" content="article">
 <meta property="og:title" content="effective modern c++读书笔记(二)">
 <meta property="og:url" content="http://yoursite.com/2018/02/12/effective-modern-cpp-two/index.html">
 <meta property="og:site_name" content="Pluto&#39;s Blog">
-<meta property="og:description" content="智能指针首先，raw pointer有着诸多缺陷  指向对象的不明确(单个对象or数组？) 析构方式的不明确(delete，delete[]还是一个特殊的析构机制，比如调用某个函数) 析构的时机、次数容易出错 容易出现dangling pointer  所以，c++11有了智能指针。 Item 18 资源紧缺的机器上也可以用std::unique_ptr，因为当它使用默认或者stateless l">
-<meta property="og:updated_time" content="2018-02-27T17:39:34.000Z">
+<meta property="og:description" content="智能指针首先，raw pointer有着诸多缺陷  指向对象的不明确(单个对象or数组？) 析构方式的不明确(delete，delete[]还是一个特殊的析构机制，比如调用某个函数) 析构的时机、次数容易出错 容易出现dangling pointer  所以，c++11有了智能指针。  Item 18 资源紧缺的机器上也可以用std::unique_ptr，因为当它使用默认或者stateless">
+<meta property="og:updated_time" content="2018-02-27T18:02:33.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="effective modern c++读书笔记(二)">
-<meta name="twitter:description" content="智能指针首先，raw pointer有着诸多缺陷  指向对象的不明确(单个对象or数组？) 析构方式的不明确(delete，delete[]还是一个特殊的析构机制，比如调用某个函数) 析构的时机、次数容易出错 容易出现dangling pointer  所以，c++11有了智能指针。 Item 18 资源紧缺的机器上也可以用std::unique_ptr，因为当它使用默认或者stateless l">
+<meta name="twitter:description" content="智能指针首先，raw pointer有着诸多缺陷  指向对象的不明确(单个对象or数组？) 析构方式的不明确(delete，delete[]还是一个特殊的析构机制，比如调用某个函数) 析构的时机、次数容易出错 容易出现dangling pointer  所以，c++11有了智能指针。  Item 18 资源紧缺的机器上也可以用std::unique_ptr，因为当它使用默认或者stateless">
   
   
     <link rel="icon" href="/css/images/favicon.ico">
@@ -89,7 +90,7 @@ Item 18" />
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective-modern-cpp-two/" data-id="cje5xtciz0000zk775j6fwoyx" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective-modern-cpp-two/" data-id="cje5xvv6z00034y774f6udaos" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -103,6 +104,7 @@ Item 18" />
 <li>容易出现dangling pointer</li>
 </ul>
 <p>所以，c++11有了智能指针。</p>
+<hr>
 <h1 id="Item-18"><a href="#Item-18" class="headerlink" title="Item 18"></a>Item 18</h1><ul>
 <li><p>资源紧缺的机器上也可以用<code>std::unique_ptr</code>，因为当它使用默认或者stateless lambda作为删除器的时候，和raw pointer大小一样。而且对于很多操作(比如解引用)，它们执行相同的指令。</p>
 </li>
@@ -113,6 +115,7 @@ Item 18" />
 <li><p><code>std::unique_ptr</code>有两种形式，一个是单独的对象(<code>std::unique_ptr&lt;T&gt;</code>)，另一个是数组(<code>std::unique_ptr&lt;T[]&gt;</code>)。不过对于后者来说，c++中已经有了足够多足够好的替代品(比如说<code>std::array</code>、<code>std::vector</code>、<code>std::string</code>)。最好在使用返回一个裸指针的C-like API的时候才使用std::unique_ptr<t[]>。</t[]></p>
 </li>
 </ul>
+<hr>
 <h2 id="Item-19"><a href="#Item-19" class="headerlink" title="Item 19"></a>Item 19</h2><ul>
 <li><p><code>std::shared_ptr</code>性能影响:</p>
 <ul>
@@ -150,6 +153,7 @@ Item 18" />
 <li><p><code>std::shared_ptr</code>不同于<code>std::unique_ptr</code>，不能很好地工作于数组。没有<code>std::shared_ptr&lt;T[]&gt;</code>的版本。所以默认删除器用的<code>delete</code>，而且没有重载<code>oparetor[]</code>。而且对于单个对象，<code>std::shared_ptr</code>允许从派生类向基类的转化；当作用在数组上时，可能会有奇怪的行为。所以尽量用<code>std::array</code>或者<code>std::vector</code>代替build-in array。</p>
 </li>
 </ul>
+<hr>
 <h1 id="Item-20"><a href="#Item-20" class="headerlink" title="Item 20"></a>Item 20</h1><ul>
 <li><p><code>std::weak_ptr</code>不能解引用。所以一般还得用<code>std::shared_ptr</code>。</p>
 <ul>
@@ -182,6 +186,7 @@ Item 18" />
 <li><p><code>std::weak_ptr</code>和<code>std::shared_ptr</code>大小相同。<code>std::weak_ptr</code>不参与对象的所有权，因此不会影响指向对象的reference count。</p>
 </li>
 </ul>
+<hr>
 <h2 id="Item-21"><a href="#Item-21" class="headerlink" title="Item 21"></a>Item 21</h2><ul>
 <li><p>有三个make函数，作用都是完美转发参数然后构造某个对象，并让智能指针指向它。分别是</p>
 <ul>
@@ -214,80 +219,56 @@ Item 18" />
 </li>
 <li><p>用make函数性能上也可能会更好。考虑一下代码</p>
   <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;Widget&gt; spw(<span class="keyword">new</span> Widget);</span><br></pre></td></tr></table></figure>
+<p>  它总共分配了两次空间。一次是<code>new Widget</code>，另一个是构造<code>std::shared_ptr&lt;Widget&gt;</code>时，分配cotrol block。</p>
+<p>  而对于make函数</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> spw = <span class="built_in">std</span>::make_shared&lt;Widget&gt;();</span><br></pre></td></tr></table></figure>
+<p>  只需要申请一次空间。因为会一次分配能容纳Widget对象和control block大小之和的空间，然后在分别初始化它们。不仅如此，根据cpu cache局部性，以后缓存命中率还可能更高。</p>
 </li>
 </ul>
-<pre><code>它总共分配了两次空间。一次是`new Widget`，另一个是构造`std::shared_ptr&lt;Widget&gt;`时，分配cotrol block。
-
-而对于make函数
-
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> spw = <span class="built_in">std</span>::make_shared&lt;Widget&gt;();</span><br></pre></td></tr></table></figure>
-
-只需要申请一次空间。因为会一次分配能容纳Widget对象和control block大小之和的空间，然后在分别初始化它们。
-
-不仅如此，根据cpu cache局部性，以后缓存命中率还可能更高。
-</code></pre><ul>
+<ul>
 <li><p>不过make函数也有一些局限性：</p>
 <ul>
 <li>不能指定删除器。而直接用智能指针的构造函数却可以。</li>
 <li><p>当你小要用花括号作为对象构造函数的时候，不能用make函数。或者这么用：</p>
-   <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//create std::initalizer_list</span></span><br><span class="line"><span class="keyword">auto</span> initList = &#123; <span class="number">10</span>, <span class="number">20</span> &#125;;</span><br><span class="line"><span class="comment">//createstd::vector using std::initializer_list ctor</span></span><br><span class="line"><span class="keyword">auto</span> spv = <span class="built_in">std</span>::make_shared&lt;<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt;(initList);</span><br></pre></td></tr></table></figure>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//create std::initalizer_list</span></span><br><span class="line"><span class="keyword">auto</span> initList = &#123; <span class="number">10</span>, <span class="number">20</span> &#125;;</span><br><span class="line"><span class="comment">//createstd::vector using std::initializer_list ctor</span></span><br><span class="line"><span class="keyword">auto</span> spv = <span class="built_in">std</span>::make_shared&lt;<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;&gt;(initList);</span><br></pre></td></tr></table></figure>
+<p>  对于<code>std::unique_ptr</code>，它的make函数有以上缺点。但是对于<code>std::shared_ptr</code>和它的make函数来说，还有另外两个缺点(都是极端情况</p>
+</li>
+<li><p>如果一个对象的类型有自定义版本的operator new和operator delete，那么使用make函数来创建他们通常是一个糟糕的想法。</p>
+</li>
+<li><p>上面也提到过，当使用make函数的时候，会一次分配能容纳Widget对象和control block大小之和的空间。而control block有reference count和weak count。只要weak count大于0，引用快就必须存在。那么显然，会有对象所占的内存无法及时释放的情况出现：</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ReallyBigType</span>&#123;</span>...&#125;;</span><br><span class="line"><span class="keyword">auto</span> pBigObj = <span class="built_in">std</span>::make_shared&lt;ReallyBigType&gt;();      <span class="comment">//通过make_shared创建一个很大的对象</span></span><br><span class="line"></span><br><span class="line">...                                                    <span class="comment">//创建若干个指向此对象的std::shared_ptr和std::weak_ptr并使用它们</span></span><br><span class="line"></span><br><span class="line">...                                                    <span class="comment">//最后一个指向此对象的std::shared_ptr在这被销毁。但是std::weak_ptr仍然保持</span></span><br><span class="line"></span><br><span class="line">...                                                    <span class="comment">//在这期间，先前创建的大对象所占的内存仍然没有被回收</span></span><br><span class="line"></span><br><span class="line">...                                                    <span class="comment">//最后一个指向此对象的std::weak_ptr在这被销毁。对象和control所占的内存才被释放。</span></span><br></pre></td></tr></table></figure>
+<p>  这种情形直接用new反而更好。</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ReallyBigType</span>&#123;</span>...&#125;;                                       <span class="comment">//和之前一样</span></span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;ReallyBigType&gt; pBigObj(<span class="keyword">new</span> ReallyBigType);      <span class="comment">//通过new创建一个很大的对象</span></span><br><span class="line"></span><br><span class="line">...                                                             <span class="comment">//和之前一样，创建若干个指向此对象的std::shared_ptr和std::weak_ptr并使用它们</span></span><br><span class="line"></span><br><span class="line">...                                                             <span class="comment">//最后一个指向此对象的std::shared_ptr在这被销毁。但是std::weak_ptr仍然保持。为对象分配的空间已经被释放</span></span><br><span class="line"></span><br><span class="line">...                                                             <span class="comment">//在这期间，只有control block的空间还没释放</span></span><br><span class="line"></span><br><span class="line">...                                                             <span class="comment">//最后一个指向此对象的std::weak_ptr在这被销毁。control block所占的内存才被释放。</span></span><br></pre></td></tr></table></figure>
 </li>
 </ul>
 </li>
 </ul>
-<pre><code>    ps: 对于`std::unique_ptr`，它的make函数有以上缺点。但是对于`std::shared_ptr`和它的make函数来说，还有另外两个缺点(都是极端情况
-
-* 如果一个对象的类型有自定义版本的operator new和operator delete，那么使用make函数来创建他们通常是一个糟糕的想法。
-* 上面也提到过，当使用make函数的时候，会一次分配能容纳Widget对象和control block大小之和的空间。而control block有reference count和weak count。只要weak count大于0，引用快就必须存在。那么显然，会有对象所占的内存无法及时释放的情况出现：
-
-    <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ReallyBigType</span>&#123;</span>...&#125;;</span><br><span class="line"><span class="keyword">auto</span> pBigObj = <span class="built_in">std</span>::make_shared&lt;ReallyBigType&gt;();      <span class="comment">//通过make_shared创建一个很大的对象</span></span><br><span class="line"></span><br><span class="line">...                                                    <span class="comment">//创建若干个指向此对象的std::shared_ptr和std::weak_ptr并使用它们</span></span><br><span class="line"></span><br><span class="line">...                                                    <span class="comment">//最后一个指向此对象的std::shared_ptr在这被销毁。但是std::weak_ptr仍然保持</span></span><br><span class="line"></span><br><span class="line">...                                                    <span class="comment">//在这期间，先前创建的大对象所占的内存仍然没有被回收</span></span><br><span class="line"></span><br><span class="line">...                                                    <span class="comment">//最后一个指向此对象的std::weak_ptr在这被销毁。对象和control所占的内存才被释放。</span></span><br></pre></td></tr></table></figure>
-
-    这种情形直接用new反而更好。
-
-    <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ReallyBigType</span>&#123;</span>...&#125;;                                       <span class="comment">//和之前一样</span></span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;ReallyBigType&gt; pBigObj(<span class="keyword">new</span> ReallyBigType);      <span class="comment">//通过new创建一个很大的对象</span></span><br><span class="line"></span><br><span class="line">...                                                             <span class="comment">//和之前一样，创建若干个指向此对象的std::shared_ptr和std::weak_ptr并使用它们</span></span><br><span class="line"></span><br><span class="line">...                                                             <span class="comment">//最后一个指向此对象的std::shared_ptr在这被销毁。但是std::weak_ptr仍然保持。为对象分配的空间已经被释放</span></span><br><span class="line"></span><br><span class="line">...                                                             <span class="comment">//在这期间，只有control block的空间还没释放</span></span><br><span class="line"></span><br><span class="line">...                                                             <span class="comment">//最后一个指向此对象的std::weak_ptr在这被销毁。control block所占的内存才被释放。</span></span><br></pre></td></tr></table></figure>
-</code></pre><h2 id="Item-22"><a href="#Item-22" class="headerlink" title="Item 22"></a>Item 22</h2><ul>
-<li><p><em>Pimpl(“pointer to implementation”) Idiom</em>是医用用来缩短编译时间的技术。用一个指向某个class(or struct)的指针来代替具体的成员对象。举个例子</p>
-  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//in header "widget.h"</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Widget</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Widget();</span><br><span class="line">...</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> name;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt; data;</span><br><span class="line">    Gadget g1, g2, g3;            <span class="comment">//Gadget是用户自定义的类型</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<p>  每次Gadget.h改变，都得重新编译。所以运用<code>Pimpl Idiom</code>:</p>
-  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//still in header "widget.h"</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Widget</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Widget();</span><br><span class="line">    ~Widget();</span><br><span class="line">...</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Impl</span>;</span>   <span class="comment">// declare implementation struct</span></span><br><span class="line">    Impl *pImpl;   <span class="comment">// and pointer to it</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-<pre><code>每次Gadget.h改变，Widget不受影响。
-不过学了智能指针，你可能互相到把raw pointer换成std::unique_ptr。就想下面这样：
-
+<hr>
+<h2 id="Item-22"><a href="#Item-22" class="headerlink" title="Item 22"></a>Item 22</h2><p><em>Pimpl(“pointer to implementation”) Idiom</em>是医用用来缩短编译时间的技术。用一个指向某个class(or struct)的指针来代替具体的成员对象。举个例子</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//in header "widget.h"</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Widget</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Widget();</span><br><span class="line">...</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> name;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt; data;</span><br><span class="line">    Gadget g1, g2, g3;            <span class="comment">//Gadget是用户自定义的类型</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>每次Gadget.h改变，都得重新编译。所以运用<code>Pimpl Idiom</code>:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//still in header "widget.h"</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Widget</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Widget();</span><br><span class="line">    ~Widget();</span><br><span class="line">...</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Impl</span>;</span>   <span class="comment">// declare implementation struct</span></span><br><span class="line">    Impl *pImpl;   <span class="comment">// and pointer to it</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>每次Gadget.h改变，Widget不受影响。<br>不过学了智能指针，你可能互相到把raw pointer换成std::unique_ptr。就想下面这样：</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// in "widget.h"</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Widget</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Widget();</span><br><span class="line">...</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Impl</span>;</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Impl&gt; pImpl;</span><br></pre></td></tr></table></figure>
-
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// in "widget.cpp"</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"widget.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"gadget.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Widget</span>:</span>:Impl &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> name;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt; data;</span><br><span class="line">    Gadget g1, g2, g3;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Widget::Widget()</span><br><span class="line">: pImpl(<span class="built_in">std</span>::make_unique&lt;Impl&gt;()) &#123;&#125;</span><br></pre></td></tr></table></figure>
-
-可能注意到了，由于用智能指针管理资源，似乎用编译器生成的析构函数就能正常工作了的样子。编译没问题。不过，当你写下`WIdget w;`，想要使用它的时候，却会编译出错。
-
-问题出在试图析构w，生成代码的时候。此时，析构函数将会被调用。根据编译器生成特殊成员函数的规则(详情见Item 17)，编译器试图生成一个析构函数。这个生成的析构函数会调用plmpl(一个使用默认删除器的std::unique_ptr)的析构函数。在这个指针的析构函数中，将会直接用`delete`作用于一个raw pointer。要注意到，在这时，Impl还是个不完全类型。但是，由于在实现在实现作用，默认deleter通常会用c++11的static_assert来确保指针指向完整类型。所以当编译器生成析构函数的时候，它就碰到了一个失败的static_assert。
-
-要解决这个问题也很简单，做到在析构的时候Impl是完整类型就可以了。
-
+<p>可能注意到了，由于用智能指针管理资源，似乎用编译器生成的析构函数就能正常工作了的样子。编译没问题。不过，当你写下<code>WIdget w;</code>，想要使用它的时候，却会编译出错。</p>
+<p>问题出在试图析构w，生成代码的时候。此时，析构函数将会被调用。根据编译器生成特殊成员函数的规则(详情见Item 17)，编译器试图生成一个析构函数。这个生成的析构函数会调用plmpl(一个使用默认删除器的std::unique_ptr)的析构函数。在这个指针的析构函数中，将会直接用<code>delete</code>作用于一个raw pointer。要注意到，在这时，Impl还是个不完全类型。但是，由于在实现在实现作用，默认deleter通常会用c++11的static_assert来确保指针指向完整类型。所以当编译器生成析构函数的时候，它就碰到了一个失败的static_assert。</p>
+<p>要解决这个问题也很简单，做到在析构的时候Impl是完整类型就可以了。</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// in file "widget.h"</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Widget</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Widget();</span><br><span class="line">    ~Widget();                          <span class="comment">// 只声明</span></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Impl</span>;</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Impl&gt; pImpl;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// in file "widget.cpp"</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"widget.h"</span> </span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"gadget.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Widget</span>:</span>:Impl &#123; </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> name; </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt; data;</span><br><span class="line">    Gadget g1, g2, g3;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Widget::Widget() </span><br><span class="line">: pImpl(<span class="built_in">std</span>::make_unique&lt;Impl&gt;())</span><br><span class="line">&#123;&#125;</span><br><span class="line"></span><br><span class="line">Widget::~Widget()                       <span class="comment">// ~Widget的定义</span></span><br><span class="line">&#123;&#125;</span><br></pre></td></tr></table></figure>
-
-如果想要强调编译器生成的析构函数就可以工作(声明它的唯一理由就是为了在Widget的实现中生成)，你也可以这么干:
-
+<p>如果想要强调编译器生成的析构函数就可以工作(声明它的唯一理由就是为了在Widget的实现中生成)，你也可以这么干:</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Widget::~Widget() = <span class="keyword">default</span>;  <span class="comment">//same effect as above</span></span><br></pre></td></tr></table></figure>
-
-处于同样的考量，还能加上move和copy操作。完整代码如下：
-
+<p>处于同样的考量，还能加上move和copy操作。完整代码如下：</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// in file "widget.h"</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Widget</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Widget();</span><br><span class="line">    ~Widget();                          <span class="comment">// 只声明</span></span><br><span class="line">    Widget(<span class="keyword">const</span> Widget&amp; rhs);</span><br><span class="line">    Widget&amp; <span class="keyword">operator</span>=(<span class="keyword">const</span> Widget&amp; rhs);</span><br><span class="line">    Widget(Widget&amp;&amp; rhs);</span><br><span class="line">    Widget&amp; <span class="keyword">operator</span>=(Widget&amp;&amp; rhs);</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Impl</span>;</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Impl&gt; pImpl;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// in file "widget.cpp"</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"widget.h"</span> </span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"gadget.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Widget</span>:</span>:Impl &#123; </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> name; </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt; data;</span><br><span class="line">    Gadget g1, g2, g3;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Widget::Widget() </span><br><span class="line">: pImpl(<span class="built_in">std</span>::make_unique&lt;Impl&gt;())</span><br><span class="line">&#123;&#125;</span><br><span class="line"></span><br><span class="line">Widget::~Widget() = <span class="keyword">default</span>;</span><br><span class="line">Widget::Widget(Widget&amp;&amp; rhs) = <span class="keyword">default</span>;</span><br><span class="line">Widget&amp; Widget::<span class="keyword">operator</span>=(Widget&amp;&amp; rhs) = <span class="keyword">default</span>;</span><br><span class="line"></span><br><span class="line">Widget::Widget(<span class="keyword">const</span> Widget&amp; rhs)</span><br><span class="line">: pImpl(<span class="built_in">std</span>::make_unique&lt;Impl&gt;(*rhs.pImpl));</span><br><span class="line"></span><br><span class="line">Widget&amp; Widget::<span class="keyword">operator</span>=(<span class="keyword">const</span> Widget&amp; rhs)</span><br><span class="line">&#123;</span><br><span class="line">    *pImpl = *rhs,pImpl;</span><br><span class="line">    <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到，如果Pimpl采用<code>std::unique_ptr</code>，即使编译器生成的函数能工作，也需要明确的把比声明和实现分开来。</p>
+<p>但是如果采用<code>std::shared_ptr</code>，上述的建议就不需要了。直接用编译器生成的函数就能够工作。</p>
+<p>造成不同的根本原因是它们支持custom deleter的不同方式。</p>
+<ul>
+<li>对于<code>std::unique_ptr</code>，deleter是类型的一部分，使得编译器能够生成更小的运行期数据结构和更快的运行期代码。这个带来的后果就是，当编译器生成特殊函数的时候，指向的类型必须完整。</li>
+<li>对于<code>std::shared_ptr</code>，deleter不是类型的一部分，使得需要更大的运行期数据结构和更慢的代码。但是当编译器产生特殊函数的时候，指向的类型不需要是完整的。</li>
+</ul>
 
-可以看到，如果Pimpl采用`std::unique_ptr`，即使编译器生成的函数能工作，也需要明确的把比声明和实现分开来。
-
-但是如果采用`std::shared_ptr`，上述的建议就不需要了。直接用编译器生成的函数就能够工作。
-
-造成不同的根本原因是它们支持custom deleter的不同方式。
-
-* 对于`std::unique_ptr`，deleter是类型的一部分，使得编译器能够生成更小的运行期数据结构和更快的运行期代码。这个带来的后果就是，当编译器生成特殊函数的时候，指向的类型必须完整。
-* 对于`std::shared_ptr`，deleter不是类型的一部分，使得需要更大的运行期数据结构和更慢的代码。但是当编译器产生特殊函数的时候，指向的类型不需要是完整的。
-</code></pre>
       
     </div><!-- .entry-content -->
 
