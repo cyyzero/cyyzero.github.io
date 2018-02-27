@@ -31,7 +31,7 @@ Item 1" />
 <meta property="og:url" content="http://yoursite.com/2018/02/12/effective-modern-cpp-two/index.html">
 <meta property="og:site_name" content="Pluto&#39;s Blog">
 <meta property="og:description" content="智能指针首先，raw pointer有着诸多缺陷  指向对象的不明确(单个对象or数组？) 析构方式的不明确(delete，delete[]还是一个特殊的析构机制，比如调用某个函数) 析构的时机、次数容易出错 容易出现dangling pointer  所以，c++11有了智能指针。  Item 18 资源紧缺的机器上也可以用std::unique_ptr，因为当它使用默认或者stateless">
-<meta property="og:updated_time" content="2018-02-27T18:02:33.000Z">
+<meta property="og:updated_time" content="2018-02-27T18:07:24.819Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="effective modern c++读书笔记(二)">
 <meta name="twitter:description" content="智能指针首先，raw pointer有着诸多缺陷  指向对象的不明确(单个对象or数组？) 析构方式的不明确(delete，delete[]还是一个特殊的析构机制，比如调用某个函数) 析构的时机、次数容易出错 容易出现dangling pointer  所以，c++11有了智能指针。  Item 18 资源紧缺的机器上也可以用std::unique_ptr，因为当它使用默认或者stateless">
@@ -90,7 +90,7 @@ Item 1" />
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective-modern-cpp-two/" data-id="cje5xvv6z00034y774f6udaos" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective-modern-cpp-two/" data-id="cje5ysy3m000315773gqg99hx" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -105,7 +105,7 @@ Item 1" />
 </ul>
 <p>所以，c++11有了智能指针。</p>
 <hr>
-<h1 id="Item-18"><a href="#Item-18" class="headerlink" title="Item 18"></a>Item 18</h1><ul>
+<h2 id="Item-18"><a href="#Item-18" class="headerlink" title="Item 18"></a>Item 18</h2><ul>
 <li><p>资源紧缺的机器上也可以用<code>std::unique_ptr</code>，因为当它使用默认或者stateless lambda作为删除器的时候，和raw pointer大小一样。而且对于很多操作(比如解引用)，它们执行相同的指令。</p>
 </li>
 <li><p><code>std::unique_ptr</code>体现了独占所有权(exclusive ownership)的语义。只能move，不能copy。</p>
@@ -154,7 +154,7 @@ Item 1" />
 </li>
 </ul>
 <hr>
-<h1 id="Item-20"><a href="#Item-20" class="headerlink" title="Item 20"></a>Item 20</h1><ul>
+<h2 id="Item-20"><a href="#Item-20" class="headerlink" title="Item 20"></a>Item 20</h2><ul>
 <li><p><code>std::weak_ptr</code>不能解引用。所以一般还得用<code>std::shared_ptr</code>。</p>
 <ul>
 <li><p>一种形式</p>
