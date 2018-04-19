@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <meta name="description" content="lambda 表达式首先来明确一下三个概念：
+
+lambda 表达式只是一个表达式。它是源码的一部分。
+
+closure 是由lambda创造的运行期对象。根据捕获的模式，closure 持有被捕获对象的副本或者引用。
+
+closure class 是给 closure 实例化的。每个 lambda" />
+  
+
+  
+  
+  
+  
+  
+  
+  <title>effective modern c++读书笔记(四) | Pluto&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="lambda 表达式首先来明确一下三个概念：  lambda 表达式只是一个表达式。它是源码的一部分。  closure 是由lambda创造的运行期对象。根据捕获的模式，closure 持有被捕获对象的副本或者引用。  closure class 是给 closure 实例化的。每个 lambda 会让编译器生成一个独一无二的 closure class 。lambda 内的声明将变成它 clo">
+<meta name="keywords" content="c++">
+<meta property="og:type" content="article">
+<meta property="og:title" content="effective modern c++读书笔记(四)">
+<meta property="og:url" content="http://yoursite.com/2018/04/20/effective_modern_cpp_four/index.html">
+<meta property="og:site_name" content="Pluto&#39;s Blog">
+<meta property="og:description" content="lambda 表达式首先来明确一下三个概念：  lambda 表达式只是一个表达式。它是源码的一部分。  closure 是由lambda创造的运行期对象。根据捕获的模式，closure 持有被捕获对象的副本或者引用。  closure class 是给 closure 实例化的。每个 lambda 会让编译器生成一个独一无二的 closure class 。lambda 内的声明将变成它 clo">
+<meta property="og:updated_time" content="2018-04-19T16:06:35.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="effective modern c++读书笔记(四)">
+<meta name="twitter:description" content="lambda 表达式首先来明确一下三个概念：  lambda 表达式只是一个表达式。它是源码的一部分。  closure 是由lambda创造的运行期对象。根据捕获的模式，closure 持有被捕获对象的副本或者引用。  closure class 是给 closure 实例化的。每个 lambda 会让编译器生成一个独一无二的 closure class 。lambda 内的声明将变成它 clo">
+  
+  
+    <link rel="icon" href="/css/images/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+  
+  <!-- baidu webmaster push -->
+  <script src='//push.zhanzhang.baidu.com/push.js'></script>
+</head>
+<body class="home blog custom-background custom-font-enabled single-author">
+  <div id="page" class="hfeed site">
+      <header id="masthead" class="site-header" role="banner">
+    <hgroup>
+      <h1 class="site-title">
+        <a href="/" title="Pluto&#39;s Blog" rel="home">Pluto&#39;s Blog</a>
+      </h1>
+      
+        <h2 class="site-description">
+          <a href="/" id="subtitle">失败人士自留地</a>
+        </h2>
+      
+    </hgroup>
+
+    <nav id="site-navigation" class="main-navigation" role="navigation">
+            <button class="menu-toggle">菜单</button>
+            <a class="assistive-text" href="/#content" title="跳至内容">跳至内容</a><!--TODO-->
+            <div class="menu-main-container">
+                <ul id="menu-main" class="nav-menu">
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/">Home</a></li>
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/archives">Archives</a></li>
+                
+                </ul>
+            </div>
+    </nav>
+</header>
+      <div id="main" class="wrapper">
+        <div id="primary" class="site-content"><div id="content" role="main"><article id="post-effective_modern_cpp_four" class="post-effective_modern_cpp_four post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title article-title">
+      effective modern c++读书笔记(四)
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/20/effective_modern_cpp_four/" data-id="cjg6py7ta00006x771x2omk1t" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <h1 id="lambda-表达式"><a href="#lambda-表达式" class="headerlink" title="lambda 表达式"></a>lambda 表达式</h1><p>首先来明确一下三个概念：</p>
+<ul>
+<li><p>lambda 表达式只是一个表达式。它是源码的一部分。</p>
+</li>
+<li><p><em>closure</em> 是由lambda创造的运行期对象。根据捕获的模式，<em>closure</em> 持有被捕获对象的副本或者引用。</p>
+</li>
+<li><p><em>closure class</em> 是给 <em>closure</em> 实例化的。每个 <em>lambda</em> 会让编译器生成一个独一无二的 <em>closure class</em> 。<em>lambda</em> 内的声明将变成它 <em>closure class</em> 内的成员函数的可执行指令。</p>
+</li>
+</ul>
+<hr>
+<h2 id="Item-31"><a href="#Item-31" class="headerlink" title="Item 31"></a>Item 31</h2><ul>
+<li><p>在C++11里有两种默认的捕获模式： <em>by-reference</em> 和 <em>by-value</em> 。默认的 <em>by-reference</em> 捕获可以导致空悬引用。比如说这个 <em>closure</em> (或者它的副本)比捕获的引用的对象的声明周期长。 (这也应该是处理引用本就应该小心的地方)。应该不使用默认捕获，捕获的时候添上引用的对象。这样可以让程序员注意到引用的对象，从而对它的生命周期有了考量。或者直接就通过传值来捕获。但如果传值的对象是 <em>raw pointer</em> ，那又得考虑是否会出现空悬指针的问题。</p>
+</li>
+<li><p>有种情况 <em>by-value</em> 捕获会造成意想不到的悬垂指针。看个例子：</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::function&lt;<span class="keyword">bool</span>(<span class="keyword">int</span>)&gt;&gt; filters;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Widget</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">int</span> divisor;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">void</span> Widget::addFilter() <span class="keyword">const</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// </span></span><br><span class="line">    filters.emplace_back(</span><br><span class="line">        [=](<span class="keyword">int</span> value)&#123; <span class="keyword">return</span> value % divisor&#125; == <span class="number">0</span>; &#125;</span><br><span class="line">    );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  这里看似 <em>by-value</em> 捕获了divisor，但是却并非如此。首先，divisor是类内 <em>non-static 数据成员</em> ，是不能被捕获的。但是这段代码却可以编译过。原因就在与 <em>this</em> 指针。类的 <em>non-static</em> 函数体中隐含了一个 <em>this</em> 指针，它是个纯右值(prvalue)表达式，表示调用这个函数的对象的地址。所以其实捕获的是 <em>this</em> 指针，而lambda表达式中的 <code>divisor</code> 其实也是 <code>this-&gt;divisor</code> 。</p>
+<p>  所以既然是 <em>by-value</em> 捕获的 <em>this</em> 指针，那么就有可能出现空悬指针。为了避免这种情况，还是老实地在 <code>addFilters</code> 函数体内用一个 local 变量作为 <em>divisor</em> 的副本，然后 <em>by-value</em> 捕获这个副本。</p>
+</li>
+<li><p>还有就是要注意，静态存储周期的对象都是可以直接在lambda 表达式中使用的，而且<em>不能捕获</em> 。所以在lambda表达式中用默认 <em>by-value</em> 捕获，就会让人产生错觉。但实际上什么都没捕获。</p>
+</li>
+</ul>
+<hr>
+<h2 id="Item-32"><a href="#Item-32" class="headerlink" title="Item 32"></a>Item 32</h2><ul>
+<li><p>C++14 提供了 <em>init capture</em> 这种新的捕获方式。具体来说就是在捕获列表中可以通过 <code>=</code> 的方式，等号左边是从 <em>lambda</em> 表达式生成的闭包类的数据成员，右边是表达式，用于初始化左边。可以明显看出，<code>=</code>左边和右边的作用域也不同。所以，通过这种语法，让“移动”捕获成为了可能，而非 C++11 那样只能传值和传引用捕获。</p>
+</li>
+<li><p>不过在C++11中也是可以模拟出“移动”捕获的。</p>
+<ul>
+<li>lambda 表达式可以看成定义一个函数类并构造它的对象。所以没有什么是直接定义一个类不能解决的。类中自然可以通过移动的方式初始化数据成员。</li>
+<li><p>通过 <code>std::bind</code> 来模拟。可以看个例子：</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt; data;</span><br><span class="line"><span class="comment">// In C++14</span></span><br><span class="line"><span class="keyword">auto</span> func = [data = <span class="built_in">std</span>::move(data)]()&#123; <span class="comment">/*uses of data*/</span> &#125;;</span><br><span class="line"><span class="comment">// 以下是等价的版本</span></span><br><span class="line"><span class="comment">// In C++11</span></span><br><span class="line"><span class="keyword">auto</span> func = <span class="built_in">std</span>::bind(</span><br><span class="line">    [](<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt;&amp; data)</span><br><span class="line">    &#123; <span class="comment">/*uses of data*/</span> &#125;,</span><br><span class="line">    <span class="built_in">std</span>::move(data)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p>  <code>std::bind</code>构造的对象持有所有参数的副本。当参数是左值，就拷贝构造；当参数是右值，就移动构造。所以参数<code>data</code>通过移动构造传进了 bind 对象内(姑且称之为d)，然后每次调用 <code>func</code> 的 <code>operator()</code> 的时候，都会调用那个 <em>lambda</em> 表达式的 <code>operator()</code> 。而参数就是 bind 对象内的data对象的副本。由于 <em>lambda</em> 没有加 <code>multable</code>，闭包类内的 <code>operator()</code>是 <code>const</code> 限定的的。而 bind 对象的data的副本却不是const的。为了防止它被修改，所以参数加了<code>const</code>。但其实这样也可以：</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> func =</span><br><span class="line">    <span class="built_in">std</span>::bind(</span><br><span class="line">        [](<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt;&amp; data) <span class="keyword">mutable</span></span><br><span class="line">        &#123; <span class="comment">/* uses of data */</span> &#125;,</span><br><span class="line">        <span class="built_in">std</span>::move(data)</span><br><span class="line">    );</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="Item-33"><a href="#Item-33" class="headerlink" title="Item 33"></a>Item 33</h2><p>C++14 引入了 <em>generic lambdas</em> 的特性。具体来说就是 <em>lambda</em> 表达式的参数列表的类型是 <code>auto</code> 。这个特性的实现也很直观：生成的闭包类的 <code>operator()</code> 函数是个模板。所以，随着来的 <em>universal reference</em> 和完美转发都可以实现了。完美转发的关键还是在对引用折叠和 <code>std::forward</code> 函数实现的理解。看一下完美转发的例子：</p>
+<pre><code><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> f = [](<span class="keyword">auto</span>&amp;&amp; param)</span><br><span class="line">    &#123;</span><br><span class="line">        func(<span class="built_in">std</span>::forward&lt;<span class="keyword">decltype</span>(param)&gt;(param));</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> f = [](<span class="keyword">auto</span>&amp;&amp;... params)</span><br><span class="line">    &#123;</span><br><span class="line">        func(<span class="built_in">std</span>::forward&lt;<span class="keyword">decltype</span>(param)&gt;(params)...);</span><br><span class="line">    &#125;;</span><br></pre></td></tr></table></figure>
+</code></pre><hr>
+<h2 id="Item-34"><a href="#Item-34" class="headerlink" title="Item 34"></a>Item 34</h2><p>用 <em>lambda</em> 表达式与 <code>std::bind</code> 相比有些优势，如下：</p>
+<ul>
+<li><em>lambda</em> 表达式比较清晰。(这里书中给的代码有误，最后再详细讲)</li>
+<li><em>lambda</em> 表达式内可以调用重载的函数，但是<code>std::bind</code>第一个参数是重载函数的话得明确调用的版本(通过<code>static_cast</code>)。而且由于使用的指针，还会减少它被内联优化的可能性。</li>
+<li><p><code>std::bind</code> 默认是将参数拷贝的。想要保存参数的引用，必须要用<code>std::ref</code>。比如：</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> compressRateB = <span class="built_in">std</span>::bind(compress, <span class="built_in">std</span>::ref(w), _1);       <span class="comment">// compressRateB acts as if it holds a reference to w, rather than a copy</span></span><br></pre></td></tr></table></figure>
+<p>  这点就很不如 <em>lambda</em> 表达式直观。</p>
+</li>
+</ul>
+<p>在 C++14 中，<em>lambda</em> 表达式已经十分优秀，再也没有使用 <code>std::bind</code> 的理由了。但是在 C++11 中，<code>std::bind</code> 在以下情况下还是很有用的：</p>
+<ul>
+<li><em>Move capture</em> 。C++11 <em>lambda</em> 表达式没有提供通过移动捕获的方式，但是能通过 <code>std::bind</code> 模拟出来。但 C++14 开始， <em>lambda</em> 表达式通过 <em>init capture</em> 已经能够实现这个。</li>
+<li><em>Polymorphic function objects</em> 。<code>std::bind</code>绑定一个模板函数的时候，它能完美转发任何参数。但是 C++14 开始，<em>lambda</em> 表达式可以通过 <code>auto</code> 实现泛型。</li>
+</ul>
+<p>ps：这章里的代码竟然还有错误的地方，琢磨半天= =。 最后在 <a href="https://stackoverflow.com/questions/42207520/why-nested-bind-can-defer-evaluation-of-the-expression" target="_blank" rel="noopener"><em>StackOverflow</em> 上查到了正确的写法</a>。</p>
+<p>先还原一下问题的引入：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>::chrono;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>::literals;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>::placeholders;          <span class="comment">// needed for use of "_1"</span></span><br><span class="line"><span class="keyword">auto</span> setSoundL = [](Sound s) &#123;</span><br><span class="line">    setAlarm(steady_clock::now()) + <span class="number">1</span>h,</span><br><span class="line">             s,</span><br><span class="line">             <span class="number">30</span>s);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> setSoundB = <span class="built_in">std</span>::bind(setAlarm,</span><br><span class="line">                           steady_clock::now() + <span class="number">1</span>h,</span><br><span class="line">                           _1,</span><br><span class="line">                           <span class="number">30</span>s);</span><br></pre></td></tr></table></figure>
+<p>可以看到 <code>setSoundL</code> 和 <code>setSoundB</code> 看似完成相同的功能，但是实际上却并非如此。因为 在调用 <code>setSoundL</code> 时会调用<code>setAlarm</code>函数。显然，此时才会<code>now</code> 函数。而对于 <code>setSoundB</code> 来说，它在生成的时候就已经被调用了 <code>now()</code> 函数。然后每次调用它的时候，并不会再对 <code>now()</code> 调用。所以可以看到，在语义上双方已经不同了。解决方法也很简单，将后者对 <code>now</code> 函数的调用推迟到它自身被调用的时候。</p>
+<p>书上给出的修改是这样的：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 省略了一系列的 using</span></span><br><span class="line"><span class="keyword">auto</span> setSoundB = <span class="built_in">std</span>::bind(setAlarm,</span><br><span class="line">                           <span class="built_in">std</span>::bind(<span class="built_in">std</span>::plus&lt;&gt;(), steady_clock::now(), <span class="number">1</span>h),       <span class="comment">// 在 C++14 中，标准操作模板的模板参数声明通常可以被省略。注意， C++ 11 并不支持这么写。</span></span><br><span class="line">                           <span class="number">30</span>s);</span><br></pre></td></tr></table></figure>
+<p>但这显然也不能达成目标，<code>now</code> 函数还是会在 <code>setSoundB</code> 生成的时候就调用。不难想到，<code>std::bind</code>第一个参数，即可调用对象，是不会提前被调用的。所以应该这么改：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 省略了一系列的 using</span></span><br><span class="line"><span class="keyword">auto</span> setSoundB = <span class="built_in">std</span>::bind(setAlarm,</span><br><span class="line">                           <span class="built_in">std</span>::bind(<span class="built_in">std</span>::plus&lt;&gt;(), <span class="built_in">std</span>::bind(steady_clock::now()), <span class="number">1</span>h),</span><br><span class="line">                           <span class="number">30</span>s);</span><br></pre></td></tr></table></figure>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2018/04/20/effective_modern_cpp_four/">
+    <time datetime="2018-04-20T04:06:46.000Z" class="entry-date">
+        2018-04-20
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+
+    </footer>
+</article>
+
+
+    
+<nav class="nav-single">
+    <h3 class="assistive-text">文章导航</h3>
+    
+    
+        <span class="nav-next"><a href="/2018/03/01/effective_modern_cpp_three/" rel="next">effective modern c++读书笔记(三) <span class="meta-nav">→</span></a></span>
+    
+</nav><!-- .nav-single -->
+
+
+
+
+
+
+
+</div></div>
+        <div id="secondary" class="widget-area" role="complementary">
+  
+    <aside id="search" class="widget widget_search"><form role="search" method="get" accept-charset="utf-8" id="searchform" class="searchform" action="//google.com/search">
+    <div>
+        <input type="text" value="" name="s" id="s" />
+        <input type="submit" id="searchsubmit" value="搜索" />
+    </div>
+</form></aside>
+  
+    
+  
+    
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget-content">
+      <ul>
+        
+          <li>
+            <a href="/2018/04/20/effective_modern_cpp_four/">effective modern c++读书笔记(四)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/03/01/effective_modern_cpp_three/">effective modern c++读书笔记(三)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/02/12/effective-modern-cpp-two/">effective modern c++读书笔记(二)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/02/12/effective_modern_cpp_one/">effective modern c++读书笔记(一)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/01/29/syscall/">当我们谈论系统调用的时候我们在谈论什么</a>
+          </li>
+        
+      </ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget-content">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget-content tagcloud">
+      <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+    </div>
+  </aside>
+
+  
+</div>
+      </div>
+      <footer id="colophon" role="contentinfo">
+    <p>&copy; 2018 cyyzero
+    All rights reserved.</p>
+    <p>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></p>
+</footer>
+    <script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"1","bdMiniList":false,"bdPic":"","bdStyle":"2","bdSize":"16"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+<script src="/js/navigation.js"></script>
+
+<div id="bg"></div>
+
+  </div>
+</body>
+</html>
