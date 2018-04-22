@@ -61,6 +61,78 @@
       <div id="main" class="wrapper">
         <div id="primary" class="site-content"><div id="content" role="main">
   
+    <article id="post-about_do_while(0)" class="post-about_do_while(0) post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title">
+      <a class="article-title" href="/2018/04/22/about_do_while(0)/">do {...} while (0) 在宏定义中的作用</a>
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/22/about_do_while(0)/" data-id="cjgav2zkc000api77quv0xo08" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p>今天在看linux内核中链表操作的接口的时候，碰到这样一个宏定义：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// INIT_LIST_HEAD宏用于运行时初始化链表</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> INIT_LIST_HEAD(ptr) do &#123; \</span></span><br><span class="line">    (ptr)-&gt;next = (ptr); (ptr)-&gt;prev = (ptr); \</span><br><span class="line">&#125; <span class="keyword">while</span> (<span class="number">0</span>)</span><br></pre></td></tr></table></figure>
+<p>不太明白这里的<code>do{...}while(0)</code>是个什么操作，看起来似乎没有什么用——因为这里<code>while(0)</code>显然并没有起到循环的效果。后来查了下资料(<a href="https://kernelnewbies.org/FAQ/DoWhile0" target="_blank" rel="noopener">网址在这</a>)，才知道在Linux内核和其它一些著名的C库中有许多使用do{…}while(0)的宏定义，也大概明白了这么写的作用。</p>
+<ul>
+<li><p>第一个理由：空的 <em>statement</em> 会让编译器发出警告，所以会看到有些宏定义是这样的： <code>#define FOO do{ }while(0)</code> 。（暂时没看到这样的宏 = =。  先记录一下</p>
+</li>
+<li><p>第二个理由：它提供了一个 block 用于声明局部变量。可能你会想到不使用 <code>do{...}while(0)</code> 而简单地使用一对大括号 <code>{...}</code> 。这样有缺陷，具体看下一条。</p>
+</li>
+<li><p>第三个理由：让你能够声明复杂的宏定义。想象一下一个宏定义如下：</p>
+  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> FOO(x) \</span></span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"arg is %d\n"</span>, x); \</span><br><span class="line">        do_something_useful(x);</span><br></pre></td></tr></table></figure>
+<p>  现在这么使用它：</p>
+  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (blah == <span class="number">2</span>)</span><br><span class="line">    FOO(blash);</span><br></pre></td></tr></table></figure>
+<p>  宏本质上就是文本替换，所以它实际上：</p>
+  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (blash == <span class="number">2</span>)</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"arg is %d\n"</span>, blash);</span><br><span class="line">do_something_useful(blash);              <span class="comment">// 不论 blash为何止，都会执行这条</span></span><br></pre></td></tr></table></figure>
+<p>  所以显然，这可能带来用于预期之外的效果。而如果用了 <code>do{...}while(0)</code> ，就会是这样的：</p>
+  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (blah == <span class="number">2</span>)</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"arg is %d\n"</span>, blah);</span><br><span class="line">        do_something_useful(blah);</span><br><span class="line">    &#125; <span class="keyword">while</span> (<span class="number">0</span>);</span><br><span class="line"><span class="comment">// OK</span></span><br></pre></td></tr></table></figure>
+<p>  可能有人会想，既然需要一个 block ，那么加个大括号不就好了？好的，假如说有这样一个宏定义：</p>
+  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 交换两个值</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> exch(x, y) &#123; int tmp; tmp = x; x = y; y = tmp; &#125;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> (x &gt; y)</span><br><span class="line">    exch(x, y);            <span class="comment">// 看起来似乎没问题</span></span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    do_something();</span><br></pre></td></tr></table></figure>
+<p>  很显然，这个相当于这样：</p>
+  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (x &gt; y)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">int</span> tmp;</span><br><span class="line">    tmp = x;</span><br><span class="line">    x = y;</span><br><span class="line">    y = tmp;</span><br><span class="line">&#125;</span><br><span class="line">;                       <span class="comment">// 注意这里！！</span></span><br><span class="line"><span class="keyword">else</span>                    <span class="comment">// 语法错误</span></span><br><span class="line">    do_something();</span><br></pre></td></tr></table></figure>
+<p>  问题就出现在那个 <code>;</code> 。当然，你可以选择当初写下 <code>each(x, y)</code> 的时候在这行末尾不加分号，但是(我觉得)这实在显得太奇怪了。</p>
+<p>  用了 <code>do{...} while (0)</code> 就没有这个问题：</p>
+  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (x &gt; y)</span><br><span class="line">    <span class="keyword">do</span> &#123;</span><br><span class="line">        <span class="keyword">int</span> tmp;</span><br><span class="line">        tmp = x;</span><br><span class="line">        x = y;</span><br><span class="line">        y = tmp;</span><br><span class="line">    &#125; <span class="keyword">while</span> (<span class="number">0</span>);           <span class="comment">// Ok</span></span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    do_something();</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>总结：Linux和其它代码库里的宏都用 <code>do{...}while (0)</code> 来包围执行逻辑，因为它能确保宏的行为总是相同的，而不管在调用代码中使用了多少分号和大括号。</p>
+<p>（一点吐槽：感觉就是给C语言的宏擦屁股的？还有就是 <code>if/else</code> 即使只有一条语句也加大括号真是个好习惯 = =。</p>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2018/04/22/about_do_while(0)/">
+    <time datetime="2018-04-22T12:54:46.000Z" class="entry-date">
+        2018-04-22
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/">linux</a></li></ul>
+
+    </footer>
+</article>
+
+
+
+
+
+
+  
     <article id="post-effective_modern_cpp_four" class="post-effective_modern_cpp_four post type-post status-publish format-standard hentry">
     <!---->
 
@@ -76,7 +148,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/20/effective_modern_cpp_four/" data-id="cjg6py7ta00006x771x2omk1t" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/20/effective_modern_cpp_four/" data-id="cjgav2zjr0000pi77709to4k7" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -183,7 +255,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/03/01/effective_modern_cpp_three/" data-id="cjg6py7tn00046x77xny5ibk4" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/03/01/effective_modern_cpp_three/" data-id="cjgav2zki000ipi77h4hhvnlp" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -402,7 +474,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective-modern-cpp-two/" data-id="cjg6py7up000s6x77qj83jvau" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective-modern-cpp-two/" data-id="cjgav2zka0008pi773o5kx2ri" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -619,7 +691,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective_modern_cpp_one/" data-id="cjg6py7tg00016x771fodsrl0" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective_modern_cpp_one/" data-id="cjgav2zk30003pi772hhkleny" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -801,7 +873,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/01/29/syscall/" data-id="cjg6py7u0000i6x77ogn99qcv" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/01/29/syscall/" data-id="cjgav2zkg000fpi77d63e8my8" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -882,7 +954,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/13/plus_and_minus/" data-id="cjg6py7tu000a6x77dvubhid9" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/13/plus_and_minus/" data-id="cjgav2zl7000qpi771l6nnnth" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -959,7 +1031,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/04/nullptr_and_NULL/" data-id="cjg6py7uq000t6x77dyjz936i" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/04/nullptr_and_NULL/" data-id="cjgav2zk60005pi772pkh296z" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -1025,7 +1097,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/10/30/c++_switch/" data-id="cjg6py7to00056x77ryqtt9q9" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/10/30/c++_switch/" data-id="cjgav2zk40004pi77lti79o4m" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -1086,7 +1158,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/08/05/name-mangling-and-overload/" data-id="cjg6py7tr00086x77853eb8iv" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/08/05/name-mangling-and-overload/" data-id="cjgav2zke000dpi77nzjxgjpm" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -1152,73 +1224,6 @@
 
 
   
-    <article id="post-c++-reference" class="post-c++-reference post type-post status-publish format-standard hentry">
-    <!---->
-
-      <header class="entry-header">
-        
-        
-  
-    <h1 class="entry-title">
-      <a class="article-title" href="/2017/07/13/c++-reference/">c++引用的实现</a>
-    </h1>
-  
-
-        
-        <div class="comments-link">
-            
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/07/13/c++-reference/" data-id="cjg6py7tl00036x77nurbvz8o" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
-        </div><!-- .comments-link -->
-      </header><!-- .entry-header -->
-
-    <div class="entry-content">
-      
-        <p>很多c++初学者对于引用（reference）的的印象不外乎就是“对象的别名”、“同义词”。而引用作为c++对于c语言的重要扩充，与指针有着千丝万缕、剪不断理还乱的联系。甚至，引用在底层<del>就是</del>(勘误，应该改成“<strong>可能</strong>”)通过“指针”实现。</p>
-<p><strong>左值引用</strong></p>
-<p>接下来，看一个很简单的小例子：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> a = <span class="number">6</span>;</span><br><span class="line">	<span class="keyword">int</span> &amp;b = a;</span><br><span class="line">	b = <span class="number">7</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>汇编后的代码节选：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">_Z4testv:</span><br><span class="line">.LFB0:</span><br><span class="line">	pushq	%rbp</span><br><span class="line">	.seh_pushreg	%rbp</span><br><span class="line">	movq	%rsp, %rbp</span><br><span class="line">	.seh_setframe	%rbp, 0</span><br><span class="line">	subq	$16, %rsp</span><br><span class="line">	.seh_stackalloc	16</span><br><span class="line">	.seh_endprologue           #以上几行是test函数栈帧的建立过程</span><br><span class="line">	movl	$6, -12(%rbp)      #保存a</span><br><span class="line">	leaq	-12(%rbp), %rax    #将a的地址存入rax寄存器</span><br><span class="line">	movq	%rax, -8(%rbp)     #保存b，存入的是a的地址</span><br><span class="line">	movq	-8(%rbp), %rax     #将b，即a的地址传入rax寄存器</span><br><span class="line">	movl	$7, (%rax)         #通过b中保存的地址对a赋值</span><br><span class="line">	addq	$16, %rsp          #从以下几行是test函数栈帧的销毁过程</span><br><span class="line">	popq	%rbp</span><br><span class="line">	ret</span><br><span class="line">	.seh_endproc</span><br></pre></td></tr></table></figure>
-<p>可以看到，内存上b存储的其实是a的地址。</p>
-<p><del>在底层，引用是通过指针来实现</del>。引用算的上是c++的一个语法糖。</p>
-<p><strong>右值引用</strong></p>
-<p><del>以上的讲解都是基于c++传统的、用&amp;表示的引用，也就是左值引用。而c++11标准还有个右值引用的概念。那右值引用也还是用指针的实现的吗？要知道，右值引用可是对于临时变量的引用，万一是存储在寄存器中的临时变量呢？要知道，寄存器内的数据可不能寻址…作为一个c++菜鸟，我对右值引用也没有很深的理解…想到这，我不禁冒冷汗，难道我的猜测错了？上面的都得重写？</del></p>
-<p>吓得我赶紧试验一下…</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> a = <span class="number">6</span>;</span><br><span class="line">	<span class="keyword">int</span> &amp;&amp;b = a+<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>汇编之后的节选：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">_Z4testv:</span><br><span class="line">.LFB0:</span><br><span class="line">	pushq	%rbp</span><br><span class="line">	.seh_pushreg	%rbp</span><br><span class="line">	movq	%rsp, %rbp</span><br><span class="line">	.seh_setframe	%rbp, 0</span><br><span class="line">	subq	$32, %rsp</span><br><span class="line">	.seh_stackalloc	32</span><br><span class="line">	.seh_endprologue           #以上是栈帧的建立过程</span><br><span class="line">	movl	$6, -4(%rbp)       #保存a</span><br><span class="line">	movl	-4(%rbp), %eax     #将a存入寄存器eax</span><br><span class="line">	addl	$1, %eax           #eax中数据+1，得到a+1</span><br><span class="line">	movl	%eax, -20(%rbp)    #保存a+1</span><br><span class="line">	leaq	-20(%rbp), %rax    #将保存的a+1的地址传入寄存器eax</span><br><span class="line">	movq	%rax, -16(%rbp)    #保存a+1的地址</span><br><span class="line">	addq	$32, %rsp          #从这以下是这个栈帧的销毁过程</span><br><span class="line">	popq	%rbp</span><br><span class="line">	ret</span><br><span class="line">	.seh_endproc</span><br></pre></td></tr></table></figure>
-<p>可以看到，程序会先将a+1计算结果保存进栈帧，然后把a+1被保存的地址传给b。b保存的还是一个地址。</p>
-<p>当然…我由于c++水品有限，可能这只是我错误的猜想和认识。欢迎指正我的错误所在。 </p>
-<p>ps：“怎么指正错误啊喂，你的博客还不能评论啊啊啊啊啊”  （来自官方的吐槽- -。</p>
-<hr>
-<p>2018.1.29</p>
-<p>update：</p>
-<p>c++标准本身没有规定引用的实现方法。因此引用可能利用指针实现，也可以被优化调(即直接操作被引用的对象)。</p>
-<p>实际上不应该对引用的实现做任何假设。搞清楚它语义上是作为对象的别名就够了。</p>
-
-      
-    </div><!-- .entry-content -->
-
-    <footer class="entry-meta">
-    <a href="/2017/07/13/c++-reference/">
-    <time datetime="2017-07-13T15:59:56.000Z" class="entry-date">
-        2017-07-13
-    </time>
-</a>
-    
-    
-  <span class="article-delim">&#8226;</span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
-
-    </footer>
-</article>
-
-
-
-
-
-
-  
   
     <nav id="pagination">
       <nav id="page-nav">
@@ -1248,6 +1253,10 @@
       <ul>
         
           <li>
+            <a href="/2018/04/22/about_do_while(0)/">do {...} while (0) 在宏定义中的作用</a>
+          </li>
+        
+          <li>
             <a href="/2018/04/20/effective_modern_cpp_four/">effective modern c++读书笔记(四)</a>
           </li>
         
@@ -1263,10 +1272,6 @@
             <a href="/2018/02/12/effective_modern_cpp_one/">effective modern c++读书笔记(一)</a>
           </li>
         
-          <li>
-            <a href="/2018/01/29/syscall/">当我们谈论系统调用的时候我们在谈论什么</a>
-          </li>
-        
       </ul>
     </div>
   </aside>
@@ -1276,7 +1281,7 @@
   <aside class="widget">
     <h3 class="widget-title">Tags</h3>
     <div class="widget-content">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </aside>
 
@@ -1285,7 +1290,7 @@
   <aside class="widget">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget-content tagcloud">
-      <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+      <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
     </div>
   </aside>
 
