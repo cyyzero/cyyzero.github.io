@@ -17,13 +17,13 @@
   <title>do {...} while (0) 在宏定义中的作用 | Pluto&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="今天在看linux内核中链表操作的接口的时候，碰到这样一个宏定义： 1234// INIT_LIST_HEAD宏用于运行时初始化链表#define INIT_LIST_HEAD(ptr) do &amp;#123; \    (ptr)-&amp;gt;next = (ptr); (ptr)-&amp;gt;prev = (ptr); \&amp;#125; while (0) 不太明白这里的do{...}while(0)是个什">
-<meta name="keywords" content="linux">
+<meta name="keywords" content="Linux">
 <meta property="og:type" content="article">
 <meta property="og:title" content="do {...} while (0) 在宏定义中的作用">
 <meta property="og:url" content="http://yoursite.com/2018/04/22/about_do_while(0)/index.html">
 <meta property="og:site_name" content="Pluto&#39;s Blog">
 <meta property="og:description" content="今天在看linux内核中链表操作的接口的时候，碰到这样一个宏定义： 1234// INIT_LIST_HEAD宏用于运行时初始化链表#define INIT_LIST_HEAD(ptr) do &amp;#123; \    (ptr)-&amp;gt;next = (ptr); (ptr)-&amp;gt;prev = (ptr); \&amp;#125; while (0) 不太明白这里的do{...}while(0)是个什">
-<meta property="og:updated_time" content="2018-04-22T13:49:41.195Z">
+<meta property="og:updated_time" content="2018-05-19T17:54:12.302Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="do {...} while (0) 在宏定义中的作用">
 <meta name="twitter:description" content="今天在看linux内核中链表操作的接口的时候，碰到这样一个宏定义： 1234// INIT_LIST_HEAD宏用于运行时初始化链表#define INIT_LIST_HEAD(ptr) do &amp;#123; \    (ptr)-&amp;gt;next = (ptr); (ptr)-&amp;gt;prev = (ptr); \&amp;#125; while (0) 不太明白这里的do{...}while(0)是个什">
@@ -82,7 +82,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/22/about_do_while(0)/" data-id="cjgavdazi000001776oj8tbwm" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/22/about_do_while(0)/" data-id="cjhdp1c5k0000ad77v78gzc7h" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -128,7 +128,7 @@
     
     
   <span class="article-delim">&#8226;</span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/">linux</a></li></ul>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li></ul>
 
     </footer>
 </article>
@@ -137,6 +137,8 @@
     
 <nav class="nav-single">
     <h3 class="assistive-text">文章导航</h3>
+    
+        <span class="nav-previous"><a href="/2018/05/20/about_SFINAE/" rel="prev"><span class="meta-nav">←</span> SFINAE 概念的介绍</a></span>
     
     
         <span class="nav-next"><a href="/2018/04/20/effective_modern_cpp_four/" rel="next">effective modern c++读书笔记(四) <span class="meta-nav">→</span></a></span>
@@ -170,6 +172,10 @@
       <ul>
         
           <li>
+            <a href="/2018/05/20/about_SFINAE/">SFINAE 概念的介绍</a>
+          </li>
+        
+          <li>
             <a href="/2018/04/22/about_do_while(0)/">do {...} while (0) 在宏定义中的作用</a>
           </li>
         
@@ -185,10 +191,6 @@
             <a href="/2018/02/12/effective-modern-cpp-two/">effective modern c++读书笔记(二)</a>
           </li>
         
-          <li>
-            <a href="/2018/02/12/effective_modern_cpp_one/">effective modern c++读书笔记(一)</a>
-          </li>
-        
       </ul>
     </div>
   </aside>
@@ -198,7 +200,7 @@
   <aside class="widget">
     <h3 class="widget-title">Tags</h3>
     <div class="widget-content">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </aside>
 
@@ -207,7 +209,7 @@
   <aside class="widget">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget-content tagcloud">
-      <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+      <a href="/tags/Linux/" style="font-size: 15px;">Linux</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
     </div>
   </aside>
 

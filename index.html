@@ -61,6 +61,95 @@
       <div id="main" class="wrapper">
         <div id="primary" class="site-content"><div id="content" role="main">
   
+    <article id="post-about_SFINAE" class="post-about_SFINAE post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title">
+      <a class="article-title" href="/2018/05/20/about_SFINAE/">SFINAE 概念的介绍</a>
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/05/20/about_SFINAE/" data-id="cjhdp1c5r0001ad77hkdtq3yn" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <h1 id="引入"><a href="#引入" class="headerlink" title="引入"></a>引入</h1><p>前段时间看 <code>std::unique_ptr</code> 的实现，发现里面用到了好多用到<code>std::enable_if</code> 的地方，查了下才知道这涉及到C++ 里 <em>SFINAE</em> 的规则，还有定义成员类型的时候也在注释里提到了利用 <em>SFINAE</em> ，所以特地查阅资料记录下。</p>
+<h1 id="SFINAE-定义"><a href="#SFINAE-定义" class="headerlink" title="SFINAE 定义"></a>SFINAE 定义</h1><p><em>SFINAE</em> 表示 <em>Substitution Failure Is Not An Error</em> (替换失败不是错误)。这里的 <em>Substitution</em>　（替换）是个什么概念呢？</p>
+<p>先来了解一下模板实参替换的概念：</p>
+<blockquote>
+<p>已指定、推导出或从默认模板实参获得所有模板实参时，函数参数列表中每次模板形参的使用都会被替换成对应的模板实参。</p>
+<p>替换发生于:<br>-所有用于函数类型中的类型（包含返回类型和所有参数的类型）<br>-所有用于模板形参声明中的所有类型<br>-所有用于函数类型中的表达式<br>-所有用于模板形参声明中的表达式 </p>
+</blockquote>
+<p>（ps：后两种替换都是从C++11起）</p>
+<p>听起来很拗口，总之就是模板形参会被替换成实参。</p>
+<p>举个简单的例子就能懂了：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T,</span><br><span class="line">         <span class="keyword">typename</span> U = <span class="keyword">typename</span> T::type&gt;    <span class="comment">// 第二种替换</span></span><br><span class="line">T&amp;                                         <span class="comment">// 第一种替换</span></span><br><span class="line">fun(T)                                     <span class="comment">// 第一种替换</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 不替换</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>粗略的了解了替换之后，就能明白 <em>SFINAE</em> 大概什么意思了：模板形参替换推导类型失败时，从重载集抛弃特化，而非导致编译失败。其实还是挺好理解的，举个例子：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">test</span>&#123;</span></span><br><span class="line">    <span class="keyword">using</span> type = <span class="keyword">int</span>;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;                <span class="comment">// 重载版本1</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">fun</span><span class="params">(<span class="keyword">typename</span> T::type)</span> </span>&#123; &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;                <span class="comment">// 重载版本2</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">fun</span><span class="params">(T)</span> </span>&#123; &#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    fun&lt;test&gt;(<span class="number">0</span>);                   <span class="comment">// 调用1</span></span><br><span class="line">    fun&lt;<span class="keyword">int</span>&gt;(<span class="number">0</span>);                    <span class="comment">// 调用2</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于调用1，它模板参数为test，替换就已经开始了。</p>
+<ul>
+<li>重载版本1，替换后它变成了类似 <code>void fun(int)</code>；</li>
+<li>重载版本2，替换后它变成了类似 <code>void fun(test)</code>。 </li>
+</ul>
+<p>两者都是在重载集中的。根据函数重载匹配规则，匹配到前者。可以看到，这里其实并没有用到 <em>SFINAE</em>。</p>
+<p>对于调用2，它模板参数为int</p>
+<ul>
+<li>重载版本1， 替换后它变成了类似 <code>void fun(int::type)</code>，很显然，这个替换是failure（失败）。所以它从重载集被中删除。</li>
+<li>重载版本2，替换后它变成了类似 <code>void fun(int)</code>。</li>
+</ul>
+<p>所以调用版本2。</p>
+<p>说道底，<em>Substitution Failure</em> 的含义就是：替换的实参写入时，带来了无效(invalid)的类型或表达式(参考上面提到的替换的四种情况)为 ill-formed 。（就像上面例子里出现的类似 <code>int::type</code>）。我查了下C++标准草案，发现里面并没有提到 <em>SFINAE</em> 的概念，只提到了替换后的类型或表达式为无效的话，模板类型推导就失败了。而且标准还特地强调了，当且仅当替换后的无效(invalid)类型和表达式是在函数类型和它的模板类型参数的立即上下文(immediate context)时，才导致类型推断失败。如果替换后的类型或者表达式会引发副作用(实例化某模板特化、生成某隐式定义的成员函数等)的话，就认为它并不是在 immediate context 中，会引发程序为 ill-formed。所以说，我猜正是因为只是模板类型推断失败，就不会引发错误（error）。</p>
+<p>上面这段说的很拗口，我也没办法。<a href="http://en.cppreference.com/w/cpp/language/sfinae" target="_blank" rel="noopener">cppreference</a>和C++标准草案n上上说的也很拗口。而且cppreference上的描述还有很多奇怪的地方，一会而 Substitution Failure， 一会又冒出个 <em>SFINAE error</em> ，后来看了草案才知道 <em>SFINAE error</em> 就是让类型推断失败的情况。我把这段摘录下来，可以结合<a href="http://en.cppreference.com/w/cpp/language/sfinae" target="_blank" rel="noopener">cppreference</a>上的描述一起看下：</p>
+<blockquote>
+<p>If a substitution results in an invalid type or expression, type deduction fails. An invalid type or expression is one that would be ill-formed, with a diagnostic required, if written using the substituted arguments. [ Note: If no diagnostic is required, the program is still ill-formed. Access checking is done as part of the substitution process. — end note ] Only invalid types and expressions in the immediate context of the function type and its template parameter types can result in a deduction failure. [ Note: The substitution into types and expressions can result in effects such as the instantiation of class template specializations and/or function template specializations, the generation of implicitly-defined functions, etc. Such effects are not in the “immediate context” and can result in the program being ill-formed. — end note ]</p>
+</blockquote>
+<p>草案上还明确规定了什么情况下会让模板参数推断失败。<a href="http://en.cppreference.com/w/cpp/language/sfinae" target="_blank" rel="noopener">cppreference</a>上也介绍了，只不过正如上面所提到的，说法改了下，变成了 <em>SFINAE error</em> 出现的情况。相当于是对于标准的提炼和总结。</p>
+<p>最后再提一下，如果 SFINAE 完美工作，但最终还是匹配不到某个函数，那显然也会造成编译失败。</p>
+<h1 id="SFINAE-应用例子"><a href="#SFINAE-应用例子" class="headerlink" title="SFINAE 应用例子"></a>SFINAE 应用例子</h1><h2 id="std-enable-if"><a href="#std-enable-if" class="headerlink" title="std::enable_if"></a>std::enable_if</h2><p>这差不多算是很经典的利用 SFINAE 的例子了。直接上源代码：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Primary template.</span></span><br><span class="line"><span class="comment">/// Define a member typedef @c type only if a boolean constant is true.</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">bool</span>, <span class="keyword">typename</span> _Tp = <span class="keyword">void</span>&gt;</span><br><span class="line">struct enable_if </span><br><span class="line">&#123; &#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Partial specialization for true.</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> _Tp&gt;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">enable_if</span>&lt;true, _Tp&gt;</span></span><br><span class="line"><span class="class">&#123;</span> <span class="keyword">typedef</span> _Tp type; &#125;;</span><br></pre></td></tr></table></figure>
+<p>根据 SFINAE 规则，<code>std::enable_if&lt;true, someType&gt;</code>的时候，它提供了成员类型 <code>type</code>； <code>std::enable_if&lt;false, someType&gt;</code>的时候，它无成员类型 <code>type</code>。而且由于它有了个默认模板参数 <code>_TP = void</code>，所以 <code>std::enable_if&lt;true&gt;</code> 提供了成员类型 <code>type</code> 为 void，当然，<code>std::enable_if&lt;false&gt;</code> 仍然无类型成员 <code>type</code>。 </p>
+<p><code>std::enable_if</code>对不同类型特性提供分离的函数重载与特化的便利方法。它可用作额外的函数参数、返回类型、或类模板或函数模板形参。来看个使用它的例子。<code>std::unique_ptr</code>所使用的默认的删除器 <code>std::default_delete</code>，它有一个重载版本的构造函数标准规定是这样的：从另一 <code>std::default_delete</code> 构造 <code>std::default_delete</code> 对象。此构造函数仅若 U<em> 可隐式转换为 T</em> 才参与重载决议。大概函数原型就是：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">default_delete&#123;</span><br><span class="line">    <span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">U</span>&gt;</span></span><br><span class="line"><span class="class">    <span class="title">default_delete</span>( <span class="title">const</span> <span class="title">default_delete</span>&lt;U&gt;&amp; <span class="title">d</span> ) <span class="title">noexcept</span>;</span>     <span class="comment">//仅若 U* 可隐式转换为 T* 才参与重载决议。T是 default_delete 能删除的类型</span></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>有了 <code>std::enable_if</code>，再配合 <em>type_traits</em> 头文件提供的用于判断两种类型是否能转化的函数 <code>std::is_convertible</code>，完成这样的需求就很容易了：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">default_delete &#123;</span><br><span class="line">    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> U, <span class="keyword">typename</span> = </span><br><span class="line">        <span class="keyword">typename</span> <span class="built_in">std</span>::enable_if&lt;<span class="built_in">std</span>::is_convertible&lt;U*, T*&gt;::value&gt;::type&gt;</span><br><span class="line">    default_delete(<span class="keyword">const</span> default_delete&lt;Up&gt;&amp;) <span class="keyword">noexcept</span> &#123; &#125;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当 <code>U*</code> 能够转化成 <code>T*</code> 的时候，<code>std::is_convertible&lt;U*, T*&gt;::value</code> 为 <code>true</code> ，<code>std::enable_if&lt;std::is_convertible&lt;U*, T*&gt;::value&gt;::type</code> 为void，模板参数能正常推断；反之，当 <code>U*</code> 不能够转化成 <code>T*</code> 的时候，<code>std::is_convertible&lt;U*, T*&gt;::value</code> 为 <code>false</code> ，<code>std::enable_if&lt;std::is_convertible&lt;U*, T*&gt;::value&gt;::type</code> 为 ill-formed 。模板参数推断失败，显然无法实例化这个函数，也无法加入重载集。达到了 <em>仅若 U</em> 可隐式转换为 T<em> 才参与重载决议</em> 的要求。</p>
+<h2 id="确定-std-unique-ptr-成员类型-pointer"><a href="#确定-std-unique-ptr-成员类型-pointer" class="headerlink" title="确定 std::unique_ptr 成员类型 pointer"></a>确定 std::unique_ptr 成员类型 pointer</h2><p>这个也是阅读<code>std::unique_ptr</code>源码学习到的。感觉这个用法也很巧妙。首先需求是这样的，<code>std::unique_ptr</code> 有一个成员类型 pointer，若该类型存在则为 <code>std::remove_reference&lt;Deleter&gt;::type::pointer</code> （其中 Deleter 是unique_ptr 的第二个模板参数，用于表示删除器的类型），否则为 T* 。必须满足可空指针 (NullablePointer) 。</p>
+<p>是这么实现的：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> Deleter = default_delete&lt;T&gt;&gt;</span><br><span class="line">class <span class="built_in">unique_ptr</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="comment">// Use SINFAE to determine whether std::remove_reference&lt;Deleter&gt;::type::pointer exits</span></span><br><span class="line">    class _Pointer</span><br><span class="line">    &#123;</span><br><span class="line">    <span class="keyword">private</span>:</span><br><span class="line">        <span class="keyword">using</span> _Del = <span class="keyword">typename</span> <span class="built_in">std</span>::remove_reference&lt;Deleter&gt;::type;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> U&gt;</span><br><span class="line">        <span class="keyword">static</span> <span class="keyword">typename</span> U::pointer __test(<span class="keyword">typename</span> U::pointer*);       <span class="comment">// 重载版本1</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> U&gt;</span><br><span class="line">        <span class="keyword">static</span> T* __test(...);                                         <span class="comment">// 重载版本2</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">        <span class="keyword">using</span> type = <span class="keyword">decltype</span>(__test&lt;_Del&gt;(<span class="number">0</span>));</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">typedef</span> _pointer::type pointer;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>如果<code>std::remove_reference&lt;Deleter&gt;::type</code>有类型成员 <code>pointer</code> ，<code>__test&lt;_Del&gt;(0)</code>优先调用重载版本1，从而 <code>decltype(__test&lt;_Del&gt;(0))</code> 为重载版本1的返回值，即<code>std::remove_reference&lt;Deleter&gt;::type::pointer</code>；否则，只能调用重载版本2，<code>decltype(__test&lt;_Del&gt;(0))</code> 为重载版本2的返回值，即<code>T*</code>。</p>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2018/05/20/about_SFINAE/">
+    <time datetime="2018-05-19T17:54:46.000Z" class="entry-date">
+        2018-05-20
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+
+    </footer>
+</article>
+
+
+
+
+
+
+  
     <article id="post-about_do_while(0)" class="post-about_do_while(0) post type-post status-publish format-standard hentry">
     <!---->
 
@@ -76,7 +165,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/22/about_do_while(0)/" data-id="cjgavdazi000001776oj8tbwm" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/22/about_do_while(0)/" data-id="cjhdp1c5k0000ad77v78gzc7h" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -122,7 +211,7 @@
     
     
   <span class="article-delim">&#8226;</span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/linux/">linux</a></li></ul>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li></ul>
 
     </footer>
 </article>
@@ -148,7 +237,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/20/effective_modern_cpp_four/" data-id="cjgavdazw00050177rgvizq7f" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/20/effective_modern_cpp_four/" data-id="cjhdp1c6k000bad77ej7gcp57" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -255,7 +344,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/03/01/effective_modern_cpp_three/" data-id="cjgavdb00000901771aotvqwg" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/03/01/effective_modern_cpp_three/" data-id="cjhdp1c6m000dad77yjhh3l13" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -474,7 +563,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective-modern-cpp-two/" data-id="cjgavdazu00040177l93valvk" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective-modern-cpp-two/" data-id="cjhdp1c6i0009ad776h9lf2ak" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -691,7 +780,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective_modern_cpp_one/" data-id="cjgavdazy000801776u065ygo" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective_modern_cpp_one/" data-id="cjhdp1c6p000fad77nhvomlzm" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -873,7 +962,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/01/29/syscall/" data-id="cjgavdb0h000o01770fuka8ud" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/01/29/syscall/" data-id="cjhdp1c7g000rad775yjspy0h" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -954,7 +1043,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/13/plus_and_minus/" data-id="cjgavdb07000h01776mhjqj24" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/13/plus_and_minus/" data-id="cjhdp1c79000nad77x3x8q2s5" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -1031,7 +1120,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/04/nullptr_and_NULL/" data-id="cjgavdb05000e0177pp9of84m" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/04/nullptr_and_NULL/" data-id="cjhdp1c6t000had77yqo0lj0l" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -1097,7 +1186,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/10/30/c++_switch/" data-id="cjgavdazt00030177wxeqzrbm" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/10/30/c++_switch/" data-id="cjhdp1c6e0006ad77n5ymxejv" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -1143,87 +1232,6 @@
 
 
   
-    <article id="post-name-mangling-and-overload" class="post-name-mangling-and-overload post type-post status-publish format-standard hentry">
-    <!---->
-
-      <header class="entry-header">
-        
-        
-  
-    <h1 class="entry-title">
-      <a class="article-title" href="/2017/08/05/name-mangling-and-overload/">浅谈name mangling</a>
-    </h1>
-  
-
-        
-        <div class="comments-link">
-            
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/08/05/name-mangling-and-overload/" data-id="cjgavdb03000c017799z1j4cr" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
-        </div><!-- .comments-link -->
-      </header><!-- .entry-header -->
-
-    <div class="entry-content">
-      
-        <p>很多语言都允许重载函数，这些函数在源代码中有相同的名字，却又不同的参数列表。这用到了一种叫做name mangling的技术。</p>
-<blockquote>
-<p><strong>名字修饰</strong>，又译作<strong>名字粉碎</strong>、<strong>名字重整</strong>，译自英文<strong>name mangling</strong>或<strong>name decoration</strong>，是现代计算机程序设计语言的编译器用于解决由于程序实体的名字必须唯一而导致的问题的一种技术。</p>
-<p>它提供了在函数、结构体、类或其它的数据类型的名字中编码附加信息一种方法，用于从编译器中向链接器传递更多语义信息。</p>
-<p>该需求产生于程序设计语言允许不同的条目使用相同的标识符，包括它们占据不同的命名空间（典型的命名空间是由一个模块、一个类或显式的<em>namespace</em>指示来定义的）或者有不同的签名（例如函数重载）。</p>
-</blockquote>
-<p>接下来主要以c++的<strong>函数重载</strong>为例，来简要介绍一下name mangling。（当然，其他语言中也有name mangling，而且也c++还有很多其他地方需要name mangling，比如namespace，class，template等）。</p>
-<h2 id="name-mangling出现的原因"><a href="#name-mangling出现的原因" class="headerlink" title="name mangling出现的原因"></a>name mangling出现的原因</h2><p>c++源文件经过编译器和汇编器生成可重定位目标文件。链接器生成可执行目标文件。</p>
-<p>不同的系统之间，目标文件的格式都不同，但基本的概念都是相同的。</p>
-<p>每个可重定位目标模块中包含一个叫做符号表（.symtab）的部分。符号表包含了m所定义和引用的符号。一般分为三种：</p>
-<ul>
-<li>在m中定义并且能被其他模块引用的<strong>全局符号</strong>。对应于非静态的函数以及不带static的全局变量。</li>
-<li>在其他模块中定义并且被模块m引用的<strong>全局符号</strong>。这些符号也被称为外部（external）符号，对应于定义在其他模块的函数和变量。</li>
-<li>只被模块m定义和引用的<strong>本地符号</strong>。对应于带static的函数和全局变量。</li>
-</ul>
-<p>要注意到，符号表中不包含对应于本地非静态程序变量的任何符号。因为这些符号在运行时栈中管理，链接器不care。</p>
-<p>（可能有人对上面几段中<strong>模块</strong>一词比较疑惑。一个目标模块（object module）就是一个字节序列，而一个目标文件（object file）就是存储在存储器中的目标模块。）</p>
-<p>而链接器做的主要工作，就是进行<strong>符号解析</strong>和重定位。而链接器解析符号引用的方法是将每个引用与它输入的可重定位目标文件的符号表中的<strong>一个确定的符号定义</strong>联系起来。</p>
-<p>从这里已经可以看出一些倪端了。c++要实现重载，必须让链接器能够区分这些重载函数。而不能像c语言中一样简单的将函数名作为符号。这就必须要用到name mangling。</p>
-<p>ps：关于编译链接的过程我也不是很懂，这方面还需要后续的学习。</p>
-<h2 id="name-mangling的基本方式"><a href="#name-mangling的基本方式" class="headerlink" title="name mangling的基本方式"></a>name mangling的基本方式</h2><p>name mangling的基本原理就是将每个唯一的函数和参数列表组合编码成一个对链接器来说唯一的名字。换句话说，编译器和链接器需要一定的协议来规范符号的组织格式。</p>
-<p>c++中的重载函数区分在于参数数量和某个参数类型的不同。所以区分函数的时候，需要充分考虑参数数量和参数类型这两个语义信息。</p>
-<p>然而，c++并没有规定一个标准的name mangling方式，所以不同的编译器采用的各自的name mangling方式（甚至相同编译器的不同版本，或相同编译器在不同平台上，name mangling规则都截然不同）。所以几乎没有链接器可以链接不同编译器产生的目标代码。</p>
-<p>以下就以gcc为例子来初步了解一下。</p>
-<p>一个简单的例子：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">(<span class="keyword">void</span>)</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">g</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i = f(), j = f(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>编译得到可重定位目标文件，然后用gcc工具链中的<a href="https://sourceware.org/binutils/docs/binutils/nm.html" target="_blank" rel="noopener">nm</a>列出目标文件的符号，可以看到</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">0000000000000000 b .bss</span><br><span class="line">0000000000000000 d .data</span><br><span class="line">0000000000000000 p .pdata</span><br><span class="line">0000000000000000 r .rdata$zzz</span><br><span class="line">0000000000000000 t .text</span><br><span class="line">0000000000000000 r .xdata</span><br><span class="line">000000000000000b T _Z1fi</span><br><span class="line">0000000000000000 T _Z1fv</span><br><span class="line">0000000000000019 T _Z1gv</span><br></pre></td></tr></table></figure>
-<p>这三列分别是 symbol value，symbol type， symbol name。 现在主要关注的就是最后一列的符号名(主要是因为前两个我也不知道是个啥= =。以后再填坑吧)。</p>
-<p>可以看到<code>int f(void)</code> 在符号表中是<code>_Z1fv</code>，<code>int f(int)</code>是<code>_Z1fi</code>，<code>void g(void)</code>是<code>_Z1gv</code>。</p>
-<p>大家也可以从这个简单的例子窥见gcc中name mangling的方式。不过本文只是简单的介绍一下name mangling出现的理由和通用策略，并非意在介绍具体某种编译器的name mangling编码规则，所以不会在这块深入。（啊，其实是因为我也不懂）。</p>
-<p>最后再做一个实验，看一下涉及到namespace和class的name mangling。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> t &#123;</span><br><span class="line">	<span class="class"><span class="keyword">class</span> <span class="title">c</span></span></span><br><span class="line"><span class="class">	&#123;</span></span><br><span class="line">        <span class="keyword">public</span>:</span><br><span class="line">            <span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">	&#125;;</span><br><span class="line">	<span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">	<span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span> </span>&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	t::c objc;</span><br><span class="line">	objc.f();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>nm列出符号表(忽略其他符号)，看一下这几个函数的符号名：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">000000000000000f T _Z1fv</span><br><span class="line">0000000000000000 T _ZN1t1c1fEv</span><br><span class="line">0000000000000006 T _ZN1t1fEi</span><br><span class="line">0000000000000000 T _ZN1t1fEv</span><br></pre></td></tr></table></figure>
-<p>ps：最后的最后，感觉自己还是有很多地方也不是很明白…还得接着学 啊  = =</p>
-
-      
-    </div><!-- .entry-content -->
-
-    <footer class="entry-meta">
-    <a href="/2017/08/05/name-mangling-and-overload/">
-    <time datetime="2017-08-05T08:18:38.000Z" class="entry-date">
-        2017-08-05
-    </time>
-</a>
-    
-    
-  <span class="article-delim">&#8226;</span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
-
-    </footer>
-</article>
-
-
-
-
-
-
-  
   
     <nav id="pagination">
       <nav id="page-nav">
@@ -1253,6 +1261,10 @@
       <ul>
         
           <li>
+            <a href="/2018/05/20/about_SFINAE/">SFINAE 概念的介绍</a>
+          </li>
+        
+          <li>
             <a href="/2018/04/22/about_do_while(0)/">do {...} while (0) 在宏定义中的作用</a>
           </li>
         
@@ -1268,10 +1280,6 @@
             <a href="/2018/02/12/effective-modern-cpp-two/">effective modern c++读书笔记(二)</a>
           </li>
         
-          <li>
-            <a href="/2018/02/12/effective_modern_cpp_one/">effective modern c++读书笔记(一)</a>
-          </li>
-        
       </ul>
     </div>
   </aside>
@@ -1281,7 +1289,7 @@
   <aside class="widget">
     <h3 class="widget-title">Tags</h3>
     <div class="widget-content">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </aside>
 
@@ -1290,7 +1298,7 @@
   <aside class="widget">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget-content tagcloud">
-      <a href="/tags/Linux/" style="font-size: 10px;">Linux</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+      <a href="/tags/Linux/" style="font-size: 15px;">Linux</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
     </div>
   </aside>
 

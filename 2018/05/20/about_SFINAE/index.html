@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <meta name="description" content="引入前段时间看 std::unique_ptr 的实现，发现里面用到了好多用到std::enable_if 的地方，查了下才知道这涉及到C++ 里 SFINAE 的规则，还有定义成员类型的时候也在注释里提到了利用 SFINAE ，所以特地查阅资料记录下。
+SFINAE 定义SFINAE 表示 Sub" />
+  
+
+  
+  
+  
+  
+  
+  
+  <title>SFINAE 概念的介绍 | Pluto&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="引入前段时间看 std::unique_ptr 的实现，发现里面用到了好多用到std::enable_if 的地方，查了下才知道这涉及到C++ 里 SFINAE 的规则，还有定义成员类型的时候也在注释里提到了利用 SFINAE ，所以特地查阅资料记录下。 SFINAE 定义SFINAE 表示 Substitution Failure Is Not An Error (替换失败不是错误)。这里的 S">
+<meta name="keywords" content="c++">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SFINAE 概念的介绍">
+<meta property="og:url" content="http://yoursite.com/2018/05/20/about_SFINAE/index.html">
+<meta property="og:site_name" content="Pluto&#39;s Blog">
+<meta property="og:description" content="引入前段时间看 std::unique_ptr 的实现，发现里面用到了好多用到std::enable_if 的地方，查了下才知道这涉及到C++ 里 SFINAE 的规则，还有定义成员类型的时候也在注释里提到了利用 SFINAE ，所以特地查阅资料记录下。 SFINAE 定义SFINAE 表示 Substitution Failure Is Not An Error (替换失败不是错误)。这里的 S">
+<meta property="og:updated_time" content="2018-05-19T17:57:18.441Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="SFINAE 概念的介绍">
+<meta name="twitter:description" content="引入前段时间看 std::unique_ptr 的实现，发现里面用到了好多用到std::enable_if 的地方，查了下才知道这涉及到C++ 里 SFINAE 的规则，还有定义成员类型的时候也在注释里提到了利用 SFINAE ，所以特地查阅资料记录下。 SFINAE 定义SFINAE 表示 Substitution Failure Is Not An Error (替换失败不是错误)。这里的 S">
+  
+  
+    <link rel="icon" href="/css/images/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+  
+  <!-- baidu webmaster push -->
+  <script src='//push.zhanzhang.baidu.com/push.js'></script>
+</head>
+<body class="home blog custom-background custom-font-enabled single-author">
+  <div id="page" class="hfeed site">
+      <header id="masthead" class="site-header" role="banner">
+    <hgroup>
+      <h1 class="site-title">
+        <a href="/" title="Pluto&#39;s Blog" rel="home">Pluto&#39;s Blog</a>
+      </h1>
+      
+        <h2 class="site-description">
+          <a href="/" id="subtitle">失败人士自留地</a>
+        </h2>
+      
+    </hgroup>
+
+    <nav id="site-navigation" class="main-navigation" role="navigation">
+            <button class="menu-toggle">菜单</button>
+            <a class="assistive-text" href="/#content" title="跳至内容">跳至内容</a><!--TODO-->
+            <div class="menu-main-container">
+                <ul id="menu-main" class="nav-menu">
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/">Home</a></li>
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/archives">Archives</a></li>
+                
+                </ul>
+            </div>
+    </nav>
+</header>
+      <div id="main" class="wrapper">
+        <div id="primary" class="site-content"><div id="content" role="main"><article id="post-about_SFINAE" class="post-about_SFINAE post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title article-title">
+      SFINAE 概念的介绍
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/05/20/about_SFINAE/" data-id="cjhdp1c5r0001ad77hkdtq3yn" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <h1 id="引入"><a href="#引入" class="headerlink" title="引入"></a>引入</h1><p>前段时间看 <code>std::unique_ptr</code> 的实现，发现里面用到了好多用到<code>std::enable_if</code> 的地方，查了下才知道这涉及到C++ 里 <em>SFINAE</em> 的规则，还有定义成员类型的时候也在注释里提到了利用 <em>SFINAE</em> ，所以特地查阅资料记录下。</p>
+<h1 id="SFINAE-定义"><a href="#SFINAE-定义" class="headerlink" title="SFINAE 定义"></a>SFINAE 定义</h1><p><em>SFINAE</em> 表示 <em>Substitution Failure Is Not An Error</em> (替换失败不是错误)。这里的 <em>Substitution</em>　（替换）是个什么概念呢？</p>
+<p>先来了解一下模板实参替换的概念：</p>
+<blockquote>
+<p>已指定、推导出或从默认模板实参获得所有模板实参时，函数参数列表中每次模板形参的使用都会被替换成对应的模板实参。</p>
+<p>替换发生于:<br>-所有用于函数类型中的类型（包含返回类型和所有参数的类型）<br>-所有用于模板形参声明中的所有类型<br>-所有用于函数类型中的表达式<br>-所有用于模板形参声明中的表达式 </p>
+</blockquote>
+<p>（ps：后两种替换都是从C++11起）</p>
+<p>听起来很拗口，总之就是模板形参会被替换成实参。</p>
+<p>举个简单的例子就能懂了：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T,</span><br><span class="line">         <span class="keyword">typename</span> U = <span class="keyword">typename</span> T::type&gt;    <span class="comment">// 第二种替换</span></span><br><span class="line">T&amp;                                         <span class="comment">// 第一种替换</span></span><br><span class="line">fun(T)                                     <span class="comment">// 第一种替换</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// 不替换</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>粗略的了解了替换之后，就能明白 <em>SFINAE</em> 大概什么意思了：模板形参替换推导类型失败时，从重载集抛弃特化，而非导致编译失败。其实还是挺好理解的，举个例子：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">test</span>&#123;</span></span><br><span class="line">    <span class="keyword">using</span> type = <span class="keyword">int</span>;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;                <span class="comment">// 重载版本1</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">fun</span><span class="params">(<span class="keyword">typename</span> T::type)</span> </span>&#123; &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;                <span class="comment">// 重载版本2</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">fun</span><span class="params">(T)</span> </span>&#123; &#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    fun&lt;test&gt;(<span class="number">0</span>);                   <span class="comment">// 调用1</span></span><br><span class="line">    fun&lt;<span class="keyword">int</span>&gt;(<span class="number">0</span>);                    <span class="comment">// 调用2</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于调用1，它模板参数为test，替换就已经开始了。</p>
+<ul>
+<li>重载版本1，替换后它变成了类似 <code>void fun(int)</code>；</li>
+<li>重载版本2，替换后它变成了类似 <code>void fun(test)</code>。 </li>
+</ul>
+<p>两者都是在重载集中的。根据函数重载匹配规则，匹配到前者。可以看到，这里其实并没有用到 <em>SFINAE</em>。</p>
+<p>对于调用2，它模板参数为int</p>
+<ul>
+<li>重载版本1， 替换后它变成了类似 <code>void fun(int::type)</code>，很显然，这个替换是failure（失败）。所以它从重载集被中删除。</li>
+<li>重载版本2，替换后它变成了类似 <code>void fun(int)</code>。</li>
+</ul>
+<p>所以调用版本2。</p>
+<p>说道底，<em>Substitution Failure</em> 的含义就是：替换的实参写入时，带来了无效(invalid)的类型或表达式(参考上面提到的替换的四种情况)为 ill-formed 。（就像上面例子里出现的类似 <code>int::type</code>）。我查了下C++标准草案，发现里面并没有提到 <em>SFINAE</em> 的概念，只提到了替换后的类型或表达式为无效的话，模板类型推导就失败了。而且标准还特地强调了，当且仅当替换后的无效(invalid)类型和表达式是在函数类型和它的模板类型参数的立即上下文(immediate context)时，才导致类型推断失败。如果替换后的类型或者表达式会引发副作用(实例化某模板特化、生成某隐式定义的成员函数等)的话，就认为它并不是在 immediate context 中，会引发程序为 ill-formed。所以说，我猜正是因为只是模板类型推断失败，就不会引发错误（error）。</p>
+<p>上面这段说的很拗口，我也没办法。<a href="http://en.cppreference.com/w/cpp/language/sfinae" target="_blank" rel="noopener">cppreference</a>和C++标准草案n上上说的也很拗口。而且cppreference上的描述还有很多奇怪的地方，一会而 Substitution Failure， 一会又冒出个 <em>SFINAE error</em> ，后来看了草案才知道 <em>SFINAE error</em> 就是让类型推断失败的情况。我把这段摘录下来，可以结合<a href="http://en.cppreference.com/w/cpp/language/sfinae" target="_blank" rel="noopener">cppreference</a>上的描述一起看下：</p>
+<blockquote>
+<p>If a substitution results in an invalid type or expression, type deduction fails. An invalid type or expression is one that would be ill-formed, with a diagnostic required, if written using the substituted arguments. [ Note: If no diagnostic is required, the program is still ill-formed. Access checking is done as part of the substitution process. — end note ] Only invalid types and expressions in the immediate context of the function type and its template parameter types can result in a deduction failure. [ Note: The substitution into types and expressions can result in effects such as the instantiation of class template specializations and/or function template specializations, the generation of implicitly-defined functions, etc. Such effects are not in the “immediate context” and can result in the program being ill-formed. — end note ]</p>
+</blockquote>
+<p>草案上还明确规定了什么情况下会让模板参数推断失败。<a href="http://en.cppreference.com/w/cpp/language/sfinae" target="_blank" rel="noopener">cppreference</a>上也介绍了，只不过正如上面所提到的，说法改了下，变成了 <em>SFINAE error</em> 出现的情况。相当于是对于标准的提炼和总结。</p>
+<p>最后再提一下，如果 SFINAE 完美工作，但最终还是匹配不到某个函数，那显然也会造成编译失败。</p>
+<h1 id="SFINAE-应用例子"><a href="#SFINAE-应用例子" class="headerlink" title="SFINAE 应用例子"></a>SFINAE 应用例子</h1><h2 id="std-enable-if"><a href="#std-enable-if" class="headerlink" title="std::enable_if"></a>std::enable_if</h2><p>这差不多算是很经典的利用 SFINAE 的例子了。直接上源代码：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Primary template.</span></span><br><span class="line"><span class="comment">/// Define a member typedef @c type only if a boolean constant is true.</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">bool</span>, <span class="keyword">typename</span> _Tp = <span class="keyword">void</span>&gt;</span><br><span class="line">struct enable_if </span><br><span class="line">&#123; &#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Partial specialization for true.</span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> _Tp&gt;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">enable_if</span>&lt;true, _Tp&gt;</span></span><br><span class="line"><span class="class">&#123;</span> <span class="keyword">typedef</span> _Tp type; &#125;;</span><br></pre></td></tr></table></figure>
+<p>根据 SFINAE 规则，<code>std::enable_if&lt;true, someType&gt;</code>的时候，它提供了成员类型 <code>type</code>； <code>std::enable_if&lt;false, someType&gt;</code>的时候，它无成员类型 <code>type</code>。而且由于它有了个默认模板参数 <code>_TP = void</code>，所以 <code>std::enable_if&lt;true&gt;</code> 提供了成员类型 <code>type</code> 为 void，当然，<code>std::enable_if&lt;false&gt;</code> 仍然无类型成员 <code>type</code>。 </p>
+<p><code>std::enable_if</code>对不同类型特性提供分离的函数重载与特化的便利方法。它可用作额外的函数参数、返回类型、或类模板或函数模板形参。来看个使用它的例子。<code>std::unique_ptr</code>所使用的默认的删除器 <code>std::default_delete</code>，它有一个重载版本的构造函数标准规定是这样的：从另一 <code>std::default_delete</code> 构造 <code>std::default_delete</code> 对象。此构造函数仅若 U<em> 可隐式转换为 T</em> 才参与重载决议。大概函数原型就是：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">default_delete&#123;</span><br><span class="line">    <span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">U</span>&gt;</span></span><br><span class="line"><span class="class">    <span class="title">default_delete</span>( <span class="title">const</span> <span class="title">default_delete</span>&lt;U&gt;&amp; <span class="title">d</span> ) <span class="title">noexcept</span>;</span>     <span class="comment">//仅若 U* 可隐式转换为 T* 才参与重载决议。T是 default_delete 能删除的类型</span></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>有了 <code>std::enable_if</code>，再配合 <em>type_traits</em> 头文件提供的用于判断两种类型是否能转化的函数 <code>std::is_convertible</code>，完成这样的需求就很容易了：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">default_delete &#123;</span><br><span class="line">    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> U, <span class="keyword">typename</span> = </span><br><span class="line">        <span class="keyword">typename</span> <span class="built_in">std</span>::enable_if&lt;<span class="built_in">std</span>::is_convertible&lt;U*, T*&gt;::value&gt;::type&gt;</span><br><span class="line">    default_delete(<span class="keyword">const</span> default_delete&lt;Up&gt;&amp;) <span class="keyword">noexcept</span> &#123; &#125;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当 <code>U*</code> 能够转化成 <code>T*</code> 的时候，<code>std::is_convertible&lt;U*, T*&gt;::value</code> 为 <code>true</code> ，<code>std::enable_if&lt;std::is_convertible&lt;U*, T*&gt;::value&gt;::type</code> 为void，模板参数能正常推断；反之，当 <code>U*</code> 不能够转化成 <code>T*</code> 的时候，<code>std::is_convertible&lt;U*, T*&gt;::value</code> 为 <code>false</code> ，<code>std::enable_if&lt;std::is_convertible&lt;U*, T*&gt;::value&gt;::type</code> 为 ill-formed 。模板参数推断失败，显然无法实例化这个函数，也无法加入重载集。达到了 <em>仅若 U</em> 可隐式转换为 T<em> 才参与重载决议</em> 的要求。</p>
+<h2 id="确定-std-unique-ptr-成员类型-pointer"><a href="#确定-std-unique-ptr-成员类型-pointer" class="headerlink" title="确定 std::unique_ptr 成员类型 pointer"></a>确定 std::unique_ptr 成员类型 pointer</h2><p>这个也是阅读<code>std::unique_ptr</code>源码学习到的。感觉这个用法也很巧妙。首先需求是这样的，<code>std::unique_ptr</code> 有一个成员类型 pointer，若该类型存在则为 <code>std::remove_reference&lt;Deleter&gt;::type::pointer</code> （其中 Deleter 是unique_ptr 的第二个模板参数，用于表示删除器的类型），否则为 T* 。必须满足可空指针 (NullablePointer) 。</p>
+<p>是这么实现的：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> Deleter = default_delete&lt;T&gt;&gt;</span><br><span class="line">class <span class="built_in">unique_ptr</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="comment">// Use SINFAE to determine whether std::remove_reference&lt;Deleter&gt;::type::pointer exits</span></span><br><span class="line">    class _Pointer</span><br><span class="line">    &#123;</span><br><span class="line">    <span class="keyword">private</span>:</span><br><span class="line">        <span class="keyword">using</span> _Del = <span class="keyword">typename</span> <span class="built_in">std</span>::remove_reference&lt;Deleter&gt;::type;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> U&gt;</span><br><span class="line">        <span class="keyword">static</span> <span class="keyword">typename</span> U::pointer __test(<span class="keyword">typename</span> U::pointer*);       <span class="comment">// 重载版本1</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">template</span>&lt;<span class="keyword">typename</span> U&gt;</span><br><span class="line">        <span class="keyword">static</span> T* __test(...);                                         <span class="comment">// 重载版本2</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">        <span class="keyword">using</span> type = <span class="keyword">decltype</span>(__test&lt;_Del&gt;(<span class="number">0</span>));</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">typedef</span> _pointer::type pointer;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>如果<code>std::remove_reference&lt;Deleter&gt;::type</code>有类型成员 <code>pointer</code> ，<code>__test&lt;_Del&gt;(0)</code>优先调用重载版本1，从而 <code>decltype(__test&lt;_Del&gt;(0))</code> 为重载版本1的返回值，即<code>std::remove_reference&lt;Deleter&gt;::type::pointer</code>；否则，只能调用重载版本2，<code>decltype(__test&lt;_Del&gt;(0))</code> 为重载版本2的返回值，即<code>T*</code>。</p>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2018/05/20/about_SFINAE/">
+    <time datetime="2018-05-19T17:54:46.000Z" class="entry-date">
+        2018-05-20
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+
+    </footer>
+</article>
+
+
+    
+<nav class="nav-single">
+    <h3 class="assistive-text">文章导航</h3>
+    
+    
+        <span class="nav-next"><a href="/2018/04/22/about_do_while(0)/" rel="next">do {...} while (0) 在宏定义中的作用 <span class="meta-nav">→</span></a></span>
+    
+</nav><!-- .nav-single -->
+
+
+
+
+
+
+
+</div></div>
+        <div id="secondary" class="widget-area" role="complementary">
+  
+    <aside id="search" class="widget widget_search"><form role="search" method="get" accept-charset="utf-8" id="searchform" class="searchform" action="//google.com/search">
+    <div>
+        <input type="text" value="" name="s" id="s" />
+        <input type="submit" id="searchsubmit" value="搜索" />
+    </div>
+</form></aside>
+  
+    
+  
+    
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget-content">
+      <ul>
+        
+          <li>
+            <a href="/2018/05/20/about_SFINAE/">SFINAE 概念的介绍</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/22/about_do_while(0)/">do {...} while (0) 在宏定义中的作用</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/20/effective_modern_cpp_four/">effective modern c++读书笔记(四)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/03/01/effective_modern_cpp_three/">effective modern c++读书笔记(三)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/02/12/effective-modern-cpp-two/">effective modern c++读书笔记(二)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget-content">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget-content tagcloud">
+      <a href="/tags/Linux/" style="font-size: 15px;">Linux</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+    </div>
+  </aside>
+
+  
+</div>
+      </div>
+      <footer id="colophon" role="contentinfo">
+    <p>&copy; 2018 cyyzero
+    All rights reserved.</p>
+    <p>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></p>
+</footer>
+    <script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"1","bdMiniList":false,"bdPic":"","bdStyle":"2","bdSize":"16"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+<script src="/js/navigation.js"></script>
+
+<div id="bg"></div>
+
+  </div>
+</body>
+</html>
