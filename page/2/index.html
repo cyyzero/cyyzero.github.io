@@ -61,6 +61,67 @@
       <div id="main" class="wrapper">
         <div id="primary" class="site-content"><div id="content" role="main">
   
+    <article id="post-c++_switch" class="post-c++_switch post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title">
+      <a class="article-title" href="/2017/10/30/c++_switch/">c++ switch内部的变量定义</a>
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/10/30/c++_switch/" data-id="cjhlzu1qy0008vp77s5aawjrm" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p>c++中的switch语句大家肯定都很熟悉。switch执行流程是匹配相应的case。很显然，可能会跳过某些case标签，忽略某些代码。那么就带来了一个有意思的话题：<strong>如果被忽略的代码中有变量的定义该怎么办</strong>？</p>
+<p>先来看一个简单的例子：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span>(<span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">	<span class="keyword">int</span> a = <span class="number">10</span>;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后编译就错了：</p>
+<ul>
+<li><code>error: jump to case label [-fpermissive]</code></li>
+<li><code>error: crosses initialization of ‘int a’</code></li>
+</ul>
+<p>编译器的意思是控制流跳过了变量的初始化。乍看之下似乎不太好理解为什么出错。其实如果在case 0标签中要使用的变量a的时候，问题就来了。试图在未初始化的时候使用对象，这显然是行不通的。可能由于举的例子中变量是内置类型，所以不太好理解到问题的严重性，再来看一个例子：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span>(<span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">string</span> s1;</span><br><span class="line">	<span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">s2</span><span class="params">(<span class="string">"hello"</span>)</span></span>;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">	<span class="comment">//可能会使用s1或者s2</span></span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这样就跳过了类的隐式或者显式初始化。</p>
+<p>因此c++规定，不允许跨过变量的初始化语句直接跳转到变量作用域的另一个位置。</p>
+<p>然而，对于内置类型来说，定义的时候并非一定要初始化。<br>比如：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span>(<span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">	<span class="keyword">int</span> a;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">	a = <span class="number">20</span>;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这段代码就不会报错，因为变量并没有初始化。可以从底层来理解。</p>
+<p>首先，switch下的大括号是一个完整的作用域，不要被case标签的缩进所欺骗，认为每个case有一个作用域（除非显示地加大括号）。</p>
+<p>其次，定义变量并不存在“执行动作”，有的只是改变栈指针从而在栈上分配空间。编译器会保证在相应的作用域之中这个变量的空间是被分配了。大部分编译器实现会选择在函数开始把所有局部变量的空间都分配好。但是变量的初始化是有”执行动作“的，比如说<code>int a = 10</code>，就会在栈上某4个字节存入10（假设机器上int占4字节）。再比如某个类初始化，也会调用相应的构造函数。所以控制流程的跳转可能造成某个对象没有正常的初始化就使用。</p>
+<p>所以，就可以回答一开始的问题了。如果被忽略的代码中的定义包含了初始化的过程，就会编译失败。如果是内置类型的定义（不含初始化），那么就能通过编译。</p>
+<p>当然，为了不出现上述的问题，可以直接用大括号将case标签下构成一个单独的作用域。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span>(<span class="number">0</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">std</span>::<span class="built_in">string</span> s;</span><br><span class="line">		<span class="keyword">int</span> a = <span class="number">10</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">	<span class="comment">//显然，这里也不可能再使用对象s或者a</span></span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2017/10/30/c++_switch/">
+    <time datetime="2017-10-30T15:59:56.000Z" class="entry-date">
+        2017-10-30
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+
+    </footer>
+</article>
+
+
+
+
+
+
+  
     <article id="post-name-mangling-and-overload" class="post-name-mangling-and-overload post type-post status-publish format-standard hentry">
     <!---->
 
@@ -76,7 +137,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/08/05/name-mangling-and-overload/" data-id="cjhdp1c71000lad77sijapstr" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/08/05/name-mangling-and-overload/" data-id="cjhlzu1rb000jvp77bh0idcea" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -157,7 +218,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/07/13/c++-reference/" data-id="cjhdp1c6g0007ad775xicfxdt" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/07/13/c++-reference/" data-id="cjhlzu1qt0004vp777th9vmva" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -224,7 +285,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/07/10/stack-frame/" data-id="cjhdp1c7d000pad77ib6oef8j" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/07/10/stack-frame/" data-id="cjhlzu1rd000lvp77r297plmt" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -330,7 +391,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/07/07/quick-pow/" data-id="cjhdp1c6w000jad77o3sbhmju" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/07/07/quick-pow/" data-id="cjhlzu1rg000nvp77z7ohjs3c" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -410,6 +471,10 @@
       <ul>
         
           <li>
+            <a href="/2018/05/25/concepts_of_address/">X86体系结构中各种“地址”的概念</a>
+          </li>
+        
+          <li>
             <a href="/2018/05/20/about_SFINAE/">SFINAE 概念的介绍</a>
           </li>
         
@@ -425,10 +490,6 @@
             <a href="/2018/03/01/effective_modern_cpp_three/">effective modern c++读书笔记(三)</a>
           </li>
         
-          <li>
-            <a href="/2018/02/12/effective-modern-cpp-two/">effective modern c++读书笔记(二)</a>
-          </li>
-        
       </ul>
     </div>
   </aside>
@@ -438,7 +499,7 @@
   <aside class="widget">
     <h3 class="widget-title">Tags</h3>
     <div class="widget-content">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </aside>
 

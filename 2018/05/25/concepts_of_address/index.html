@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <meta name="description" content="之前看CSAPP的时候，看到虚拟地址和物理地址的概念，对CPU的内存映射、地址空间这些有了粗略的印象。后来看了些关于X86的体系结构的内容，感觉相关的概念还是复杂了很多，所以特地整理一下。 (再次证明CSAPP还是当成入门书来看比较合适 ((逃
+
+在具体介绍这些概念之前，还是简单的总结一下X86的实" />
+  
+
+  
+  
+  
+  
+  
+  
+  <title>X86体系结构中各种“地址”的概念 | Pluto&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="之前看CSAPP的时候，看到虚拟地址和物理地址的概念，对CPU的内存映射、地址空间这些有了粗略的印象。后来看了些关于X86的体系结构的内容，感觉相关的概念还是复杂了很多，所以特地整理一下。 (再次证明CSAPP还是当成入门书来看比较合适 ((逃  在具体介绍这些概念之前，还是简单的总结一下X86的实模式和保护模式在内存管理上的区别。 X86的实模式(real mode)始于当年的8086芯片。现在">
+<meta name="keywords" content="c++">
+<meta property="og:type" content="article">
+<meta property="og:title" content="X86体系结构中各种“地址”的概念">
+<meta property="og:url" content="http://yoursite.com/2018/05/25/concepts_of_address/index.html">
+<meta property="og:site_name" content="Pluto&#39;s Blog">
+<meta property="og:description" content="之前看CSAPP的时候，看到虚拟地址和物理地址的概念，对CPU的内存映射、地址空间这些有了粗略的印象。后来看了些关于X86的体系结构的内容，感觉相关的概念还是复杂了很多，所以特地整理一下。 (再次证明CSAPP还是当成入门书来看比较合适 ((逃  在具体介绍这些概念之前，还是简单的总结一下X86的实模式和保护模式在内存管理上的区别。 X86的实模式(real mode)始于当年的8086芯片。现在">
+<meta property="og:updated_time" content="2018-05-25T13:20:30.682Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="X86体系结构中各种“地址”的概念">
+<meta name="twitter:description" content="之前看CSAPP的时候，看到虚拟地址和物理地址的概念，对CPU的内存映射、地址空间这些有了粗略的印象。后来看了些关于X86的体系结构的内容，感觉相关的概念还是复杂了很多，所以特地整理一下。 (再次证明CSAPP还是当成入门书来看比较合适 ((逃  在具体介绍这些概念之前，还是简单的总结一下X86的实模式和保护模式在内存管理上的区别。 X86的实模式(real mode)始于当年的8086芯片。现在">
+  
+  
+    <link rel="icon" href="/css/images/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+  
+  <!-- baidu webmaster push -->
+  <script src='//push.zhanzhang.baidu.com/push.js'></script>
+</head>
+<body class="home blog custom-background custom-font-enabled single-author">
+  <div id="page" class="hfeed site">
+      <header id="masthead" class="site-header" role="banner">
+    <hgroup>
+      <h1 class="site-title">
+        <a href="/" title="Pluto&#39;s Blog" rel="home">Pluto&#39;s Blog</a>
+      </h1>
+      
+        <h2 class="site-description">
+          <a href="/" id="subtitle">失败人士自留地</a>
+        </h2>
+      
+    </hgroup>
+
+    <nav id="site-navigation" class="main-navigation" role="navigation">
+            <button class="menu-toggle">菜单</button>
+            <a class="assistive-text" href="/#content" title="跳至内容">跳至内容</a><!--TODO-->
+            <div class="menu-main-container">
+                <ul id="menu-main" class="nav-menu">
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/">Home</a></li>
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/archives">Archives</a></li>
+                
+                </ul>
+            </div>
+    </nav>
+</header>
+      <div id="main" class="wrapper">
+        <div id="primary" class="site-content"><div id="content" role="main"><article id="post-concepts_of_address" class="post-concepts_of_address post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title article-title">
+      X86体系结构中各种“地址”的概念
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/05/25/concepts_of_address/" data-id="cjhlzu1qn0001vp77nb8nywl9" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p>之前看CSAPP的时候，看到虚拟地址和物理地址的概念，对CPU的内存映射、地址空间这些有了粗略的印象。后来看了些关于X86的体系结构的内容，感觉相关的概念还是复杂了很多，所以特地整理一下。 (再次证明CSAPP还是当成入门书来看比较合适 ((逃</p>
+<hr>
+<p>在具体介绍这些概念之前，还是简单的总结一下X86的实模式和保护模式在内存管理上的区别。</p>
+<p>X86的实模式(real mode)始于当年的8086芯片。现在的X86芯片刚启动时也默认先进入实模式。保护模式内存管理比较简单，寻址就是 段地址 + 段内偏移。8086提供了四个16位段寄存器用于保存段地址，分别是CS，DS，ES，SS，段内偏移量也是16位。但是地址线却有20位，也就是说物理地址是20位。所以英特尔公司就设计了一种很巧妙的方法，计算物理地址的时候段基址左移4位，再和偏移地址相加，这就得到了20位的物理地址。</p>
+<p>80286处理器首次提出了保护模式的概念，但本文说的保护模式是指IA-32的保护模式。保护模式提供的内存管理机制大概分成了两个部分：分段和分页。分段能够隔离单独的代码模块、数据模块和栈模块，让彼此互不干扰(地址空间分离)。分页提供了虚拟内存的机制，让程序的各个部分能够根据执行环境的需要被映射到物理内存。值得一提的是，分段不能关闭，但是分页是可关闭的。</p>
+<p>但是对于几乎所有操作系统来说，其实并没有用到保护模式提供的分段机制。一般都是将所有内存当成一个段来处理，这就是所谓的平坦模式(flat mode)。</p>
+<h2 id="物理地址-physical-address"><a href="#物理地址-physical-address" class="headerlink" title="物理地址 physical address"></a>物理地址 physical address</h2><p>物理地址的概念很好理解，就是物理内存真正的地址。CPU最终对于内存的访问就得通过给总线物理地址的信号。</p>
+<p>在X86的保护模式下，得到物理地址的方法就是16位的<code>段基址</code>左移4位加上16位的 <code>段内偏移地址</code>，最终得到的就是20位物理地址。</p>
+<p>在IA-32的保护模式下，物理地址也是类似的概念，但是扩充到了32位，寻址4GBytes。从Pentium Pro处理器开始，IA-32架构地址扩充到了 2^36 Gbytes。在开启分页的情况下，虚拟地址通过MMU和页表的映射后引发缺页中断或者直接得到物理地址。</p>
+<h2 id="有效地址-effective-address"><a href="#有效地址-effective-address" class="headerlink" title="有效地址 effective address"></a>有效地址 effective address</h2><p>有效地址就是段内偏移地址，不论是实模式还是保护模式都是如此。</p>
+<h2 id="逻辑地址-logical-address"><a href="#逻辑地址-logical-address" class="headerlink" title="逻辑地址 logical address"></a>逻辑地址 logical address</h2><p>在实模式下，逻辑地址包括16位段地址和16位偏移地址。</p>
+<p>在保护模式下，逻辑地址包括16位的段选择子和32位的偏移地址。</p>
+<p>至于段选择子是什么，我在英特尔手册上摘抄了一段：</p>
+<blockquote>
+<p>A segment selector is a 16-bit identifier for a segment (see Figure 3-6). It does not point directly to the segment,but instead points to the segment descriptor that defines the segment.</p>
+</blockquote>
+<p>简单来说，段选择子就是一个16位的索引，它不直接指向段，而是指向段描述符。每个段都需要一个段描述符，为了放这些段描述符，在内存中开辟了一些空间，构成一个段描述符表。</p>
+<p>也不细讲了，再从手册上摘抄些资料看看凑合吧：</p>
+<blockquote>
+<p>A logical address consists of a segment selector and an offset. The segment selector is a unique identifier for a segment. Among other things it provides an offset into a descriptor table (such as the global descriptor table, GDT) to a data structure called a segment descriptor. Each segment has a segment descriptor, which specifies the size of the segment, the access rights and privilege level for the segment, the segment type, and the location of the first byte of the segment in the linear address space (called the base address of the segment). The offset part of the logical address is added to the base address for the segment to locate a byte within the segment. The base address plus the offset thus forms a linear address in the processor’s linear address space.</p>
+</blockquote>
+<h2 id="线性地址-linear-address"><a href="#线性地址-linear-address" class="headerlink" title="线性地址 linear address"></a>线性地址 linear address</h2><p>在保护模式下，处理器能把每个逻辑地址转换成一个线性地址。线性地址是32位。具体转换方式如下：</p>
+<ul>
+<li>通过段选择子中的偏移定位到 GDT 或者 LDT 中的段描述符，读进处理器。</li>
+<li>检查段描述符中的各种标志位是否访问本段，然后确认32位的偏移是在段的限制内。</li>
+<li>从段描述符中得到段的基址，然后和逻辑地址的32位的偏移相加，就得到了线性地址。</li>
+</ul>
+<p>如果没有开启分页，那这个线性地址就已经是物理地址。如果开启了分页，那得到的线性地址就是虚拟地址。</p>
+<h2 id="虚拟地址-physical-address"><a href="#虚拟地址-physical-address" class="headerlink" title="虚拟地址 physical address"></a>虚拟地址 physical address</h2><p>从上面对线性地址的描述可以看到，如果开启了分页，那线性地址就是虚拟地址，CPU通过页表的映射可以得到物理地址。</p>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2018/05/25/concepts_of_address/">
+    <time datetime="2018-05-25T01:17:46.000Z" class="entry-date">
+        2018-05-25
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+
+    </footer>
+</article>
+
+
+    
+<nav class="nav-single">
+    <h3 class="assistive-text">文章导航</h3>
+    
+    
+        <span class="nav-next"><a href="/2018/05/20/about_SFINAE/" rel="next">SFINAE 概念的介绍 <span class="meta-nav">→</span></a></span>
+    
+</nav><!-- .nav-single -->
+
+
+
+
+
+
+
+</div></div>
+        <div id="secondary" class="widget-area" role="complementary">
+  
+    <aside id="search" class="widget widget_search"><form role="search" method="get" accept-charset="utf-8" id="searchform" class="searchform" action="//google.com/search">
+    <div>
+        <input type="text" value="" name="s" id="s" />
+        <input type="submit" id="searchsubmit" value="搜索" />
+    </div>
+</form></aside>
+  
+    
+  
+    
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget-content">
+      <ul>
+        
+          <li>
+            <a href="/2018/05/25/concepts_of_address/">X86体系结构中各种“地址”的概念</a>
+          </li>
+        
+          <li>
+            <a href="/2018/05/20/about_SFINAE/">SFINAE 概念的介绍</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/22/about_do_while(0)/">do {...} while (0) 在宏定义中的作用</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/20/effective_modern_cpp_four/">effective modern c++读书笔记(四)</a>
+          </li>
+        
+          <li>
+            <a href="/2018/03/01/effective_modern_cpp_three/">effective modern c++读书笔记(三)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget-content">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget-content tagcloud">
+      <a href="/tags/Linux/" style="font-size: 15px;">Linux</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+    </div>
+  </aside>
+
+  
+</div>
+      </div>
+      <footer id="colophon" role="contentinfo">
+    <p>&copy; 2018 cyyzero
+    All rights reserved.</p>
+    <p>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></p>
+</footer>
+    <script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"1","bdMiniList":false,"bdPic":"","bdStyle":"2","bdSize":"16"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+<script src="/js/navigation.js"></script>
+
+<div id="bg"></div>
+
+  </div>
+</body>
+</html>
