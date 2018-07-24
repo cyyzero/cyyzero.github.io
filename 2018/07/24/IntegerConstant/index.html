@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <meta name="description" content="这个问题是在CSAPP上看到的，详情可以看这个。
+简单来说，问题就是：在用补码表示有符号整型的机器上，C语言中的整型的最大值和最小值的表示方法不同。接下来就以32位int为例子讲解这个问题。
+int的最大值INT_MAX和int的最小值INT_MIN，是这么定义的：
+123#define INT_M" />
+  
+
+  
+  
+  
+  
+  
+  
+  <title>扭曲的INT_MIN | Pluto&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="这个问题是在CSAPP上看到的，详情可以看这个。 简单来说，问题就是：在用补码表示有符号整型的机器上，C语言中的整型的最大值和最小值的表示方法不同。接下来就以32位int为例子讲解这个问题。 int的最大值INT_MAX和int的最小值INT_MIN，是这么定义的： 123#define INT_MAX 2147483647#define INT_MIN (-INT_MAX – 1) 熟悉补码的童">
+<meta name="keywords" content="C">
+<meta property="og:type" content="article">
+<meta property="og:title" content="扭曲的INT_MIN">
+<meta property="og:url" content="http://yoursite.com/2018/07/24/IntegerConstant/index.html">
+<meta property="og:site_name" content="Pluto&#39;s Blog">
+<meta property="og:description" content="这个问题是在CSAPP上看到的，详情可以看这个。 简单来说，问题就是：在用补码表示有符号整型的机器上，C语言中的整型的最大值和最小值的表示方法不同。接下来就以32位int为例子讲解这个问题。 int的最大值INT_MAX和int的最小值INT_MIN，是这么定义的： 123#define INT_MAX 2147483647#define INT_MIN (-INT_MAX – 1) 熟悉补码的童">
+<meta property="og:updated_time" content="2018-07-24T20:13:21.552Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="扭曲的INT_MIN">
+<meta name="twitter:description" content="这个问题是在CSAPP上看到的，详情可以看这个。 简单来说，问题就是：在用补码表示有符号整型的机器上，C语言中的整型的最大值和最小值的表示方法不同。接下来就以32位int为例子讲解这个问题。 int的最大值INT_MAX和int的最小值INT_MIN，是这么定义的： 123#define INT_MAX 2147483647#define INT_MIN (-INT_MAX – 1) 熟悉补码的童">
+  
+  
+    <link rel="icon" href="/css/images/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+  
+  <!-- baidu webmaster push -->
+  <script src='//push.zhanzhang.baidu.com/push.js'></script>
+</head>
+<body class="home blog custom-background custom-font-enabled single-author">
+  <div id="page" class="hfeed site">
+      <header id="masthead" class="site-header" role="banner">
+    <hgroup>
+      <h1 class="site-title">
+        <a href="/" title="Pluto&#39;s Blog" rel="home">Pluto&#39;s Blog</a>
+      </h1>
+      
+        <h2 class="site-description">
+          <a href="/" id="subtitle">失败人士自留地</a>
+        </h2>
+      
+    </hgroup>
+
+    <nav id="site-navigation" class="main-navigation" role="navigation">
+            <button class="menu-toggle">菜单</button>
+            <a class="assistive-text" href="/#content" title="跳至内容">跳至内容</a><!--TODO-->
+            <div class="menu-main-container">
+                <ul id="menu-main" class="nav-menu">
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/">Home</a></li>
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/archives">Archives</a></li>
+                
+                </ul>
+            </div>
+    </nav>
+</header>
+      <div id="main" class="wrapper">
+        <div id="primary" class="site-content"><div id="content" role="main"><article id="post-IntegerConstant" class="post-IntegerConstant post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title article-title">
+      扭曲的INT_MIN
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/07/24/IntegerConstant/" data-id="cjk051ox70000ig77wcfo30ni" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p>这个问题是在CSAPP上看到的，详情可以看<a href="http://101.96.10.63/csapp.cs.cmu.edu/public/waside/waside-tmin.pdf" target="_blank" rel="noopener">这个</a>。</p>
+<p>简单来说，问题就是：在用补码表示有符号整型的机器上，C语言中的整型的最大值和最小值的表示方法不同。接下来就以32位int为例子讲解这个问题。</p>
+<p>int的最大值INT_MAX和int的最小值INT_MIN，是这么定义的：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> INT_MAX 2147483647</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> INT_MIN (-INT_MAX – 1)</span></span><br></pre></td></tr></table></figure>
+<p>熟悉补码的童鞋应该都知道，32位的数据，能表示的最大的整数的位级表示是<code>0x7FFFFFFF</code>，即<code>2147483647</code>，最小的整数的位级表示是<code>0x80000000</code>，即<code>-2147483648</code>。那么是为什么不能直接<code>#define INT_MIN -2147483648</code>或者<code>#define INT_MIN 0x80000000</code>?</p>
+<p>CSAPP上是这么来说的，我觉得总结的很好：</p>
+<blockquote>
+<p>不幸的是，补码表示的不对称性和C语言转换规则之间这种奇怪的交互，迫使我们使用奇怪的方式来写Tmin。虽然理解这个问题需要我们钻研C语言标准中一些隐晦的角落，但是它也能帮助我们理解整数数据类型和表示的一些细微之处。</p>
+</blockquote>
+<p>接下来以我自己的理解来阐述一下原因。</p>
+<p>首先，C语言里有整数常量（<code>integer constant</code>），让整型数值直接在表达式中使用。比如说<code>int a = 10</code>这里出现的<code>10</code>，就是个整型常量。整型常量除了默认的十进制，可以在开头加<code>0</code>表示八进制，比如<code>010</code>就是表示的八进制数字<code>10</code>；还可以在开头加<code>0x</code>或者<code>0X</code>表示十六进制，比如说<code>0xFF</code>就表示十六进制数字<code>FF</code>。</p>
+<p>而且<code>integer constant</code>可以添加后缀。可选的后缀有<code>u</code>或者<code>U</code>，<code>l</code>或者<code>L</code>，<code>ll</code>或者<code>LL</code>。带<code>u</code>和带<code>l</code>的后缀可以进行组合（而且不用分先后顺序）。于是这样就有了6种后缀方式：</p>
+<ul>
+<li>无后缀</li>
+<li><code>u</code> 或者 <code>U</code></li>
+<li><code>l</code> 或者 <code>L</code></li>
+<li><code>ll</code> 或者 <code>LL</code></li>
+<li>既有 <code>l/L</code>又有 <code>u/U</code></li>
+<li>既有 <code>ll/LL</code> 又有 <code>u/U</code></li>
+</ul>
+<p><code>integer constant</code> 有自己的类型。而决定每个 <code>integer constant</code> 类型的规则有点复杂。上面提到的3种进制方式和6种后缀方式一共带来了18种组合，每个组合都会有一个由若干个整数类型组成的候选列表，会依次匹配，第一个能容纳这个数值的类型就是这个 <code>integer constant</code> 的类型。<a href="https://en.cppreference.com/w/c/language/integer_constant" target="_blank" rel="noopener">完整的表格可以上cppreference上看</a>。</p>
+<p>现在再来看<code>INT_MIN</code>。如果<code>#define INT_MIN -2147483648</code>，由于没有负整数常量，那么首先来判断<code>2147483648</code>的类型。它属于无后缀的十进制，从C99开始，候选列表为：</p>
+<ul>
+<li>int</li>
+<li>long int</li>
+<li>long long int</li>
+</ul>
+<p>而在int是32位补码表示的机器上，int最大为 <code>2147483647</code>， <code>2147483648</code>会被当成<code>long int</code>类型或者<code>long long int</code>类型，具体情况由 <a href="https://en.cppreference.com/w/c/language/arithmetic_types" target="_blank" rel="noopener">data models</a> 来定。总而言之，就无法用 <code>-2147483648</code> 来表示最小的int值了。</p>
+<p><code>#define INT_MIN 0x80000000</code>也是类似的情况。首先来判断 <code>0x80000000</code>的类型。它属于无后缀的十六进制，候选列表为：</p>
+<ul>
+<li>int</li>
+<li>unsigned int</li>
+<li>long int</li>
+<li>unsigned long int</li>
+<li>unsigned long long int</li>
+</ul>
+<p>在 int 是32位补码表示的机器上，int最大为 <code>2147483647</code>，即 <code>0x7FFFFFFF</code>，小于 <code>0x80000000</code>。所以也不能用 int 来表示 <code>0x80000000</code>,自然就无法用 <code>0x80000000</code> 来表示最小的int值了。</p>
+<p>在网上看到的一句话总结，我觉得说的挺有道理：虽然 <code>-2147483648</code> 这个数值能够用int类型来表示，但在C语言中却没法写出对应这个数值的int类型常量。</p>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2018/07/24/IntegerConstant/">
+    <time datetime="2018-07-24T01:17:46.000Z" class="entry-date">
+        2018-07-24
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/C/">C</a></li></ul>
+
+    </footer>
+</article>
+
+
+    
+<nav class="nav-single">
+    <h3 class="assistive-text">文章导航</h3>
+    
+    
+        <span class="nav-next"><a href="/2018/05/25/concepts_of_address/" rel="next">X86体系结构中各种“地址”的概念 <span class="meta-nav">→</span></a></span>
+    
+</nav><!-- .nav-single -->
+
+
+
+
+
+
+
+</div></div>
+        <div id="secondary" class="widget-area" role="complementary">
+  
+    <aside id="search" class="widget widget_search"><form role="search" method="get" accept-charset="utf-8" id="searchform" class="searchform" action="//google.com/search">
+    <div>
+        <input type="text" value="" name="s" id="s" />
+        <input type="submit" id="searchsubmit" value="搜索" />
+    </div>
+</form></aside>
+  
+    
+  
+    
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget-content">
+      <ul>
+        
+          <li>
+            <a href="/2018/07/24/IntegerConstant/">扭曲的INT_MIN</a>
+          </li>
+        
+          <li>
+            <a href="/2018/05/25/concepts_of_address/">X86体系结构中各种“地址”的概念</a>
+          </li>
+        
+          <li>
+            <a href="/2018/05/20/about_SFINAE/">SFINAE 概念的介绍</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/22/about_do_while(0)/">do {...} while (0) 在宏定义中的作用</a>
+          </li>
+        
+          <li>
+            <a href="/2018/04/20/effective_modern_cpp_four/">effective modern c++读书笔记(四)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget-content">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget-content tagcloud">
+      <a href="/tags/C/" style="font-size: 10px;">C</a> <a href="/tags/Linux/" style="font-size: 15px;">Linux</a> <a href="/tags/X86/" style="font-size: 10px;">X86</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+    </div>
+  </aside>
+
+  
+</div>
+      </div>
+      <footer id="colophon" role="contentinfo">
+    <p>&copy; 2018 cyyzero
+    All rights reserved.</p>
+    <p>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></p>
+</footer>
+    <script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"1","bdMiniList":false,"bdPic":"","bdStyle":"2","bdSize":"16"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+<script src="/js/navigation.js"></script>
+
+<div id="bg"></div>
+
+  </div>
+</body>
+</html>

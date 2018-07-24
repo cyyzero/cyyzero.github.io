@@ -18,13 +18,13 @@
   <title>X86体系结构中各种“地址”的概念 | Pluto&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="之前看CSAPP的时候，看到虚拟地址和物理地址的概念，对CPU的内存映射、地址空间这些有了粗略的印象。后来看了些关于X86的体系结构的内容，感觉相关的概念还是复杂了很多，所以特地整理一下。 (再次证明CSAPP还是当成入门书来看比较合适 ((逃  在具体介绍这些概念之前，还是简单的总结一下X86的实模式和保护模式在内存管理上的区别。 X86的实模式(real mode)始于当年的8086芯片。现在">
-<meta name="keywords" content="c++">
+<meta name="keywords" content="X86">
 <meta property="og:type" content="article">
 <meta property="og:title" content="X86体系结构中各种“地址”的概念">
 <meta property="og:url" content="http://yoursite.com/2018/05/25/concepts_of_address/index.html">
 <meta property="og:site_name" content="Pluto&#39;s Blog">
 <meta property="og:description" content="之前看CSAPP的时候，看到虚拟地址和物理地址的概念，对CPU的内存映射、地址空间这些有了粗略的印象。后来看了些关于X86的体系结构的内容，感觉相关的概念还是复杂了很多，所以特地整理一下。 (再次证明CSAPP还是当成入门书来看比较合适 ((逃  在具体介绍这些概念之前，还是简单的总结一下X86的实模式和保护模式在内存管理上的区别。 X86的实模式(real mode)始于当年的8086芯片。现在">
-<meta property="og:updated_time" content="2018-05-25T13:20:30.682Z">
+<meta property="og:updated_time" content="2018-05-25T15:38:24.654Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="X86体系结构中各种“地址”的概念">
 <meta name="twitter:description" content="之前看CSAPP的时候，看到虚拟地址和物理地址的概念，对CPU的内存映射、地址空间这些有了粗略的印象。后来看了些关于X86的体系结构的内容，感觉相关的概念还是复杂了很多，所以特地整理一下。 (再次证明CSAPP还是当成入门书来看比较合适 ((逃  在具体介绍这些概念之前，还是简单的总结一下X86的实模式和保护模式在内存管理上的区别。 X86的实模式(real mode)始于当年的8086芯片。现在">
@@ -83,7 +83,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/05/25/concepts_of_address/" data-id="cjhlzu1qn0001vp77nb8nywl9" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/05/25/concepts_of_address/" data-id="cjhlzx28e000b8x774tschqis" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -131,7 +131,7 @@
     
     
   <span class="article-delim">&#8226;</span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/X86/">X86</a></li></ul>
 
     </footer>
 </article>
@@ -140,6 +140,8 @@
     
 <nav class="nav-single">
     <h3 class="assistive-text">文章导航</h3>
+    
+        <span class="nav-previous"><a href="/2018/07/24/IntegerConstant/" rel="prev"><span class="meta-nav">←</span> 扭曲的INT_MIN</a></span>
     
     
         <span class="nav-next"><a href="/2018/05/20/about_SFINAE/" rel="next">SFINAE 概念的介绍 <span class="meta-nav">→</span></a></span>
@@ -173,6 +175,10 @@
       <ul>
         
           <li>
+            <a href="/2018/07/24/IntegerConstant/">扭曲的INT_MIN</a>
+          </li>
+        
+          <li>
             <a href="/2018/05/25/concepts_of_address/">X86体系结构中各种“地址”的概念</a>
           </li>
         
@@ -188,10 +194,6 @@
             <a href="/2018/04/20/effective_modern_cpp_four/">effective modern c++读书笔记(四)</a>
           </li>
         
-          <li>
-            <a href="/2018/03/01/effective_modern_cpp_three/">effective modern c++读书笔记(三)</a>
-          </li>
-        
       </ul>
     </div>
   </aside>
@@ -201,7 +203,7 @@
   <aside class="widget">
     <h3 class="widget-title">Tags</h3>
     <div class="widget-content">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">11</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </aside>
 
@@ -210,7 +212,7 @@
   <aside class="widget">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget-content tagcloud">
-      <a href="/tags/Linux/" style="font-size: 15px;">Linux</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+      <a href="/tags/C/" style="font-size: 10px;">C</a> <a href="/tags/Linux/" style="font-size: 15px;">Linux</a> <a href="/tags/X86/" style="font-size: 10px;">X86</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
     </div>
   </aside>
 
