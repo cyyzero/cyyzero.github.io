@@ -61,6 +61,138 @@
       <div id="main" class="wrapper">
         <div id="primary" class="site-content"><div id="content" role="main">
   
+    <article id="post-LDK_0" class="post-LDK_0 post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title">
+      <a class="article-title" href="/2018/07/27/LDK_0/">《Linux内核设计与实现》读书笔记————进程</a>
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/07/27/LDK_0/" data-id="cjk2yisnz0000sc778gnqv121" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p>发现读书不记笔记还是不行，过两天就忘得差不多了…最近在看《Linux内核设计与实现》，决定记些笔记。我可能有讲错的地方，一切以书上的讲解以及<em>Linux 2.6.X</em>源码为准  （逃</p>
+<hr>
+<h2 id="进程"><a href="#进程" class="headerlink" title="进程"></a>进程</h2><p>进程包括执行的代码，数据，打开的文件，挂起的信号，内核内部数据，处理器状态，一个或多个具有内存映射的内存地址空间以及一个或多个执行线程。实际上，进程就是正在执行的程序代码的实时结果。</p>
+<p>执行线程，简称线程，是进程中活动的独享。每个线程有一个独立的程序计数器、进程栈和一组进程寄存器。Linux对进程和线程并不特别区分，线程只不过是一种特殊的进程。调度的对象是线程。</p>
+<p>熟悉Unix/Linux系统编程的童鞋都知道，<code>fork()</code>函数通过复制一个已有的进程来创建一个全新的进程。然后可能会用<code>exec()</code>函数创建新的地址空间，然后把新的程序载入其中。最终通过<code>exit()</code>系统调用退出执行，并把占有的资源释放。父进程可以通过<code>wait4()</code>系统调用查询子进程是否终结。进程退出后被设置为僵死状态，直到父进程调用<code>wait()</code>或者<code>waitid()</code>为止。</p>
+<p>需要注意的是，Linux上实现<code>fork()</code>是用的<code>clone()</code>系统调用。</p>
+<h2 id="进程描述符及任务结构"><a href="#进程描述符及任务结构" class="headerlink" title="进程描述符及任务结构"></a>进程描述符及任务结构</h2><p>内核把进程的列表放在叫做 <code>task list</code> 的双向循环链表中。链表中的每个项目类型为 <code>task_struct</code>，称为进程描述符(process descriptor)的结构。进程描述符中包含一个具体进程的所有信息，包括：打开的文件、进程的地址空间、挂起的信号、进程的状态，还有其他的信息。</p>
+<h3 id="分配进程描述符"><a href="#分配进程描述符" class="headerlink" title="分配进程描述符"></a>分配进程描述符</h3><p>Linux 通过 <code>slab</code> 分配器分配 <code>task_struct</code> 结构，能达到对象复用和缓存着色(cache coloring)的目的。在内核栈的栈底(当然，这是对于向下增长的栈来说)创建爱你一个新的结构 <code>struct thread_info</code>，</p>
+<p>在X86上，<code>thread_info</code>定义如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">thread_info</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> *<span class="title">task</span>;</span>        <span class="comment">/* main task structure */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">exec_domain</span> *<span class="title">exec_domain</span>;</span> <span class="comment">/* execution domain */</span></span><br><span class="line">    __u32 flags;                     <span class="comment">/* low level flags */</span></span><br><span class="line">    __u32 status;                    <span class="comment">/* thread synchronous flags */</span></span><br><span class="line">    __u32 cpu;                       <span class="comment">/* current CPU */</span></span><br><span class="line">    <span class="keyword">int</span> preempt_count;               <span class="comment">/* 0 =&gt; preemptable,</span></span><br><span class="line"><span class="comment">                                        &lt;0 =&gt; BUG */</span></span><br><span class="line">    <span class="keyword">mm_segment_t</span> addr_limit;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">restart_block</span> <span class="title">restart_block</span>;</span></span><br><span class="line">    <span class="keyword">void</span> __user *sysenter_return;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_X86_32</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> previous_esp;      <span class="comment">/* ESP of the previous stack in</span></span><br><span class="line"><span class="comment">                                        case of nested (IRQ) stacks</span></span><br><span class="line"><span class="comment">                                     */</span></span><br><span class="line">    __u8 supervisor_stack[<span class="number">0</span>];</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">    <span class="keyword">int</span> uaccess_err;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><code>struct task_struct *task</code> 是指向该任务实际 <code>task_struct</code> 的指针。</p>
+<h3 id="进程描述符的存放"><a href="#进程描述符的存放" class="headerlink" title="进程描述符的存放"></a>进程描述符的存放</h3><p>内核通过一个唯一的 <code>PID</code> 来标识每个进程。PID是一个数字，为 <code>pid_t</code> 类型。</p>
+<p>在内核中，访问任务通常需要通过 <code>current</code> 宏获得指向其 <code>task_struct</code> 的指针。<code>current</code> 针对专门的硬件体系结构有不同的定义。在X86上，<code>current</code> 把栈指针的后13个有效位屏蔽掉，用来计算出 <code>thread_info</code> 的偏移。该操作是通过 <code>current_thread_info()</code> 函数来完成的。然后从得到的 <code>thread_info</code> 的 <code>task</code> 域中提取并返回 <code>task_struct</code> 的地址： <code>current_thread_info()-&gt;task</code>。</p>
+<h3 id="进程状态"><a href="#进程状态" class="headerlink" title="进程状态"></a>进程状态</h3><p>进程描述符中的 <code>state</code> 域描述了进程的当前状态。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Task state bitmask. NOTE! These bits are also</span></span><br><span class="line"><span class="comment"> * encoded in fs/proc/array.c: get_task_state().</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * We have two separate sets of flags: task-&gt;state</span></span><br><span class="line"><span class="comment"> * is about runnability, while task-&gt;exit_state are</span></span><br><span class="line"><span class="comment"> * about the task exiting. Confusing, but this way</span></span><br><span class="line"><span class="comment"> * modifying one set can't modify the other one by</span></span><br><span class="line"><span class="comment"> * mistake.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> TASK_RUNNING         0</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> TASK_INTERRUPTIBLE   1</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> TASK_UNINTERRUPTIBLE 2</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __TASK_STOPPED       4</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __TASK_TRACED        8</span></span><br><span class="line"><span class="comment">/* in tsk-&gt;exit_state */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> EXIT_ZOMBIE         16</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> EXIT_DEAD           32</span></span><br><span class="line"><span class="comment">/* in tsk-&gt;state again */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> TASK_DEAD           64</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> TASK_WAKEKILL      128</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> TASK_WAKING        256</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> TASK_STATE_MAX     512</span></span><br></pre></td></tr></table></figure>
+<p>可以看到，<code>state</code>的状态有五个：</p>
+<ul>
+<li>TASK_RUNNING（运行）： 进程是可执行的。它正在执行，或者在运行队列中等待执行。</li>
+<li>TASK_INTERRUPTIBLE（可中断）： 进程正在睡眠，也就是被阻塞，等待某些条件达成。一旦这些条件达成，内核就会把进程的状态设为运行。处于此状态的进程也会因为接收到信号而提前被唤醒并素食准备投入运行。</li>
+<li>TASK_UNINTERRUPTIBLE（不可中断）：除了就算是接收信号也不会被唤醒或准备投入运行外，这个状态与可打断状态相同。</li>
+<li>__TASK_STOPPED（停止）：进程停止执行。通常发生在接收到SIGSTOP,SIGTSTP,SIGTTIN,SIGTTOU等信号的时候。</li>
+<li>__TASK_TRACED：被其他进程跟踪的进程。</li>
+</ul>
+<h3 id="设置当前进程状态"><a href="#设置当前进程状态" class="headerlink" title="设置当前进程状态"></a>设置当前进程状态</h3><p>一般通过 <code>set_task_state(task, state)</code> 这个函数。<code>set_current_state(state)</code> 和 <code>set_task_state(current, state)</code> 含义是等同的。</p>
+<h3 id="进程上下文"><a href="#进程上下文" class="headerlink" title="进程上下文"></a>进程上下文</h3><p>可执行程序代码是进程的重要组成部分。这些代码从一个可执行文件载入到进程的地址空间执行。一般程序在用户空间执行。当执行了系统调用或者出发了某个异常，它就陷入了内核空间。此时，我们称内核“代表进程执行”并处于进程上下文中。此时 <code>current</code> 宏是有效的。</p>
+<h3 id="进程家族树"><a href="#进程家族树" class="headerlink" title="进程家族树"></a>进程家族树</h3><p>Linux中进程有明显的继承关系，所有的进程都是 PID 为 1 的 <code>init</code> 进程的后代。内核在启动的最后阶段启动 <code>init</code> 进程。该进程读取系统的初始化脚本(initscript)并执行其他的相关程序。</p>
+<p>每个进程都有一个父进程，零个或多个子进程。每个 <code>task_struct</code> 都包含一个指向其父进程叫做 <code>parent</code> 的指针，还包含一个称为 <code>children</code> 的子进程链表。</p>
+<p>对于当前进程，可以通过下面的代码获得其父进程的进程描述符：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> *<span class="title">my_parent</span> = <span class="title">current</span>-&gt;<span class="title">parent</span>;</span></span><br></pre></td></tr></table></figure>
+<p>同样，也可以按下面的方式依次访问子进程：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> *<span class="title">task</span>;</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">list_head</span> *<span class="title">list</span>;</span></span><br><span class="line"></span><br><span class="line">list_for_each(<span class="built_in">list</span>, &amp;current-&gt;children)</span><br><span class="line">&#123;</span><br><span class="line">    task = list_entry(<span class="built_in">list</span>, struct task_struct, sibling);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>init</code> 进程的描述符是作为 <code>init_task</code> 静态分配的。向上遍历的方法如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> *<span class="title">task</span>;</span></span><br><span class="line"><span class="keyword">for</span> (task = current; task != &amp;init_task; task = task-&gt;parent)</span><br><span class="line">    ;</span><br></pre></td></tr></table></figure>
+<p>可以通过这个树型结构，从任何一个进程出发，查找任意指定的其他进程。但很多时候，只需要通过简单的遍历，因为任务队列本来就是一个双向的循环链表。</p>
+<p>对于给定的进程，获取链表的下一个进程：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">list_entry(task-&gt;tasks.next, struct task_struct, tasks)</span><br></pre></td></tr></table></figure>
+<p>获取前一个进程：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">list_entry(task-&gt;tasks.prev, struct task_struct, tasks)</span><br></pre></td></tr></table></figure>
+<p><code>for_each_process(task)</code> 宏提供了依次访问整个任务队列的能力。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">task_struct</span> *<span class="title">task</span>;</span></span><br><span class="line"></span><br><span class="line">for_each_process(task)</span><br><span class="line">&#123;</span><br><span class="line">    printk(<span class="string">"%s[%d]\n"</span>, task-&gt;comm, task-&gt;pid)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="进程创建"><a href="#进程创建" class="headerlink" title="进程创建"></a>进程创建</h2><p>Unix 通过<code>fork()</code>拷贝当前进程创建一个子进程，然后通过<code>exec()</code>函数负责读取可执行文件并将其载入地址空间开始运行。</p>
+<h3 id="写时拷贝"><a href="#写时拷贝" class="headerlink" title="写时拷贝"></a>写时拷贝</h3><p>Linux的<code>fork()</code>采用写时拷贝（copy-on-write）页实现。写时拷贝是一种推迟甚至免除拷贝数据的技术。内核此时并不复制整个进程的地址空间，而是让父进程和子进程共享一个拷贝。只有在需要写入的时候，数据才会被复制。这种技术使得地址空间上页的拷贝被推迟到实际发生写入的时候才进行。<code>fork()</code>的实际开销就是赋值父进程的页表以及给子进程创建唯一的进程描述符。</p>
+<h3 id="fork"><a href="#fork" class="headerlink" title="fork()"></a>fork()</h3><p>Linux通过<code>clone()</code>系统调用实现<code>fork()</code>。这个调用通过一系列的参数标志来指明父子进程需要共享的资源。<code>fork()</code>、 <code>vfork()</code>、 <code>__clone()</code>库函数都根据各自需要的参数去调用<code>clone()</code>，然后由<code>clone()</code>去调用<code>do_fork()</code>。</p>
+<p><code>do_fork()</code> 完成了创建进程中的大部分工作。该函数调用<code>copy_process()</code>函数，然后让进程开始运行。</p>
+<p><code>copy_process()</code>完成的工作：</p>
+<ul>
+<li><p>调用<code>dup_task_struct()</code>为新进程创建一个内核栈、<code>thread_info</code>结构和<code>task_struct</code>。这些值与当前进程值相同。</p>
+</li>
+<li><p>检查并确保新创建子进程后，当前用户所拥有的进程数没有超出给它分配的资源的限制。</p>
+</li>
+<li><p>子进程着手使自己与父进程区别开来。<code>task_struct</code>内的许多成员都清0或者设置为初始值。大多数据仍然未修改。</p>
+</li>
+<li><p>子进程的状态被设置为<code>TASK_UNINTERRUPTIBLE</code>，以保证不会投入运行。</p>
+</li>
+<li><p>调用<code>copy_flags()</code>以更新<code>task_struct</code>的<code>flags</code>成员。</p>
+</li>
+<li><p>调用<code>alloc_pid</code>为新进程分配一个有效的PID。</p>
+</li>
+<li><p>根据传给<code>clone</code>的参数标志，<code>copy_process()</code>拷贝或共享打开的文件、文件系统信息、信号处理函数、进程地址空间和命名空间等。</p>
+</li>
+<li><p>最后返回一个指向子进程的指针。</p>
+</li>
+</ul>
+<p>回到<code>do_fork()</code>函数，如果<code>copy_process()</code>函数返回成功，新创建的子进程被唤醒并让其投入运行。</p>
+<h3 id="vfork"><a href="#vfork" class="headerlink" title="vfork()"></a>vfork()</h3><p>除了不拷贝父进程的页表项外，<code>vfork()</code>和<code>fork()</code>的功能相同。子进程作为父进程的一个单独的线程再它的地址空间里运行，父进程被阻塞，直到子进程退出或执行<code>exec()</code>。子进程不能向地址空间写入。由于<code>fork()</code>是写时复制并明确子进程先执行，所以<code>vfork()</code>的好处就只限于不拷贝父进程的页表项了。</p>
+<h2 id="线程在Linux中的实现"><a href="#线程在Linux中的实现" class="headerlink" title="线程在Linux中的实现"></a>线程在Linux中的实现</h2><p>Linux从内核的角度讲，没有线程的概念。线程被视作一个与其他进程共享某些资源的的进程。每个线程都有一个属于自己的<code>task_struct</code>，所以在内核中，它看起来就像一个普通的进程，只是和其他task会共享某些资源，比如地址空间。</p>
+<h3 id="创建线程"><a href="#创建线程" class="headerlink" title="创建线程"></a>创建线程</h3><p>线程的创建和普通进程的创建类似，只不过在调用<code>clone()</code>的时候参数需要传递一些参数标志来指明需要共享的资源：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clone(CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND, <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<p>新创建的task和他的父亲共享地址空间、文件系统资源、文件描述符和信号处理程序。换言之，新创建的task是父进程的一个线程。</p>
+<p>对应的，<code>fork()</code>的实现是：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clone(SIGCHLD, <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<p><code>vfork()</code>的实现是：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">clone(CLONE_VFORK | CLONE_VM | SIGCHLD, <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<h3 id="内核线程"><a href="#内核线程" class="headerlink" title="内核线程"></a>内核线程</h3><p>内核经常需要在后台执行一些操作。这种任务可以通过内核线程(kernel thread)完成————独立运行在内核空间的标准进程。和普通进程的区别在于没有独立的地址空间。</p>
+<h2 id="进程终结"><a href="#进程终结" class="headerlink" title="进程终结"></a>进程终结</h2><p>当一个进程结束时，内核会释放它占有的资源并给父进程发送信号。</p>
+<p>进程的终止有可能是自身引起的，比如调用<code>exit()</code>系统调用，既可能显示调用，也可能隐式地从某个程序的主函数返回；也可能是被动地终结，比如进程接收到既不能处理又不能忽略的信号或异常。</p>
+<p>大部分任务需要靠<code>do_exit()</code>来完成。至此进程不可运行，并处于<code>EIXT_ZOMBIE</code>退出状态，它所占有的所有内存就是内核栈、<code>thread_info</code>结构和<code>task_struct</code>结构。此时进程存在的唯一目的就是向它的父进程提供信息。父进程检索到信息或者通知内核那是无关的信息后，进程所持有的剩余内核被释放，归还给系统使用。</p>
+<h3 id="删除进程描述符"><a href="#删除进程描述符" class="headerlink" title="删除进程描述符"></a>删除进程描述符</h3><p><code>wait()</code>这一族的函数都是通过唯一的一个系统调用<code>wait4()</code>来实现的。它的标准动作是挂起调用它的进程，直到其中一个子进程退出，此函数会返回该子进程的PID。</p>
+<p>最终释放进程描述符时，<code>release_task()</code>会被调用：</p>
+<ul>
+<li>它调用<code>__exit_signal()</code>，该函数调用<code>__unhash_process()</code>,后者又调用<code>detach_pid()</code>从<code>pidhash</code>上删除该进程，同时从任务列表中删除该进程。</li>
+<li><code>__exit_signal()</code>释放目前僵死进程所使用的所有剩余资源，并进行最终统计和记录。</li>
+<li>如果这个进程是进程组最后一个进程，并且领头进程已经死亡，那么通知僵死的领头进程的父进程。</li>
+<li>调用<code>put_task_struct()</code>释放掉进程内核栈和<code>thread_info</code>结构所占的页，并释放<code>task_struct</code>所占的slab高速缓存</li>
+</ul>
+<p>至此，进程描述符和所有的进程独享的资源就被全部释放掉了。</p>
+<h3 id="孤儿进程"><a href="#孤儿进程" class="headerlink" title="孤儿进程"></a>孤儿进程</h3><p>如果父进程在子进程之前退出，必须有机制来保证子进程能找到一个新的父亲，否则这些子进程就变成了孤儿进程，在退出时永远处于僵死状态。解决方法就是给子进程在当前进程组内找一个线程作为父亲；如果不行，就让<code>init</code>做它们的父进程。在<code>do_exit()</code>会调用<code>exit_notify()</code>，该函数会调用<code>forget_original_parent()</code>，而后者会调用<code>find_new_reaper()</code>来执行寻找父进程。</p>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2018/07/27/LDK_0/">
+    <time datetime="2018-07-27T07:32:00.000Z" class="entry-date">
+        2018-07-27
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li></ul>
+
+    </footer>
+</article>
+
+
+
+
+
+
+  
     <article id="post-IntegerConstant" class="post-IntegerConstant post type-post status-publish format-standard hentry">
     <!---->
 
@@ -76,7 +208,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/07/24/IntegerConstant/" data-id="cjk051ox70000ig77wcfo30ni" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/07/24/IntegerConstant/" data-id="cjk2yiso70001sc77xe6qa86n" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -159,7 +291,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/05/25/concepts_of_address/" data-id="cjhlzx28e000b8x774tschqis" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/05/25/concepts_of_address/" data-id="cjk2yispo0014sc772syaj3w0" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -233,7 +365,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/05/20/about_SFINAE/" data-id="cjhlzx27k00008x7791k9oz18" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/05/20/about_SFINAE/" data-id="cjk2yisod0003sc77gvsn20e5" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -322,7 +454,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/22/about_do_while(0)/" data-id="cjhlzx27r00018x77ukeuze8d" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/22/about_do_while(0)/" data-id="cjk2yisof0004sc771bwjyq43" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -394,7 +526,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/20/effective_modern_cpp_four/" data-id="cjhlzx28k000e8x77yhz0m638" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/20/effective_modern_cpp_four/" data-id="cjk2yisoo000csc77xkd5kfu0" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -501,7 +633,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/03/01/effective_modern_cpp_three/" data-id="cjhlzx28w000m8x775nv22ul4" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/03/01/effective_modern_cpp_three/" data-id="cjk2yisoq000esc77dncybjq9" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -720,7 +852,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective-modern-cpp-two/" data-id="cjhlzx28g000c8x777xie4pxl" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective-modern-cpp-two/" data-id="cjk2yisom000asc77ty7av2js" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -937,7 +1069,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective_modern_cpp_one/" data-id="cjhlzx28m000g8x77yhwl83z3" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective_modern_cpp_one/" data-id="cjk2yisou000hsc77lmq071jb" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -1119,7 +1251,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/01/29/syscall/" data-id="cjhlzx299000u8x77sszw4wib" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/01/29/syscall/" data-id="cjk2yisq70017sc7768f9e68z" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -1185,83 +1317,6 @@
 
 
   
-    <article id="post-plus_and_minus" class="post-plus_and_minus post type-post status-publish format-standard hentry">
-    <!---->
-
-      <header class="entry-header">
-        
-        
-  
-    <h1 class="entry-title">
-      <a class="article-title" href="/2017/11/13/plus_and_minus/">c++的ub还真是无处不在啊</a>
-    </h1>
-  
-
-        
-        <div class="comments-link">
-            
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/13/plus_and_minus/" data-id="cjhlzx28z000o8x77ouj419hn" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
-        </div><!-- .comments-link -->
-      </header><!-- .entry-header -->
-
-    <div class="entry-content">
-      
-        <p>最近发现了一个有意思的东西，所以特意分享下。</p>
-<p>问题的引入是如何交换两个整型变量?最简单的就是引入第三个变量,然后完成三次赋值达到交换的目的。<br>然后，也有一些不使用第三个变量达到这个目的的方法。我所知道的有两个，一个是通过位运算的异或（原理是对于任意位模式ｘ^x = 0,在此不展开），还有一个就是通过以下的方法：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">swap</span><span class="params">(Type&amp; x, Type&amp; y)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	x = x+y;</span><br><span class="line">	y = x-y;</span><br><span class="line">	x = x-y;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>（可以看到我这里没有说明具体变量类型，原因往下看就知道了=。=）</p>
-<p>肯定有人一眼就看出了这个方法的问题：x+y有可能会溢出。</p>
-<p>一般程序猿看到溢出就头疼，感觉肯定潜藏着bug，然而事实真是如此吗？</p>
-<p>本篇文章的想要探讨的问题：<strong>这种方法最终结果还能保证交换结果正确吗？</strong></p>
-<p>大家都知道，在计算机的世界中，一切的整型最后都是用二进制来表示。对于有符号整型和无符号整型来说，有着不同的编码规则。</p>
-<p>BTW，现在都是用补码来表示有符号数，而不是国内教材讲半天的原码和反码：）</p>
-<p>所以，对于一个n位的二进制，当它表示一个无符号整型的时候，第i(i取1~n)位的权重就是2^(i-1)。当它表示一个有符号整型的时候，第n位的权重是-2^(n-1)，第i(i取1~k-1)位的权重是2^(i-1)。</p>
-<p>至于用补码来表示有符号数的原因，就是可以在cpu内部运算时不用区分有符号和无符号整型，用同一套加法器就能解决。这里可以自己推理或者实验一下，但弄不明白为什么也没关系，只要记住结论：<strong>有符号整型和无符号整型在cpu上的运算规律相同，即将减去一个减数换成加上它的补码，然后二进制数逐位相加，最高位进位舍弃</strong>（这个很好理解，因为运算时的bit数（高层上就是数据类型）固定）。</p>
-<p>所以，这些运算最后都能看成是一个无符号整型的加法。这是一个取模加法。也就是说发生了截断，最高位进位被舍弃。相当于每次结果对2^k取模。</p>
-<p>这在数学上有定义，模数加法形成了一个阿贝尔群。阿贝尔群的性质就是<strong>可交换</strong>和<strong>可结合</strong>。不懂什么是阿贝尔群没关系，看到可交换和可结合，相信大家心里已经有点数了：用上面那个方法交换变量应该是可行的。<br>我把交换的过程运算详细列出来。<br>| x | y |<br>|—|—|<br>|x+y| y |<br>|x+y| x+y-y |<br>| x+y-x-y+y | x+y-y | </p>
-<p>可以看到根据取模加法<strong>可交换可结合</strong>的特点x最后的结果是x+y-x-y+y=y，y最后的结果x+y-y=x。</p>
-<p>到这里似乎完事大吉,但是心头隐隐有些不安。而且某次在某个群里讨论这个话题的时候也被dalao喷过：-（  所以感觉这个还和语言的标准有关。后来查了下c++对于有符号数无符号数，以及溢出的资料，果然如此…</p>
-<p>对于无符号整型来说：</p>
-<blockquote>
-<p>Unsigned integers, declared unsigned, shall obey the laws of arithmetic modulo 2^n where n is the number of bits in the value representation of that particular size of integer</p>
-</blockquote>
-<p>标准是明确规定无符号整型运算结果会以2^n取模，即使溢出了运算结果也是明确数学定义的（mathematically defined）。也就构成了模数加法，可交换可结合。</p>
-<p>而对于有符号整型：</p>
-<p>C++11, §18.4.1:</p>
-<blockquote>
-<p>The header defines all functions, types, and macros the same as 7.20 in the C standard.</p>
-</blockquote>
-<p>好吧，一切按照c的来：</p>
-<p>C11, §7.20.1.1:</p>
-<blockquote>
-<p>The typedef name intN_t designates a signed integer type with width N, no padding bits, and a two’s complement representation. Thus, int8_t denotes such a signed integer type with a width of exactly 8 bits.</p>
-</blockquote>
-<p>c++11明确规定了有符号类型用了补码表示。但是并没有像无符号类型那样，定义了溢出之后对结果取模。也就是说，有符号类型溢出是未定义的。所以用上面那个方法交换的结果也是未定义。</p>
-<p>最后的结论：在c++中，无符号整型用上述方法可以交换变量，而有符号整型交换后结果未定义。</p>
-<p>ps：不过估计对于大多数编译器实现来说有符号整型交换这么来也是可以的…毕竟cpu运算结果就是那样 orz</p>
-
-      
-    </div><!-- .entry-content -->
-
-    <footer class="entry-meta">
-    <a href="/2017/11/13/plus_and_minus/">
-    <time datetime="2017-11-13T15:59:56.000Z" class="entry-date">
-        2017-11-13
-    </time>
-</a>
-    
-    
-  <span class="article-delim">&#8226;</span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
-
-    </footer>
-</article>
-
-
-
-
-
-
-  
   
     <nav id="pagination">
       <nav id="page-nav">
@@ -1291,6 +1346,10 @@
       <ul>
         
           <li>
+            <a href="/2018/07/27/LDK_0/">《Linux内核设计与实现》读书笔记————进程</a>
+          </li>
+        
+          <li>
             <a href="/2018/07/24/IntegerConstant/">扭曲的INT_MIN</a>
           </li>
         
@@ -1306,10 +1365,6 @@
             <a href="/2018/04/22/about_do_while(0)/">do {...} while (0) 在宏定义中的作用</a>
           </li>
         
-          <li>
-            <a href="/2018/04/20/effective_modern_cpp_four/">effective modern c++读书笔记(四)</a>
-          </li>
-        
       </ul>
     </div>
   </aside>
@@ -1319,7 +1374,7 @@
   <aside class="widget">
     <h3 class="widget-title">Tags</h3>
     <div class="widget-content">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </aside>
 
