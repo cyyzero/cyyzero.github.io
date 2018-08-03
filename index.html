@@ -61,6 +61,130 @@
       <div id="main" class="wrapper">
         <div id="primary" class="site-content"><div id="content" role="main">
   
+    <article id="post-LDK_1" class="post-LDK_1 post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title">
+      <a class="article-title" href="/2018/08/02/LDK_1/">《Linux内核设计与实现》读书笔记——进程调度</a>
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/08/02/LDK_1/" data-id="cjkds0snn00047l77kksv5a79" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p>进程调度程序是确保进程能有效工作的一个内核子系统。</p>
+<h2 id="多任务"><a href="#多任务" class="headerlink" title="多任务"></a>多任务</h2><p>多任务可以分为两类：</p>
+<ul>
+<li>非抢占式多任务(cooperative multitasking)。除非进程自己主动停止运行，否则它会一直执行。进程主动让出自己的操作称为让步(yielding)。</li>
+<li>抢占式多任务(preemtive multitasking)。Linux提供了抢占式的多任务模式。由进程调度程序来决定什么时候停止一个进程的运行。这个强制的挂起动作就叫做抢占(preemption)。进程在被抢占之前能够运行的时间叫做时间片(timeslice)。</li>
+</ul>
+<h2 id="Linux的进程调度"><a href="#Linux的进程调度" class="headerlink" title="Linux的进程调度"></a>Linux的进程调度</h2><p>从1991年的Linux第一版到后来的2.4内核系列，Linux的调度程序都相当简陋，设计近乎原始。在Linux2.5开发系列的内核中，采用了一种叫做<code>O(1)</code>调度程序的新调度程序。就如它的名字，时间复杂度是<code>O(1)</code>。</p>
+<p><code>O(1)</code>调度器在拥有数以十计的多处理器环境下尚能表现出近乎完美的性能和可拓展性，但是对于响应时间敏感的交互进程来说却有一些先天不足。从2.6内核系统开发初期，开发人员引入了新的调度算法。其中最有名的是<em>反转楼梯最后期限调度算法(<code>Rotating Staircase Deadline scheduler</code>)</em>(<code>RSDL</code>)。该算法吸取了队列理论，将公平调度的概念引入了Linux调度程序，并最终在2.6.23内核版本中替代了<code>O(1)</code>调度算法。它被称为完全公平调度算法(CFS)。</p>
+<h2 id="策略"><a href="#策略" class="headerlink" title="策略"></a>策略</h2><p>策略决定调度程序在何时让什么进程运行。</p>
+<h3 id="I-O消耗型和处理器消耗型的进程"><a href="#I-O消耗型和处理器消耗型的进程" class="headerlink" title="I/O消耗型和处理器消耗型的进程"></a>I/O消耗型和处理器消耗型的进程</h3><p>进程可被分为I/O消耗型和处理器消耗型。前者指进程的大部分时间都用来提交或等待I/O请求。相反，处理器消耗型则大部分时间都用在执行代码上。当然两者的划分并非泾渭分明。</p>
+<p>调度策略通常就要在两个矛盾的目标中寻找平衡：进程相应迅速和最大系统利用率。</p>
+<h3 id="进程优先级"><a href="#进程优先级" class="headerlink" title="进程优先级"></a>进程优先级</h3><p>Linux采用了两种不同的优先级范围。</p>
+<p>第一种是使用nice值，范围是-20～+19，默认为0。越大的nice值意味着优先级越低。nice值代表时间片的比例。可以通过<code>ps -el</code>查看，<code>NI</code>列表示的就是nice值。</p>
+<p>第二种范围是实时优先级，其范围是可配置的。默认情况下它的变化范围是[0, 99]。与nice值相反，越高的实时优先级代表进程优先级更高。任何实时进程的优先级都高于普通进程，也就是说nice优先级和实时优先级处于互不相交的两个范畴。</p>
+<h3 id="时间片"><a href="#时间片" class="headerlink" title="时间片"></a>时间片</h3><p>时间片是一个数值，表明进程在被抢占前能持续运行的时间。调度策略需要规定默认的一个时间片。但时间片过长会导致系统对交互的效应表现欠佳，过段会明显增加进程切换带来的处理器耗时。而且I/O消耗型和处理器消耗型的矛盾也显示出来：I/O消耗型不需要过长时间片，而处理器消耗型则希望越长越好。</p>
+<p>Linux的CFS调度并没有直接分配时间片到进程，而是讲处理器的使用比例划分给了进程。这样一来，进程所获得的处理器时间其实是和系统负载有关。抢占时机也取决于新的可运行程序消耗了多少处理器使用比。</p>
+<h2 id="Linux调度算法"><a href="#Linux调度算法" class="headerlink" title="Linux调度算法"></a>Linux调度算法</h2><h3 id="调度器类"><a href="#调度器类" class="headerlink" title="调度器类"></a>调度器类</h3><p>Linux调度器是以模块方式提供的，称为调度器类(<code>scheduler classes</code>)，不同类型的进程可以有针对性地选择调度算法。基础的调度器类代码定义在<code>kernel/sched.c</code>文件中，它会按照优先级顺序遍历调度类，拥有一个可执行进程的最高优先级的调度器类胜出。</p>
+<p>CFS是一个针对简单进程的调度类，在Linux中称为<code>SCHED_NORMAL</code>。</p>
+<h3 id="Unix系统中的进程调度"><a href="#Unix系统中的进程调度" class="headerlink" title="Unix系统中的进程调度"></a>Unix系统中的进程调度</h3><p>在Unix系统上，优先级以nice值形式输出给用户空间。在现实中会产生许多问题。</p>
+<ul>
+<li><p>若要讲nice值映射到时间片，就必然需要将nice单位值对应到处理器的绝对时间。但这样做会导致进程切换无法最优化执行。举例说明，默认nice值为0分配100ms的时间片，最高nice值为20分配5ms。如果同时运行时间片5ms的进程，则要在10ms间进行一次上下文切换；而运行时间片是100ms的进程，则要在100ms间进行一次上下文切换。</p>
+</li>
+<li><p>相对nice值。假设两个进程nice值分别是0和1，时间片分别是100ms和95ms，区别微乎其微。而两个进程nice值分别为18和19，时间片分别为10ms和5ms，前者是后者的两倍！</p>
+</li>
+<li><p>如果执行nice值到时间片的映射，需要能分配一个绝对时间片，而这个绝对时间片必须能在内核的测试范围内。</p>
+</li>
+<li><p>最后一个问题是关于基于优先级的调度器会为了优化交互任务而唤醒相关进程的问题。</p>
+</li>
+</ul>
+<h3 id="公平调度"><a href="#公平调度" class="headerlink" title="公平调度"></a>公平调度</h3><p>CFS的做法是允许每个进程运行一段时间、循环轮转、选择运行最少的进程作为下一个运行进程，而不再采用分配给每个进程时间片的做法了。CFS在所有可运行进程总数基础上计算出一个进程应该运行多久，而不是依靠nice值来计算时间片。nice值在CFS中被作为进程获得处理器运行比的权重。</p>
+<p>每个进程都按照其权重在其全部可运行进程中所占比例的时间片来运行。CFS为完美多任务中的无限小调度周期的近似值设立了一个目标。这个目标称为目标延迟。假定目标延迟值是20ms，两个同样优先级的可运行任务会分别运行10ms。</p>
+<p>CFS还为每个进程设置了时间片底线，这个底线称为最小粒度。默认情况下是1ms。</p>
+<p>任何进程所获得的处理器时间是由它自己和其他所有可运行进程nice值对应的绝对时差值决定的。nice值对时间片的作用是几何加权。</p>
+<h2 id="Linux调度的实现"><a href="#Linux调度的实现" class="headerlink" title="Linux调度的实现"></a>Linux调度的实现</h2><p>CFS位于<code>kernel/sched_fair.c</code>中。特别关注四个组成部分：</p>
+<ul>
+<li>时间记账</li>
+<li>进程选择</li>
+<li>调度器入口</li>
+<li>睡眠和唤醒</li>
+</ul>
+<h3 id="时间记账"><a href="#时间记账" class="headerlink" title="时间记账"></a>时间记账</h3><p>所有调度器都必须对进程运行时间做记账。</p>
+<h4 id="调度器实体结构"><a href="#调度器实体结构" class="headerlink" title="调度器实体结构"></a>调度器实体结构</h4><p>CFS不再有时间片的概念，但是它也必须维护每个进程运行的时间记账。CFS使用<code>sched_entity</code>来跟踪进程运行记账：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sched_entity</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">load_weight</span> <span class="title">load</span>;</span> <span class="comment">/* for load-balancing */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">rb_node</span> <span class="title">run_node</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">list_head</span> <span class="title">group_node</span>;</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> on_rq;</span><br><span class="line"></span><br><span class="line">    u64 exec_start;</span><br><span class="line">    u64 sum_exec_runtime;</span><br><span class="line">    u64 vruntime;</span><br><span class="line">    u64 prev_sum_exec_runtime;</span><br><span class="line"></span><br><span class="line">    u64 nr_migrations;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_SCHEDSTATS</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sched_statistics</span> <span class="title">statistics</span>;</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> CONFIG_FAIR_GROUP_SCHED</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sched_entity</span> *<span class="title">parent</span>;</span></span><br><span class="line">    <span class="comment">/* rq on which this entity is (to be) queued: */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">cfs_rq</span> *<span class="title">cfs_rq</span>;</span></span><br><span class="line">    <span class="comment">/* rq "owned" by this entity/group: */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">cfs_rq</span> *<span class="title">my_q</span>;</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><code>sched_entity</code>作为PCB中一个名为<code>se</code>的成员变量。</p>
+<h4 id="虚拟实时"><a href="#虚拟实时" class="headerlink" title="虚拟实时"></a>虚拟实时</h4><p><code>vruntime</code>变量存放进程的虚拟运行时间，该运行时间的计算是经过了所有可运行进程总数的标准化。虚拟时间是以ns为单位的。CFS用<code>vruntime</code>变量来记录一个程序到底运行了多长时间以及它还应该再运行多久。</p>
+<h3 id="进程选择"><a href="#进程选择" class="headerlink" title="进程选择"></a>进程选择</h3><p>CFS调度算法的核心：当CFS需要选择下一个运行进程时，它会挑一个具有最小<code>vruntime</code>的进程。接下来就讨论如何选择具有最小<code>vruntime</code>值的进程。</p>
+<p>CFS使用红黑树来组织可运行进程队列，并利用其迅速找到最小<code>vruntime</code>值的进程。</p>
+<h4 id="挑选下一个任务"><a href="#挑选下一个任务" class="headerlink" title="挑选下一个任务"></a>挑选下一个任务</h4><p>先假设，红黑树存储了系统中所有的可运行进程，其中节点的键值是可运行进程的虚拟运行时间。那么树中最左侧的叶子节点，就是所有<code>vruntime</code>最小的那个。</p>
+<h4 id="向树中加入进程"><a href="#向树中加入进程" class="headerlink" title="向树中加入进程"></a>向树中加入进程</h4><p>CFS在进程变为可运行状态(被唤醒)或者通过<code>fork()</code>调用第一次创建进程时，将进程加入<em>rbtree</em>中，并且缓存最右子节点。</p>
+<h4 id="从树中删除进程"><a href="#从树中删除进程" class="headerlink" title="从树中删除进程"></a>从树中删除进程</h4><p>CFS从红黑树中删除进程，删除动作发生在进程堵塞(变为不可运行态)或者终止时(结束运行)。</p>
+<h3 id="调度器入口"><a href="#调度器入口" class="headerlink" title="调度器入口"></a>调度器入口</h3><p>进程调度的主要入口点是函数<code>schedule()</code>。它选择哪个进程可以运行，何时将其投入运行。<code>schedule()</code>会找到一个最高优先级的调度类——后者需要有自己的可运行队列，然后问后者谁才是下一个该运行的进程。</p>
+<h3 id="睡眠和唤醒"><a href="#睡眠和唤醒" class="headerlink" title="睡眠和唤醒"></a>睡眠和唤醒</h3><p>休眠(被阻塞)的进程处于一个特殊的不可执行状态。当进程休眠时，内核的操作如下：进程把自己标记成休眠状态，从可执行红黑树中移出，放入等待队列，然后调用<code>schedule()</code>选择和执行一个其他进程。唤醒的过程正好相反：进程被设置成可执行状态，然后从可执行队列中移到可执行红黑树中。</p>
+<h4 id="等待队列"><a href="#等待队列" class="headerlink" title="等待队列"></a>等待队列</h4><p>休眠通过等待队列进行处理。等待队列是由等待某些事件发生的进程组成的简单链表。内核通过<code>wake_queue_head_t</code>来代表等待队列。</p>
+<p>在内核中进行休眠的推荐操作相对复杂：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// q是我们希望休眠的等待队列</span></span><br><span class="line">DEFINE_WAIT(wait);</span><br><span class="line"></span><br><span class="line">add_wait_queue(q, &amp;wait);</span><br><span class="line"><span class="keyword">while</span> (!condition)</span><br><span class="line">&#123;</span><br><span class="line">    prepare_to_wait(&amp;q, &amp;wait, TASK_INTERRUPTIBLE)；</span><br><span class="line">    <span class="keyword">if</span> (signal_pending(current))</span><br><span class="line">        <span class="comment">/* 处理信号 */</span></span><br><span class="line">    schedule();</span><br><span class="line">&#125;</span><br><span class="line">finish_wait(&amp;q, &amp;wait);</span><br></pre></td></tr></table></figure>
+<h4 id="唤醒"><a href="#唤醒" class="headerlink" title="唤醒"></a>唤醒</h4><p>唤醒操作通过函数<code>wake_up()</code>进行。它会唤醒执行的等待队列上的所有进程。</p>
+<h2 id="抢占和上下文切换"><a href="#抢占和上下文切换" class="headerlink" title="抢占和上下文切换"></a>抢占和上下文切换</h2><p>这里的上下文切换是指进程间的切换，由定义在<code>kernel/sched.c</code>中的<code>context_switch()</code>函数负责处理。每当一个新的进程被选出来投入运行的时候，<code>schedule()</code>会调用该函数。它完成两个基本的工作：</p>
+<p>-调用声明在<code>asm/mmu_context.h</code>中的<code>switch_mm()</code>，负责把虚拟内存从上一个进程映射切换到新进程中。</p>
+<ul>
+<li>调用声明<code>asm/system.h</code>中的<code>switch_to()</code>，负责从上一个进程的处理器状态切换到新进程的处理器状态。</li>
+</ul>
+<p>内核提供了一个<code>need_resched</code>标志来表明是否需要重新执行一次调度。当某个进程应该被抢占时，<code>scheduler_tick()</code>就会设置这个标志；当一个优先级高的进程进入可执行状态的时候，<code>try_to_wake_up()</code>也会设置这个标志，内核检查该标志，确认其被设置，调用<code>schedule()</code>来切换到一个新的进程。</p>
+<p>在2.2以前的内核版本中，该标志位曾是一个全局变量，2.2~2.4版的内核中它在<code>task_struct</code>中。而在2.6版中，它被移到<code>thread_info</code>结构体里，用一个特别的标志变量中的一位来表示。</p>
+<h3 id="用户抢占"><a href="#用户抢占" class="headerlink" title="用户抢占"></a>用户抢占</h3><p>用户抢占发生在一下情况：</p>
+<ul>
+<li>从系统调用返回用户空间时</li>
+<li>从中断处理程序返回用户空间时</li>
+</ul>
+<p>总而言之，内核即将返回用户空间的时候，如果<code>need_resched</code>标志被置位，会导致<code>schedule()</code>被调用。</p>
+<h3 id="内核抢占"><a href="#内核抢占" class="headerlink" title="内核抢占"></a>内核抢占</h3><p>大部分的Unix变体不支持内核抢占，调度程序没有办法在内核级的任务正在执行的时候重新调度——内核中的任务是以协作的方式调度的，不具备抢占性。</p>
+<p>Linux在2.6版本的内核中，引入了内核抢占。只要重新调度是安全的，内核就可以在任何时候抢占正在执行的任务。它发生在：</p>
+<ul>
+<li>中断处理程序正在运行，并且返回内核空间之前。</li>
+<li>内核代码再一次具有可抢占性的时候。</li>
+<li>如果内核中的任务显示地调用<code>schedule()</code>。</li>
+<li>如果内核中的任务阻塞(这也会导致调用<code>schedule()</code>)。</li>
+</ul>
+<h2 id="实时调度策略"><a href="#实时调度策略" class="headerlink" title="实时调度策略"></a>实时调度策略</h2><p>Linux提供了两种实时调度策略：<code>SCHED_FIFO</code>和<code>SCHED_RR</code>。而普通的非实时的调度策略是<code>SCHED_NORMAL</code>。这些实时调度器并不被CFS管理，而是被一个特殊的实时调度器管理。</p>
+<h2 id="与调度相关的系统调用"><a href="#与调度相关的系统调用" class="headerlink" title="与调度相关的系统调用"></a>与调度相关的系统调用</h2><p>主要通过C库提供的<code>nice()</code>和<code>sched_xxxx()</code>系列函数。基本都是和系统调用的简单对应。</p>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2018/08/02/LDK_1/">
+    <time datetime="2018-08-02T07:32:00.000Z" class="entry-date">
+        2018-08-02
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li></ul>
+
+    </footer>
+</article>
+
+
+
+
+
+
+  
     <article id="post-LDK_0" class="post-LDK_0 post type-post status-publish format-standard hentry">
     <!---->
 
@@ -69,14 +193,14 @@
         
   
     <h1 class="entry-title">
-      <a class="article-title" href="/2018/07/27/LDK_0/">《Linux内核设计与实现》读书笔记————进程</a>
+      <a class="article-title" href="/2018/07/27/LDK_0/">《Linux内核设计与实现》读书笔记——进程</a>
     </h1>
   
 
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/07/27/LDK_0/" data-id="cjk2yisnz0000sc778gnqv121" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/07/27/LDK_0/" data-id="cjkds0snq00087l77ok95iz9a" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -208,7 +332,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/07/24/IntegerConstant/" data-id="cjk2yiso70001sc77xe6qa86n" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/07/24/IntegerConstant/" data-id="cjkds0sns000a7l77kvg7itb7" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -291,7 +415,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/05/25/concepts_of_address/" data-id="cjk2yispo0014sc772syaj3w0" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/05/25/concepts_of_address/" data-id="cjkds0sno00057l77cgvrss9h" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -365,7 +489,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/05/20/about_SFINAE/" data-id="cjk2yisod0003sc77gvsn20e5" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/05/20/about_SFINAE/" data-id="cjkds0sny000i7l775csfnm3e" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -454,7 +578,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/22/about_do_while(0)/" data-id="cjk2yisof0004sc771bwjyq43" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/22/about_do_while(0)/" data-id="cjkds0sn900007l77mec4mvw5" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -526,7 +650,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/20/effective_modern_cpp_four/" data-id="cjk2yisoo000csc77xkd5kfu0" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/20/effective_modern_cpp_four/" data-id="cjkds0so9000t7l77wass3njz" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -633,7 +757,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/03/01/effective_modern_cpp_three/" data-id="cjk2yisoq000esc77dncybjq9" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/03/01/effective_modern_cpp_three/" data-id="cjkds0so2000k7l77fjzhumga" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -852,7 +976,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective-modern-cpp-two/" data-id="cjk2yisom000asc77ty7av2js" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective-modern-cpp-two/" data-id="cjkds0snx000f7l771bolfzc6" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -1069,7 +1193,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective_modern_cpp_one/" data-id="cjk2yisou000hsc77lmq071jb" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective_modern_cpp_one/" data-id="cjkds0snv000d7l775d7129vc" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -1236,87 +1360,6 @@
 
 
   
-    <article id="post-syscall" class="post-syscall post type-post status-publish format-standard hentry">
-    <!---->
-
-      <header class="entry-header">
-        
-        
-  
-    <h1 class="entry-title">
-      <a class="article-title" href="/2018/01/29/syscall/">当我们谈论系统调用的时候我们在谈论什么</a>
-    </h1>
-  
-
-        
-        <div class="comments-link">
-            
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/01/29/syscall/" data-id="cjk2yisq70017sc7768f9e68z" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
-        </div><!-- .comments-link -->
-      </header><!-- .entry-header -->
-
-    <div class="entry-content">
-      
-        <p>ps:句式“当我们谈论XX时我们在谈论什么”引用自美国作家卡佛(Ramond Carver)的作品《当我们谈论爱情时我们谈论什么》(What We Talk About When We Talk About Love)。当然，我又标题党了，应该换成<strong>浅析IA32 Linux 系统调用过程</strong>比较合适。</p>
-<p>当说到Linux下的系统调用(<strong>System Call</strong>)的时候，程序员都不会陌生。但一般都会联想到fork()，execve()等这些函数。这就是很多人(包括以前我自己)的误区所在了。</p>
-<p>诸如fork() 这些，是c语言函数库(linux下常见如glibc)实现的<strong>外壳(wrapper)函数</strong>，由它们来引发真正的系统调用。从C语言编程的角度来看，调用C语言函数库的外壳函数等同于发起系统调用。也就是说，当我们在代码中使用诸如fork()这类函数时，意味着调用外壳函数，然后由外壳函数去调用系统调用(可能有点绕)。</p>
-<p>区分了狭义上的外壳(wrapper)函数和系统调用后，就能进入本文的主题了:<strong>IA32上Linux系统调用的过程</strong>。(因为其他的不懂…</p>
-<hr>
-<p>首先描述两个概念，<strong>中断(interruption)</strong>和<strong>异常(execption)</strong>。从<a href="https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf" target="_blank" rel="noopener">Intel的手册</a>上找的简单介绍。</p>
-<blockquote>
-<p>The processor provides two mechanisms for interrupting program execution, interrupts and exceptions: </p>
-<p>• An interrupt  is an asynchronous event that is typically triggered by an I/O device.</p>
-<p>• An exception is a synchronous event that is generated when the processor detects one or more predefined conditions while executing an instruction. The IA-32 architecture specifies three classes of exceptions: faults, traps, and aborts. </p>
-</blockquote>
-<p>简单地说，中断和异常是处理器提供的中断程序执行的机制，能引起X86挂起当前指令流的执行并相应事件。在这两种情况下处理器都会保存当前进程的上下文，并将转至一个预先定义的子程序来执行特殊的服务。</p>
-<p>虽说中断和异常概念上有所区别，但在IA32上处理它们却是用了相同的方式。系统为每种类型的中断和异常分配了唯一的一个无符号整型作为一个向量(vector)，即可以理解为索引。然后内核维护的一张叫做<strong>中断描述符表</strong>(interrupt descriptor table， 一般简称为<strong>IDT</strong>)的结构，表中每一项都是某个中断或者异常对应的处理程序的入口地址。然后每次发生了某个中断和异常，就能通过它的向量，就在IDT中找到相应的处理程序并调用。</p>
-<p>具体到汇编语言，就是通过INT指令来实现。INT(interrupt的缩写)指令的作用是引发中断和异常的处理程序，格式形如INT n。</p>
-<p>从<a href="https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf" target="_blank" rel="noopener">Intel的手册</a>上找的INT指令的简单介绍。</p>
-<blockquote>
-<p>The INT n instruction generates a call to the interrupt or exception handler specified with the destination operand The destination operand specifies a vector from 0 to 255, encoded as an 8-bit unsigned intermediate value. Each vector provides an index to a gate descriptor in the IDT. The first 32 vectors are reserved by Intel for system use. Some of these vectors are used for internally generated exceptions.</p>
-</blockquote>
-<p>大意就是INT n用来调用特定的中断或者异常的处理程序。n取值从0x00-0xFF(8位无符号整型)。N就作为上述提到的向量。举一些简单的例子，比如说0x1表示除法上溢或者被零除，0x12表示栈故障(越界或者栈段不存在)，0x14表示缺页…</p>
-<p>当调用处理程序时，系统栈保存处理器的状态。下列事件将发生:</p>
-<ul>
-<li>若转移涉及特权指令改变，则当前栈段寄存器和当前拓展的栈指针(esp)寄存器的内容被压入栈。</li>
-<li>EFLAGS寄存器的当前值压入栈。</li>
-<li>中断(IF)和自陷(TF)两个标志被清除。这就禁止了INTR中断，自陷或单步中断。</li>
-<li>当前代码段(CS)寄存器和当前指令指针寄存器(IP或者EIP)寄存器被压入栈。</li>
-<li>若中断向量伴随错误代码，则错误代码也入栈。</li>
-<li>读取中断向量表对应项的内容，将其装入CS和IP(或EIP)寄存器。控制转移到终端服务子程序继续执行。</li>
-</ul>
-<p>为从中断返回，中断服务程序执行一条IRET指令。这使得所有保存在栈上的值被取回，并由中断点恢复执行。</p>
-<hr>
-<p>铺垫了这么久，又回到了系统调用。没猜错，IA32的Linux上系统调用就是通过INT 0x80调用的。</p>
-<p>下面讲一下具体过程：</p>
-<p>响应中断0x80，内核调用system_call()。可以再展开说一下，这里通过各个寄存器用于传递参数，EAX寄存器用于表示系统调用的接口号，比如EAX=1用于退出进程(exit)；EAX=2表示创建进程(fork)；EAX=3表示读取文件或者IO(read)等，每个系统调用都对应内核源代码中的一个函数，他们都是以“sys_”开头的，比如说exit调用对应于内核中的sys_exit函数。你没猜错，和IDT一样，系统也维护着一张系统调用表，通过类似*sys_call_table(0,%eax,4)，的跳转，可以通过eax所记录的系统调用号调用对应的系统调用函数。如果系统调用带有函数参数(一般也是通过寄存器传递)，那么还会检查参数的有效性。随后，该函数会执行必要的任务。接着，将状态返回sys_call()函数。从内核栈中恢复各寄存器值，并将系统调用返回结果置于栈中。最后返回外壳函数，中断结束。</p>
-<p>至此，系统调用算是结束了，但是我们调用的外壳(wrapper)函数还没算完。它还有个扫尾工作。如果返回值表明调用有错误，外壳(wrapper)函数就会设置全局变量errno。最后，外壳(wrapper)函数会返回到调用它的地方，并返回一个整型，以表明系统调用是否成功。</p>
-<p>终于调用结束，大功告成了…</p>
-<p>(取好几本书内容的子集东拼西凑写出来的…真是艰难</p>
-
-      
-    </div><!-- .entry-content -->
-
-    <footer class="entry-meta">
-    <a href="/2018/01/29/syscall/">
-    <time datetime="2018-01-29T09:59:56.000Z" class="entry-date">
-        2018-01-29
-    </time>
-</a>
-    
-    
-  <span class="article-delim">&#8226;</span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li></ul>
-
-    </footer>
-</article>
-
-
-
-
-
-
-  
   
     <nav id="pagination">
       <nav id="page-nav">
@@ -1346,7 +1389,11 @@
       <ul>
         
           <li>
-            <a href="/2018/07/27/LDK_0/">《Linux内核设计与实现》读书笔记————进程</a>
+            <a href="/2018/08/02/LDK_1/">《Linux内核设计与实现》读书笔记——进程调度</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/27/LDK_0/">《Linux内核设计与实现》读书笔记——进程</a>
           </li>
         
           <li>
@@ -1361,10 +1408,6 @@
             <a href="/2018/05/20/about_SFINAE/">SFINAE 概念的介绍</a>
           </li>
         
-          <li>
-            <a href="/2018/04/22/about_do_while(0)/">do {...} while (0) 在宏定义中的作用</a>
-          </li>
-        
       </ul>
     </div>
   </aside>
@@ -1374,7 +1417,7 @@
   <aside class="widget">
     <h3 class="widget-title">Tags</h3>
     <div class="widget-content">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </aside>
 

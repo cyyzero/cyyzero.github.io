@@ -15,18 +15,18 @@
   
   
   
-  <title>《Linux内核设计与实现》读书笔记————进程 | Pluto&#39;s Blog</title>
+  <title>《Linux内核设计与实现》读书笔记——进程 | Pluto&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="发现读书不记笔记还是不行，过两天就忘得差不多了…最近在看《Linux内核设计与实现》，决定记些笔记。我可能有讲错的地方，一切以书上的讲解以及Linux 2.6.X源码为准  （逃  进程进程包括执行的代码，数据，打开的文件，挂起的信号，内核内部数据，处理器状态，一个或多个具有内存映射的内存地址空间以及一个或多个执行线程。实际上，进程就是正在执行的程序代码的实时结果。 执行线程，简称线程，是进程中活">
 <meta name="keywords" content="Linux">
 <meta property="og:type" content="article">
-<meta property="og:title" content="《Linux内核设计与实现》读书笔记————进程">
+<meta property="og:title" content="《Linux内核设计与实现》读书笔记——进程">
 <meta property="og:url" content="http://yoursite.com/2018/07/27/LDK_0/index.html">
 <meta property="og:site_name" content="Pluto&#39;s Blog">
 <meta property="og:description" content="发现读书不记笔记还是不行，过两天就忘得差不多了…最近在看《Linux内核设计与实现》，决定记些笔记。我可能有讲错的地方，一切以书上的讲解以及Linux 2.6.X源码为准  （逃  进程进程包括执行的代码，数据，打开的文件，挂起的信号，内核内部数据，处理器状态，一个或多个具有内存映射的内存地址空间以及一个或多个执行线程。实际上，进程就是正在执行的程序代码的实时结果。 执行线程，简称线程，是进程中活">
-<meta property="og:updated_time" content="2018-07-26T19:38:33.712Z">
+<meta property="og:updated_time" content="2018-07-26T19:38:54.840Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="《Linux内核设计与实现》读书笔记————进程">
+<meta name="twitter:title" content="《Linux内核设计与实现》读书笔记——进程">
 <meta name="twitter:description" content="发现读书不记笔记还是不行，过两天就忘得差不多了…最近在看《Linux内核设计与实现》，决定记些笔记。我可能有讲错的地方，一切以书上的讲解以及Linux 2.6.X源码为准  （逃  进程进程包括执行的代码，数据，打开的文件，挂起的信号，内核内部数据，处理器状态，一个或多个具有内存映射的内存地址空间以及一个或多个执行线程。实际上，进程就是正在执行的程序代码的实时结果。 执行线程，简称线程，是进程中活">
   
   
@@ -76,14 +76,14 @@
         
   
     <h1 class="entry-title article-title">
-      《Linux内核设计与实现》读书笔记————进程
+      《Linux内核设计与实现》读书笔记——进程
     </h1>
   
 
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/07/27/LDK_0/" data-id="cjk2yisnz0000sc778gnqv121" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/07/27/LDK_0/" data-id="cjkds0snq00087l77ok95iz9a" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -199,6 +199,8 @@
 <nav class="nav-single">
     <h3 class="assistive-text">文章导航</h3>
     
+        <span class="nav-previous"><a href="/2018/08/02/LDK_1/" rel="prev"><span class="meta-nav">←</span> 《Linux内核设计与实现》读书笔记——进程调度</a></span>
+    
     
         <span class="nav-next"><a href="/2018/07/24/IntegerConstant/" rel="next">扭曲的INT_MIN <span class="meta-nav">→</span></a></span>
     
@@ -231,7 +233,11 @@
       <ul>
         
           <li>
-            <a href="/2018/07/27/LDK_0/">《Linux内核设计与实现》读书笔记————进程</a>
+            <a href="/2018/08/02/LDK_1/">《Linux内核设计与实现》读书笔记——进程调度</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/27/LDK_0/">《Linux内核设计与实现》读书笔记——进程</a>
           </li>
         
           <li>
@@ -246,10 +252,6 @@
             <a href="/2018/05/20/about_SFINAE/">SFINAE 概念的介绍</a>
           </li>
         
-          <li>
-            <a href="/2018/04/22/about_do_while(0)/">do {...} while (0) 在宏定义中的作用</a>
-          </li>
-        
       </ul>
     </div>
   </aside>
@@ -259,7 +261,7 @@
   <aside class="widget">
     <h3 class="widget-title">Tags</h3>
     <div class="widget-content">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </aside>
 
