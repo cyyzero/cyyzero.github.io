@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <meta name="description" content="写在前面：之前我粗略的整理过linux在IA32处理器上的系统调用的过程…这篇就当做补充和复习了。
+
+与内核通信系统调用在用户空间进程和硬件设备之间添加了一个中间层。在Linux中，系统调用是用户空间访问内核的唯一手段：除了异常和陷入外，它们是内核唯一的合法入口。
+API、POSIX 和 C库一般情" />
+  
+
+  
+  
+  
+  
+  
+  
+  <title>《Linux内核设计与实现》读书笔记——系统调用 | Pluto&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="写在前面：之前我粗略的整理过linux在IA32处理器上的系统调用的过程…这篇就当做补充和复习了。  与内核通信系统调用在用户空间进程和硬件设备之间添加了一个中间层。在Linux中，系统调用是用户空间访问内核的唯一手段：除了异常和陷入外，它们是内核唯一的合法入口。 API、POSIX 和 C库一般情况下，应用程序都是直接调用在用户空间实现的API来编程，而不是直接通过系统调用。这些API与系统调用">
+<meta name="keywords" content="Linux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《Linux内核设计与实现》读书笔记——系统调用">
+<meta property="og:url" content="http://yoursite.com/2018/08/23/LDK_2/index.html">
+<meta property="og:site_name" content="Pluto&#39;s Blog">
+<meta property="og:description" content="写在前面：之前我粗略的整理过linux在IA32处理器上的系统调用的过程…这篇就当做补充和复习了。  与内核通信系统调用在用户空间进程和硬件设备之间添加了一个中间层。在Linux中，系统调用是用户空间访问内核的唯一手段：除了异常和陷入外，它们是内核唯一的合法入口。 API、POSIX 和 C库一般情况下，应用程序都是直接调用在用户空间实现的API来编程，而不是直接通过系统调用。这些API与系统调用">
+<meta property="og:updated_time" content="2018-08-23T08:18:15.063Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="《Linux内核设计与实现》读书笔记——系统调用">
+<meta name="twitter:description" content="写在前面：之前我粗略的整理过linux在IA32处理器上的系统调用的过程…这篇就当做补充和复习了。  与内核通信系统调用在用户空间进程和硬件设备之间添加了一个中间层。在Linux中，系统调用是用户空间访问内核的唯一手段：除了异常和陷入外，它们是内核唯一的合法入口。 API、POSIX 和 C库一般情况下，应用程序都是直接调用在用户空间实现的API来编程，而不是直接通过系统调用。这些API与系统调用">
+  
+  
+    <link rel="icon" href="/css/images/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+  
+  <!-- baidu webmaster push -->
+  <script src='//push.zhanzhang.baidu.com/push.js'></script>
+</head>
+<body class="home blog custom-background custom-font-enabled single-author">
+  <div id="page" class="hfeed site">
+      <header id="masthead" class="site-header" role="banner">
+    <hgroup>
+      <h1 class="site-title">
+        <a href="/" title="Pluto&#39;s Blog" rel="home">Pluto&#39;s Blog</a>
+      </h1>
+      
+        <h2 class="site-description">
+          <a href="/" id="subtitle">失败人士自留地</a>
+        </h2>
+      
+    </hgroup>
+
+    <nav id="site-navigation" class="main-navigation" role="navigation">
+            <button class="menu-toggle">菜单</button>
+            <a class="assistive-text" href="/#content" title="跳至内容">跳至内容</a><!--TODO-->
+            <div class="menu-main-container">
+                <ul id="menu-main" class="nav-menu">
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/">Home</a></li>
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/archives">Archives</a></li>
+                
+                </ul>
+            </div>
+    </nav>
+</header>
+      <div id="main" class="wrapper">
+        <div id="primary" class="site-content"><div id="content" role="main"><article id="post-LDK_2" class="post-LDK_2 post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title article-title">
+      《Linux内核设计与实现》读书笔记——系统调用
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/08/23/LDK_2/" data-id="cjl6apj010001b777o3nu7pin" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p><em>写在前面</em>：之前我粗略的整理过<code>linux</code>在IA32处理器上的系统调用的过程…这篇就当做补充和复习了。</p>
+<hr>
+<h2 id="与内核通信"><a href="#与内核通信" class="headerlink" title="与内核通信"></a>与内核通信</h2><p>系统调用在用户空间进程和硬件设备之间添加了一个中间层。在Linux中，系统调用是用户空间访问内核的唯一手段：除了异常和陷入外，它们是内核唯一的合法入口。</p>
+<h2 id="API、POSIX-和-C库"><a href="#API、POSIX-和-C库" class="headerlink" title="API、POSIX 和 C库"></a>API、POSIX 和 C库</h2><p>一般情况下，应用程序都是直接调用在用户空间实现的<code>API</code>来编程，而不是直接通过系统调用。这些API与系统调用也并非一一对应(甚至不使用系统调用)。举个简单的例子，应用程序调用C库中的<code>printf()</code>，C库中的<code>printf()</code>再调用C库中的<code>write()</code>，而C库中<code>write()</code>才调用内核提供的<code>write()</code>系统调用。</p>
+<p>不难想到，通过一套标准来规范 API ，就能带来源码级的移植性。而在Unix世界里，<code>POSIX</code>标准最为流行。</p>
+<p>在<code>Linux</code>中，C库实现了Unix系统的主要API，包括标准库规定的函数以及封装的系统调用接口。</p>
+<h2 id="系统调用"><a href="#系统调用" class="headerlink" title="系统调用"></a>系统调用</h2><p>进行系统调用(<code>syscall</code>)，通常可以通过C库中的函数来完成。内核必须提供系统调用需要完成的功能，但是在实现上没有规定。这也是Unix哲学中的“<em>separating mechanism and policy</em>”。</p>
+<p>举个例子，<code>getpid()</code>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SYSCALL_DEFINE0(getpid)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> task_tpid_vnr(current);  <span class="comment">// return current-&gt;tgid</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这里<code>SYSCALL_DEFINE0</code>是个宏，展开后代码如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">asmlinkage <span class="keyword">long</span> <span class="title">sys_getpid</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br></pre></td></tr></table></figure>
+<p>这里的<code>asmlinkage</code>是gcc的拓展，用于通知编译器仅从栈中提取该函数的参数。所有系统调用都有这个限定词。其次，函数返回<code>long</code>类型，为了保证32位和64位系统的兼容。系统调用在用户空间返回值类型为int，在内核空间返回值类型为long。最后，形如<code>sys_bar()</code>是在Linux中的命名规则。</p>
+<h3 id="系统调用号"><a href="#系统调用号" class="headerlink" title="系统调用号"></a>系统调用号</h3><p>Linux中的每个系统调用被赋予一个系统调用号。用户态的进程通过这个号来指明进行哪个系统调用；进程不会提及系统调用的名称。</p>
+<p>内核记录了系统调用表中所有已经注册的系统调用的列表，存储在<code>sys_call_table</code>中。</p>
+<h3 id="系统调用的性能"><a href="#系统调用的性能" class="headerlink" title="系统调用的性能"></a>系统调用的性能</h3><p>Linux系统调用很快，一个原因是上下文切换快，进出内核被优化地简洁高效，另一个原因是系统调用处理程序和系统调用本身也十分简洁。</p>
+<h2 id="系统调用处理程序"><a href="#系统调用处理程序" class="headerlink" title="系统调用处理程序"></a>系统调用处理程序</h2><p>应用程序通过软中断通知内核，告诉内核需要进行系统调用：引发一个异常来促使系统切换到内核态去执行异常处理程序。<code>x86</code>上系统预定义的软中断号是<code>128</code>，通过<code>int $0x80</code>指令触发该中断。这条指令会触发一个异常导致系统切换到内核态并执行第<code>128</code>号异常处理程序。而该程序正是系统调用处理程序，叫<code>system_call()</code>。它与硬件体系结构密切相关。最近，<code>x86</code>处理器增加了一条叫做<code>sysenter</code>的指令。与<code>int</code>指令相比，这条指令提供了更快，更专业的陷入内核进行系统调用的方式。</p>
+<h3 id="制定恰当的系统调用"><a href="#制定恰当的系统调用" class="headerlink" title="制定恰当的系统调用"></a>制定恰当的系统调用</h3><p>在<code>x86</code>上系统调用号通过<code>eax</code>寄存器传递给内核。在陷入内核前，用户空间把相应的系统调用号放入<code>eax</code>中。其他体系结构上类似。</p>
+<p><code>system_call()</code>通过将给定的系统调用号与<code>NR_syscalls</code>做比较来检查其有效性。如果它大于或等于<code>NR_syscalls</code>，该函数就返回<code>-ENOSYS</code>。否则，执行相应的系统调用：<code>call *sys_call_table(,%rax,8)</code>。</p>
+<p>由于系统调用表中的表项是以64位(8字节)类型存放的，所以内核需要将给定的系统调用号乘以8。<code>x86-32</code>系统上，就用4代替8。</p>
+<h3 id="参数传递"><a href="#参数传递" class="headerlink" title="参数传递"></a>参数传递</h3><p>除了系统调用号外，大部分系统调用还需要一些外部的参数传入。在<code>x86-32</code>系统上，<code>ebx</code>，<code>ecx</code>，<code>edx</code>，<code>esi</code>按照顺序存放前5个参数。需要6个或者6个以上的情况不多见，此时应该用一个单独的寄存器存放指向这些参数在用户空间地址的指针。</p>
+<p>给用户空间的返回值也通过寄存器传递。在x86系统上，它存放在<code>eax</code>寄存器中。</p>
+<h2 id="系统调用的实现"><a href="#系统调用的实现" class="headerlink" title="系统调用的实现"></a>系统调用的实现</h2><p>一个Linux系统调用在实现时不需要太关心它的系统调用处理程序的关系，给linux添加一个系统调用相对容易。</p>
+<h3 id="实现系统调用"><a href="#实现系统调用" class="headerlink" title="实现系统调用"></a>实现系统调用</h3><p>一个系统调用应该有明确的用途，不提倡通过传递不同的参数来选择完成不同的工作。<code>ioctl()</code>就是一个反面例子。还要求时刻注意可移植性和健壮性。</p>
+<h3 id="参数验证"><a href="#参数验证" class="headerlink" title="参数验证"></a>参数验证</h3><p>系统调用必须验证它们所有的参数是否合法有效。系统调用在内核空间执行，如果任由用户将不合法的输入传递个内核，那么安全性和稳定性将没有保障。</p>
+<p>最重要的一种检查就是指针是否有效。内核必须保证：</p>
+<ul>
+<li>指针指向的内存区域属于用户空间。</li>
+<li>指针指向的内存区域在进程的地址空间内。</li>
+<li>如果是读，该内存应被标记为可读；如果是写，该内存应被标记为可写；如果是可执行，该内存应被标记为可执行。</li>
+</ul>
+<p>内核提供了两个方法用于完成必须的检查和内核空间与用户空间数据的来回拷贝。</p>
+<ul>
+<li><p><code>copy_to_user()</code>，向用户空间写入数据，需要三个参数。第一个是进程空间中的目的内存地址，第二个是内核空间中的源地址，最后一个是字节数。</p>
+</li>
+<li><p><code>copy-from_user()</code>，从用户空间读数据。它的三个参数和<code>copy_to_user()</code>类似。</p>
+</li>
+</ul>
+<p>如果执行失败，这两个函数返回的都是没能完成拷贝的数据字节数；如果成功，返回0。当出现上述错误，系统调用返回标准<code>-EFAULT</code>。注意，这两个函数都有可能引起阻塞，当缺页的时候。</p>
+<p>最后一项检查针对是否有合法权限。调用者可以通过<code>capable()</code>函数来检查是否有权能对制定的资源进行操作。如果返回非0就有权，否则无权。</p>
+<h2 id="系统调用上下文"><a href="#系统调用上下文" class="headerlink" title="系统调用上下文"></a>系统调用上下文</h2><p>内核在执行系统调用的时候处于进程上下文，<code>current</code>指针指向当前任务。</p>
+<p>在进程上下文中，内核可以休眠并且可以被抢占。当系统调用返回的时候，控制权仍在<code>system_call()</code>中，它最终会负责切换到用户空间，并让用户进程继续执行下去。</p>
+<h3 id="绑定一个系统调用的最后一个步骤"><a href="#绑定一个系统调用的最后一个步骤" class="headerlink" title="绑定一个系统调用的最后一个步骤"></a>绑定一个系统调用的最后一个步骤</h3><p>当编写完一个系统调用后，把它注册成一个正式的系统调用：</p>
+<ul>
+<li>首先，在系统调用表的最后一项加入一个表项。</li>
+<li>对于所支持的各种体系结构，系统调用号必须定义于<code>&lt;asm/unistd.h&gt;</code>中。</li>
+<li>系统调用必须被编译进内核映像。这只要把它放进<code>kernel/</code>下的一个相关文件中就可以了，如<code>sys.c</code>，它包含了各种各样的系统调用。</li>
+</ul>
+<h3 id="从用户空间访问系统调用"><a href="#从用户空间访问系统调用" class="headerlink" title="从用户空间访问系统调用"></a>从用户空间访问系统调用</h3><p>通常，系统调用靠C库支持。用户程序通过包含头文件并和C库链接，就可以使用系统调用。但如果你如果仅仅写出了系统调用，glibc并不提供支持。可以通过Linux本身提供的一组宏，直接对系统调用进行访问。这些宏是<code>_syscalln()</code>，n的范围从0到6，代表需要传递给系统调用的参数个数。对于每个宏，都有<code>2+2×n</code>个参数。第一个参数表示返回值类型，第二个参数是系统调用的名称，接着是按照系统调用参数顺序排列的每个参数的类型和名称。</p>
+<p>举个例子：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 对于 long open(const char *filename, int flags, int mode)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _NR_open 5</span></span><br><span class="line">_syscall3(<span class="keyword">long</span>, open, <span class="keyword">const</span> <span class="keyword">char</span> *, filename, <span class="keyword">int</span>, flags, <span class="keyword">int</span>, mode)</span><br></pre></td></tr></table></figure></p>
+<p>这组宏会被拓展成内嵌汇编的C函数。</p>
+<h2 id="为什么不通过建立系统调用的方式实现"><a href="#为什么不通过建立系统调用的方式实现" class="headerlink" title="为什么不通过建立系统调用的方式实现"></a>为什么不通过建立系统调用的方式实现</h2><p>Linux系统尽量避免没出现一种新的抽象就加入一个新的系统调用，这使得它的系统调用接口十分简洁。</p>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2018/08/23/LDK_2/">
+    <time datetime="2018-08-23T07:32:00.000Z" class="entry-date">
+        2018-08-23
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li></ul>
+
+    </footer>
+</article>
+
+
+    
+<nav class="nav-single">
+    <h3 class="assistive-text">文章导航</h3>
+    
+    
+        <span class="nav-next"><a href="/2018/08/02/LDK_1/" rel="next">《Linux内核设计与实现》读书笔记——进程调度 <span class="meta-nav">→</span></a></span>
+    
+</nav><!-- .nav-single -->
+
+
+
+
+
+
+
+</div></div>
+        <div id="secondary" class="widget-area" role="complementary">
+  
+    <aside id="search" class="widget widget_search"><form role="search" method="get" accept-charset="utf-8" id="searchform" class="searchform" action="//google.com/search">
+    <div>
+        <input type="text" value="" name="s" id="s" />
+        <input type="submit" id="searchsubmit" value="搜索" />
+    </div>
+</form></aside>
+  
+    
+  
+    
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget-content">
+      <ul>
+        
+          <li>
+            <a href="/2018/08/23/LDK_2/">《Linux内核设计与实现》读书笔记——系统调用</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/02/LDK_1/">《Linux内核设计与实现》读书笔记——进程调度</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/27/LDK_0/">《Linux内核设计与实现》读书笔记——进程</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/24/IntegerConstant/">扭曲的INT_MIN</a>
+          </li>
+        
+          <li>
+            <a href="/2018/05/25/concepts_of_address/">X86体系结构中各种“地址”的概念</a>
+          </li>
+        
+      </ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget-content">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget-content tagcloud">
+      <a href="/tags/C/" style="font-size: 10px;">C</a> <a href="/tags/Linux/" style="font-size: 15px;">Linux</a> <a href="/tags/X86/" style="font-size: 10px;">X86</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+    </div>
+  </aside>
+
+  
+</div>
+      </div>
+      <footer id="colophon" role="contentinfo">
+    <p>&copy; 2018 cyyzero
+    All rights reserved.</p>
+    <p>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></p>
+</footer>
+    <script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"1","bdMiniList":false,"bdPic":"","bdStyle":"2","bdSize":"16"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+<script src="/js/navigation.js"></script>
+
+<div id="bg"></div>
+
+  </div>
+</body>
+</html>
