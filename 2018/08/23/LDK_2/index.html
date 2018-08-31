@@ -25,7 +25,7 @@ API、POSIX 和 C库一般情" />
 <meta property="og:url" content="http://yoursite.com/2018/08/23/LDK_2/index.html">
 <meta property="og:site_name" content="Pluto&#39;s Blog">
 <meta property="og:description" content="写在前面：之前我粗略的整理过linux在IA32处理器上的系统调用的过程…这篇就当做补充和复习了。  与内核通信系统调用在用户空间进程和硬件设备之间添加了一个中间层。在Linux中，系统调用是用户空间访问内核的唯一手段：除了异常和陷入外，它们是内核唯一的合法入口。 API、POSIX 和 C库一般情况下，应用程序都是直接调用在用户空间实现的API来编程，而不是直接通过系统调用。这些API与系统调用">
-<meta property="og:updated_time" content="2018-08-23T08:18:15.063Z">
+<meta property="og:updated_time" content="2018-08-23T08:22:02.923Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="《Linux内核设计与实现》读书笔记——系统调用">
 <meta name="twitter:description" content="写在前面：之前我粗略的整理过linux在IA32处理器上的系统调用的过程…这篇就当做补充和复习了。  与内核通信系统调用在用户空间进程和硬件设备之间添加了一个中间层。在Linux中，系统调用是用户空间访问内核的唯一手段：除了异常和陷入外，它们是内核唯一的合法入口。 API、POSIX 和 C库一般情况下，应用程序都是直接调用在用户空间实现的API来编程，而不是直接通过系统调用。这些API与系统调用">
@@ -84,7 +84,7 @@ API、POSIX 和 C库一般情" />
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/08/23/LDK_2/" data-id="cjl6apj010001b777o3nu7pin" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/08/23/LDK_2/" data-id="cjlhzcvja0000x5771x8lo3fj" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -138,7 +138,8 @@ API、POSIX 和 C库一般情" />
 <li>系统调用必须被编译进内核映像。这只要把它放进<code>kernel/</code>下的一个相关文件中就可以了，如<code>sys.c</code>，它包含了各种各样的系统调用。</li>
 </ul>
 <h3 id="从用户空间访问系统调用"><a href="#从用户空间访问系统调用" class="headerlink" title="从用户空间访问系统调用"></a>从用户空间访问系统调用</h3><p>通常，系统调用靠C库支持。用户程序通过包含头文件并和C库链接，就可以使用系统调用。但如果你如果仅仅写出了系统调用，glibc并不提供支持。可以通过Linux本身提供的一组宏，直接对系统调用进行访问。这些宏是<code>_syscalln()</code>，n的范围从0到6，代表需要传递给系统调用的参数个数。对于每个宏，都有<code>2+2×n</code>个参数。第一个参数表示返回值类型，第二个参数是系统调用的名称，接着是按照系统调用参数顺序排列的每个参数的类型和名称。</p>
-<p>举个例子：<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 对于 long open(const char *filename, int flags, int mode)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _NR_open 5</span></span><br><span class="line">_syscall3(<span class="keyword">long</span>, open, <span class="keyword">const</span> <span class="keyword">char</span> *, filename, <span class="keyword">int</span>, flags, <span class="keyword">int</span>, mode)</span><br></pre></td></tr></table></figure></p>
+<p>举个例子：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 对于 long open(const char *filename, int flags, int mode)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> _NR_open 5</span></span><br><span class="line">_syscall3(<span class="keyword">long</span>, open, <span class="keyword">const</span> <span class="keyword">char</span> *, filename, <span class="keyword">int</span>, flags, <span class="keyword">int</span>, mode)</span><br></pre></td></tr></table></figure>
 <p>这组宏会被拓展成内嵌汇编的C函数。</p>
 <h2 id="为什么不通过建立系统调用的方式实现"><a href="#为什么不通过建立系统调用的方式实现" class="headerlink" title="为什么不通过建立系统调用的方式实现"></a>为什么不通过建立系统调用的方式实现</h2><p>Linux系统尽量避免没出现一种新的抽象就加入一个新的系统调用，这使得它的系统调用接口十分简洁。</p>
 
@@ -163,6 +164,8 @@ API、POSIX 和 C库一般情" />
     
 <nav class="nav-single">
     <h3 class="assistive-text">文章导航</h3>
+    
+        <span class="nav-previous"><a href="/2018/08/31/tlpi_thread_multijoin_bug/" rel="prev"><span class="meta-nav">←</span> 记 TLPI 上一个多线程代码例子的bug</a></span>
     
     
         <span class="nav-next"><a href="/2018/08/02/LDK_1/" rel="next">《Linux内核设计与实现》读书笔记——进程调度 <span class="meta-nav">→</span></a></span>
@@ -196,6 +199,10 @@ API、POSIX 和 C库一般情" />
       <ul>
         
           <li>
+            <a href="/2018/08/31/tlpi_thread_multijoin_bug/">记 TLPI 上一个多线程代码例子的bug</a>
+          </li>
+        
+          <li>
             <a href="/2018/08/23/LDK_2/">《Linux内核设计与实现》读书笔记——系统调用</a>
           </li>
         
@@ -211,10 +218,6 @@ API、POSIX 和 C库一般情" />
             <a href="/2018/07/24/IntegerConstant/">扭曲的INT_MIN</a>
           </li>
         
-          <li>
-            <a href="/2018/05/25/concepts_of_address/">X86体系结构中各种“地址”的概念</a>
-          </li>
-        
       </ul>
     </div>
   </aside>
@@ -224,7 +227,7 @@ API、POSIX 和 C库一般情" />
   <aside class="widget">
     <h3 class="widget-title">Tags</h3>
     <div class="widget-content">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </aside>
 

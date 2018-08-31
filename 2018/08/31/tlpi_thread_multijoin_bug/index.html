@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <meta name="description" content="ps:TLPI 是 The Linux Programming Interface 一书的缩写。
+
+今天试着跑 TLPI 第30章上一个程序的时候，老是运行时出bug。程序不是很难，主要是讲解 pthread 条件变量的使用：
+123456789101112131415161718192021222" />
+  
+
+  
+  
+  
+  
+  
+  
+  <title>记 TLPI 上一个多线程代码例子的bug | Pluto&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="ps:TLPI 是 The Linux Programming Interface 一书的缩写。  今天试着跑 TLPI 第30章上一个程序的时候，老是运行时出bug。程序不是很难，主要是讲解 pthread 条件变量的使用： 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474">
+<meta name="keywords" content="Linux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="记 TLPI 上一个多线程代码例子的bug">
+<meta property="og:url" content="http://yoursite.com/2018/08/31/tlpi_thread_multijoin_bug/index.html">
+<meta property="og:site_name" content="Pluto&#39;s Blog">
+<meta property="og:description" content="ps:TLPI 是 The Linux Programming Interface 一书的缩写。  今天试着跑 TLPI 第30章上一个程序的时候，老是运行时出bug。程序不是很难，主要是讲解 pthread 条件变量的使用： 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474">
+<meta property="og:updated_time" content="2018-08-31T12:39:10.238Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="记 TLPI 上一个多线程代码例子的bug">
+<meta name="twitter:description" content="ps:TLPI 是 The Linux Programming Interface 一书的缩写。  今天试着跑 TLPI 第30章上一个程序的时候，老是运行时出bug。程序不是很难，主要是讲解 pthread 条件变量的使用： 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474">
+  
+  
+    <link rel="icon" href="/css/images/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+  
+  <!-- baidu webmaster push -->
+  <script src='//push.zhanzhang.baidu.com/push.js'></script>
+</head>
+<body class="home blog custom-background custom-font-enabled single-author">
+  <div id="page" class="hfeed site">
+      <header id="masthead" class="site-header" role="banner">
+    <hgroup>
+      <h1 class="site-title">
+        <a href="/" title="Pluto&#39;s Blog" rel="home">Pluto&#39;s Blog</a>
+      </h1>
+      
+        <h2 class="site-description">
+          <a href="/" id="subtitle">失败人士自留地</a>
+        </h2>
+      
+    </hgroup>
+
+    <nav id="site-navigation" class="main-navigation" role="navigation">
+            <button class="menu-toggle">菜单</button>
+            <a class="assistive-text" href="/#content" title="跳至内容">跳至内容</a><!--TODO-->
+            <div class="menu-main-container">
+                <ul id="menu-main" class="nav-menu">
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/">Home</a></li>
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/archives">Archives</a></li>
+                
+                </ul>
+            </div>
+    </nav>
+</header>
+      <div id="main" class="wrapper">
+        <div id="primary" class="site-content"><div id="content" role="main"><article id="post-tlpi_thread_multijoin_bug" class="post-tlpi_thread_multijoin_bug post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title article-title">
+      记 TLPI 上一个多线程代码例子的bug
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/08/31/tlpi_thread_multijoin_bug/" data-id="cjlhzcvkm000wx577tu6rzq7s" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p>ps:<code>TLPI</code> 是 <code>The Linux Programming Interface</code> 一书的缩写。</p>
+<hr>
+<p>今天试着跑 <code>TLPI</code> 第30章上一个程序的时候，老是运行时出bug。程序不是很难，主要是讲解 <code>pthread</code> 条件变量的使用：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"tlpi_hdr.h"</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">pthread_cond_t</span> thread_died = PTHREAD_COND_INITIALIZER;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">pthread_mutex_t</span> thread_mutex = PTHREAD_MUTEX_INITIALIZER;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">int</span> tot_threads = <span class="number">0</span>;</span><br><span class="line"><span class="keyword">static</span> <span class="keyword">int</span> num_live = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="keyword">int</span> num_unjoined = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">enum</span> tstate</span><br><span class="line">&#123;</span><br><span class="line">    TS_ALIVE,</span><br><span class="line">    TS_TERMINATED,</span><br><span class="line">    TS_JOINED</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">static</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">pthread_t</span> tid;</span><br><span class="line">    <span class="keyword">enum</span> tstate state;</span><br><span class="line">    <span class="keyword">int</span> sleep_time;</span><br><span class="line">&#125; *thread;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">void</span> *<span class="title">thread_func</span><span class="params">(<span class="keyword">void</span> *arg)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> idx = *((*<span class="keyword">int</span>)arg);</span><br><span class="line">    <span class="keyword">int</span> s;</span><br><span class="line"></span><br><span class="line">    sleep(thread[idx].sleep_time);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"Thread %d terminating\n"</span>, idx);</span><br><span class="line"></span><br><span class="line">    s = pthread_mutex_lock(&amp;thread_mutex);</span><br><span class="line">    <span class="keyword">if</span> (s != <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        errExitEN(s, <span class="string">"pthread_mutex_lock"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    num_unjoined++;</span><br><span class="line">    thread[idx].state = TS_TERMINATED;</span><br><span class="line"></span><br><span class="line">    s = pthread_mutex_unlock(&amp;thread_mutex);</span><br><span class="line">    <span class="keyword">if</span> (s != <span class="number">0</span>)</span><br><span class="line">        errExitEN(s, <span class="string">"pthread_mutex_unlock"</span>);</span><br><span class="line"></span><br><span class="line">    s = pthread_cond_signal(&amp;thread_died);</span><br><span class="line">    <span class="keyword">if</span> (s != <span class="number">0</span>)</span><br><span class="line">        errExitEN(s, <span class="string">"pthread_cond_signal"</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> s, idx;</span><br><span class="line"></span><br><span class="line">    thread = <span class="built_in">calloc</span>(argc - <span class="number">1</span>, <span class="keyword">sizeof</span>(*thread));</span><br><span class="line">    <span class="keyword">if</span> (thread == <span class="literal">NULL</span>)</span><br><span class="line">        errExit(<span class="string">"calloc"</span>);</span><br><span class="line">    <span class="keyword">for</span> (idx = <span class="number">0</span>; idx &lt; argc<span class="number">-1</span>; ++idx)</span><br><span class="line">    &#123;</span><br><span class="line">        thread[idx].sleep_time = getInt(argv[idx+<span class="number">1</span>], GN_NONNEG, <span class="literal">NULL</span>);</span><br><span class="line">        thread[idx].state = TS_ALIVE;</span><br><span class="line">        s = pthread_create(&amp;thread[idx].tid, <span class="literal">NULL</span>, thread_func, &amp;idx);</span><br><span class="line">        <span class="keyword">if</span> (s != <span class="number">0</span>)</span><br><span class="line">            errExitEN(s, <span class="string">"pthread_create"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    tot_threads = argc - <span class="number">1</span>;</span><br><span class="line">    num_live = tot_threads;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (num_live &gt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        s = pthread_mutex_lock(&amp;thread_mutex);</span><br><span class="line">        <span class="keyword">if</span> (s != <span class="number">0</span>)</span><br><span class="line">            errExitEN(s, <span class="string">"pthread_mutex_lock"</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (num_unjoined == <span class="number">0</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            s = pthread_cond_wait(&amp;thread_died, &amp;thread_mutex);</span><br><span class="line">            <span class="keyword">if</span> (s != <span class="number">0</span>)</span><br><span class="line">                errExitEN(s, <span class="string">"pthread_cond_wait"</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (idx = <span class="number">0</span>; idx &lt; tot_threads; ++idx)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (thread[idx].state == TS_TERMINATED)</span><br><span class="line">            &#123;</span><br><span class="line">                s = pthread_join(thread[idx].tid, <span class="literal">NULL</span>);</span><br><span class="line">                <span class="keyword">if</span> (s != <span class="number">0</span>)</span><br><span class="line">                    errExitEN(s, <span class="string">"pthread_join"</span>);</span><br><span class="line"></span><br><span class="line">                thread[idx].state = TS_JOINED;</span><br><span class="line">                num_live--;</span><br><span class="line">                num_unjoined--;</span><br><span class="line"></span><br><span class="line">                <span class="built_in">printf</span>(<span class="string">"Reaped thread %d (num_live=%d)\n"</span>, idx, num_live);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        s = pthread_mutex_unlock(&amp;thread_mutex);</span><br><span class="line">        <span class="keyword">if</span> (s != <span class="number">0</span>)</span><br><span class="line">            errExitEN(s, <span class="string">"pthread_mutex_unlock"</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">exit</span>(EXIT_SUCCESS);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>后来我调试的时候，却往往能够正常运行，但运行时候的错误却很一致：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ ./a.out 1 2 1</span><br><span class="line">Thread 3 terminating</span><br><span class="line">Thread 1 terminating</span><br><span class="line">Thread 2 terminating</span><br></pre></td></tr></table></figure>
+<p>然后就卡死…</p>
+<p>仔细观察过输出结果，这是每次创建的线程中输出的结果。程序首先通过一个循环创建线程，然后把下标传址给线程作为参数：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// main函数中</span></span><br><span class="line"><span class="keyword">for</span> (idx = <span class="number">0</span>; idx &lt; argc<span class="number">-1</span>; ++idx)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    s = pthread_create(&amp;thread[idx].tid, <span class="literal">NULL</span>, thread_func, &amp;idx);</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后，在线程中，每次都将对idx解引用，得到下标，并输出：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 每个新线程的函数中, arg是传进的参数</span></span><br><span class="line"><span class="keyword">int</span> idx = *((*<span class="keyword">int</span>)arg);</span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">"Thread %d terminating\n"</span>, idx);</span><br><span class="line"><span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
+<p>可能大家也可以看出来了，妥妥的 <em>race condition</em>，多个线程通过指针访问同一个变量，没有进行同步和互斥的工作。有可能新的线程直到循环中的下标自增之后才执行解引用（实际上在我电脑上就是按照这个顺序执行了）。</p>
+<p>比较简单的修改方法就是将<code>int</code>类型的下标直接强制转化成<code>void *</code>的类型的参数传值。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在main函数里：</span></span><br><span class="line"><span class="keyword">for</span> (idx = <span class="number">0</span>; idx &lt; argc<span class="number">-1</span>; ++idx)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    s = pthread_create(&amp;thread[idx].tid, <span class="literal">NULL</span>, thread_func, (<span class="keyword">void</span>*)idx);</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 新线程的函数里</span></span><br><span class="line"><span class="keyword">int</span> idx = (<span class="keyword">int</span>)arg;</span><br></pre></td></tr></table></figure>
+<p>这个改法看似简单，但其实有点问题。因为在C标准里整形和指针类型的强制转化是 <code>implementation-defined</code>。一下摘抄自<a href="https://en.cppreference.com/w/c/language/cast" target="_blank" rel="noopener">cppreference</a>：</p>
+<blockquote>
+<p>Any integer can be cast to any pointer type. Except for the null pointer constants such as NULL (which doesn’t need a cast), the result is implementation-defined, may not be correctly aligned, may not point to an object of the referenced type, and may be a trap representation. </p>
+<p>Any pointer type can be cast to any integer type. The result is implementation-defined, even for null pointer values (they do not necessarily result in the value zero). If the result cannot be represented in the target type, the behavior is undefined (unsigned integers do not implement modulo arithmetic on a cast from pointer) </p>
+</blockquote>
+<p>事实上，在64位x86上，指针类型占8字节，<code>int</code>类型占4字节，用脚趾头都知道它们之间的转化很不安全。</p>
+<p>在 <a href="http://www.man7.org/tlpi/errata/index.html" target="_blank" rel="noopener">TLPI 官网上的勘误</a>中也提到了这个错误，上面还给了两种避免指针和整型转化的方法。</p>
+<ul>
+<li><p>一种解决方法是把当前 <code>thread[idx]</code> 地址传过去，这样只需进行不同指针的转化，这是C语言允许的。</p>
+  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">s = pthread_create(&amp;thread[idx].tid, <span class="literal">NULL</span>, threadFunc, &amp;thread[idx]);</span><br></pre></td></tr></table></figure>
+<p>  然后线程的函数中只需要对传入的地址和首元素地址进行相减就能得到相应的下标：</p>
+  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">tinfo</span> *<span class="title">tptr</span> = <span class="title">arg</span>;</span></span><br><span class="line"><span class="keyword">int</span> idx = tptr - thread;    <span class="comment">/* Obtain index in 'thread' array */</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>另一个解决方法就是用 <code>uintptr_t</code> 代替 <code>int</code> 类型。<code>unitptr_t</code> 类型是从C99标准开始有的类型，定义在头文件 <code>&lt;stdint.h&gt;</code> 中。它用来表示一个能够容纳指针值的无符号整型。</p>
+</li>
+</ul>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2018/08/31/tlpi_thread_multijoin_bug/">
+    <time datetime="2018-08-31T10:19:06.000Z" class="entry-date">
+        2018-08-31
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li></ul>
+
+    </footer>
+</article>
+
+
+    
+<nav class="nav-single">
+    <h3 class="assistive-text">文章导航</h3>
+    
+    
+        <span class="nav-next"><a href="/2018/08/23/LDK_2/" rel="next">《Linux内核设计与实现》读书笔记——系统调用 <span class="meta-nav">→</span></a></span>
+    
+</nav><!-- .nav-single -->
+
+
+
+
+
+
+
+</div></div>
+        <div id="secondary" class="widget-area" role="complementary">
+  
+    <aside id="search" class="widget widget_search"><form role="search" method="get" accept-charset="utf-8" id="searchform" class="searchform" action="//google.com/search">
+    <div>
+        <input type="text" value="" name="s" id="s" />
+        <input type="submit" id="searchsubmit" value="搜索" />
+    </div>
+</form></aside>
+  
+    
+  
+    
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget-content">
+      <ul>
+        
+          <li>
+            <a href="/2018/08/31/tlpi_thread_multijoin_bug/">记 TLPI 上一个多线程代码例子的bug</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/23/LDK_2/">《Linux内核设计与实现》读书笔记——系统调用</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/02/LDK_1/">《Linux内核设计与实现》读书笔记——进程调度</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/27/LDK_0/">《Linux内核设计与实现》读书笔记——进程</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/24/IntegerConstant/">扭曲的INT_MIN</a>
+          </li>
+        
+      </ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget-content">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget-content tagcloud">
+      <a href="/tags/C/" style="font-size: 10px;">C</a> <a href="/tags/Linux/" style="font-size: 15px;">Linux</a> <a href="/tags/X86/" style="font-size: 10px;">X86</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+    </div>
+  </aside>
+
+  
+</div>
+      </div>
+      <footer id="colophon" role="contentinfo">
+    <p>&copy; 2018 cyyzero
+    All rights reserved.</p>
+    <p>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></p>
+</footer>
+    <script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"1","bdMiniList":false,"bdPic":"","bdStyle":"2","bdSize":"16"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+<script src="/js/navigation.js"></script>
+
+<div id="bg"></div>
+
+  </div>
+</body>
+</html>
