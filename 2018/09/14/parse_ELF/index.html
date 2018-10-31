@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <meta name="description" content="写在前面： 本文主要针对 64位 linux 上的 ELF 文件。为了避免造成歧义(比如 section 和 segment 都能翻译成“段”)，一些专有名词我都保留了英文。
+什么是目标文件目标文件(object file)共有这三种：
+
+executable file: 可执行文件。操作系统可以将" />
+  
+
+  
+  
+  
+  
+  
+  
+  <title>详细解析 ELF | Pluto&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="写在前面： 本文主要针对 64位 linux 上的 ELF 文件。为了避免造成歧义(比如 section 和 segment 都能翻译成“段”)，一些专有名词我都保留了英文。 什么是目标文件目标文件(object file)共有这三种：  executable file: 可执行文件。操作系统可以将其加载并执行(execl)。  relocatable file: 可重定位文件。一般来说一个 tr">
+<meta name="keywords" content="Linux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="详细解析 ELF">
+<meta property="og:url" content="http://yoursite.com/2018/09/14/parse_ELF/index.html">
+<meta property="og:site_name" content="Pluto&#39;s Blog">
+<meta property="og:description" content="写在前面： 本文主要针对 64位 linux 上的 ELF 文件。为了避免造成歧义(比如 section 和 segment 都能翻译成“段”)，一些专有名词我都保留了英文。 什么是目标文件目标文件(object file)共有这三种：  executable file: 可执行文件。操作系统可以将其加载并执行(execl)。  relocatable file: 可重定位文件。一般来说一个 tr">
+<meta property="og:image" content="http://staff.cs.psu.ac.th/iew/cs323-650/Binary%20file%20formats%20(BFF">
+<meta property="og:updated_time" content="2018-10-31T05:26:03.645Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="详细解析 ELF">
+<meta name="twitter:description" content="写在前面： 本文主要针对 64位 linux 上的 ELF 文件。为了避免造成歧义(比如 section 和 segment 都能翻译成“段”)，一些专有名词我都保留了英文。 什么是目标文件目标文件(object file)共有这三种：  executable file: 可执行文件。操作系统可以将其加载并执行(execl)。  relocatable file: 可重定位文件。一般来说一个 tr">
+<meta name="twitter:image" content="http://staff.cs.psu.ac.th/iew/cs323-650/Binary%20file%20formats%20(BFF">
+  
+  
+    <link rel="icon" href="/css/images/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+  
+  <!-- baidu webmaster push -->
+  <script src='//push.zhanzhang.baidu.com/push.js'></script>
+</head>
+<body class="home blog custom-background custom-font-enabled single-author">
+  <div id="page" class="hfeed site">
+      <header id="masthead" class="site-header" role="banner">
+    <hgroup>
+      <h1 class="site-title">
+        <a href="/" title="Pluto&#39;s Blog" rel="home">Pluto&#39;s Blog</a>
+      </h1>
+      
+        <h2 class="site-description">
+          <a href="/" id="subtitle">失败人士自留地</a>
+        </h2>
+      
+    </hgroup>
+
+    <nav id="site-navigation" class="main-navigation" role="navigation">
+            <button class="menu-toggle">菜单</button>
+            <a class="assistive-text" href="/#content" title="跳至内容">跳至内容</a><!--TODO-->
+            <div class="menu-main-container">
+                <ul id="menu-main" class="nav-menu">
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/">Home</a></li>
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/archives">Archives</a></li>
+                
+                </ul>
+            </div>
+    </nav>
+</header>
+      <div id="main" class="wrapper">
+        <div id="primary" class="site-content"><div id="content" role="main"><article id="post-parse_ELF" class="post-parse_ELF post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title article-title">
+      详细解析 ELF
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/09/14/parse_ELF/" data-id="cjnwpxobd000nqu77arqri7fg" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p><em>写在前面</em>： 本文主要针对 64位 <code>linux</code> 上的 <code>ELF</code> 文件。为了避免造成歧义(比如 <em>section</em> 和 <em>segment</em> 都能翻译成“段”)，一些专有名词我都保留了英文。</p>
+<h2 id="什么是目标文件"><a href="#什么是目标文件" class="headerlink" title="什么是目标文件"></a>什么是目标文件</h2><p>目标文件(object file)共有这三种：</p>
+<ul>
+<li><p>executable file: 可执行文件。操作系统可以将其加载并执行(execl)。</p>
+</li>
+<li><p>relocatable file: 可重定位文件。一般来说一个 <em>translation unit</em> 经过编译之后产生一个可重定位目标文件。经过链接后得到可执行文件或共享目标文件。eg.. Linux上的 <code>.o</code> 后缀的文件。</p>
+</li>
+<li><p>shared object file: 共享目标文件。链接器可以使用这种文件跟其他的可重定位文件和共享目标文件链接，产生新的目标文件。或者是动态链接器可以将几个这种共享目标文件与可执行文件结合，作为进程映像的一部分来运行。eg.. linux上的 <code>.so</code> 后缀的文件。</p>
+</li>
+</ul>
+<p>目标文件在不同的系统上有着不同的格式。现代 x86-64 Linux 和 Unix 系统使用可执行链接格式(Executable and Linking Format)。</p>
+<h2 id="LEF-文件里有什么"><a href="#LEF-文件里有什么" class="headerlink" title="LEF 文件里有什么"></a>LEF 文件里有什么</h2><p>目标文件参与了程序链接和程序执行的过程。所以为了便利和效率，ELF 从链接和执行的角度来看，所需要的信息不太一样。</p>
+<p><img src="http://staff.cs.psu.ac.th/iew/cs323-650/Binary%20file%20formats%20(BFF" alt="ELF 文件示意图">_files/IMG00010.gif)</p>
+<p>如图所示，ELF 文件不论是从链接还是执行的角度来看，都有着一个 <em>ELF file header</em> 。这个文件头起始于文件开始处(偏移量为0的地方)。然后保存着跟文件整体组织相关的信息。后面会再详细介绍。</p>
+<p>从链接的角度来看，ELF 文件中有着有着一个 <em>section header table</em> 和若干个 <em>section</em>。 <em>section header table</em> 中的每一项对应一个 <em>section</em> ，用于描述其基本信息，比如段名、大小、偏移位置等。 目标文件将链接时需要的信息按照不用的属性以 <em>section</em> 的形式存储。比如说保存机器指令的 <em>.text</em> 代码段和保存全局变量和局部静态变量的 <em>.data</em> 数据段。</p>
+<p>从执行的角度来看，ELF 文件中有着一个 <em>program header table</em> 和若干个 <em>segment</em>。 Linux 就是通过读取 <em>program header table</em> 来得知如何创建一个进程映像(或者说如何执行一个程序)。对于可重定位目标文件来说，它并不能加载执行，所以显然它并不需要 <em>program header table</em> 。</p>
+<p>// TODO ELF file header</p>
+<h2 id="ELF-file-header"><a href="#ELF-file-header" class="headerlink" title="ELF file header"></a>ELF file header</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>// TODO ELF sections</p>
+<h2 id="ELF-section-table"><a href="#ELF-section-table" class="headerlink" title="ELF section table"></a>ELF section table</h2><p>// TODO ELF segments</p>
+<h2 id="ELF-segment-table"><a href="#ELF-segment-table" class="headerlink" title="ELF segment table"></a>ELF segment table</h2>
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2018/09/14/parse_ELF/">
+    <time datetime="2018-09-14T15:59:56.000Z" class="entry-date">
+        2018-09-14
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li></ul>
+
+    </footer>
+</article>
+
+
+    
+<nav class="nav-single">
+    <h3 class="assistive-text">文章导航</h3>
+    
+    
+        <span class="nav-next"><a href="/2018/08/31/tlpi_thread_multijoin_bug/" rel="next">记 TLPI 上一个多线程代码例子的bug <span class="meta-nav">→</span></a></span>
+    
+</nav><!-- .nav-single -->
+
+
+
+
+
+
+
+</div></div>
+        <div id="secondary" class="widget-area" role="complementary">
+  
+    <aside id="search" class="widget widget_search"><form role="search" method="get" accept-charset="utf-8" id="searchform" class="searchform" action="//google.com/search">
+    <div>
+        <input type="text" value="" name="s" id="s" />
+        <input type="submit" id="searchsubmit" value="搜索" />
+    </div>
+</form></aside>
+  
+    
+  
+    
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget-content">
+      <ul>
+        
+          <li>
+            <a href="/2018/09/14/parse_ELF/">详细解析 ELF</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/31/tlpi_thread_multijoin_bug/">记 TLPI 上一个多线程代码例子的bug</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/23/LDK_2/">《Linux内核设计与实现》读书笔记——系统调用</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/02/LDK_1/">《Linux内核设计与实现》读书笔记——进程调度</a>
+          </li>
+        
+          <li>
+            <a href="/2018/07/27/LDK_0/">《Linux内核设计与实现》读书笔记——进程</a>
+          </li>
+        
+      </ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget-content">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget-content tagcloud">
+      <a href="/tags/C/" style="font-size: 10px;">C</a> <a href="/tags/Linux/" style="font-size: 15px;">Linux</a> <a href="/tags/X86/" style="font-size: 10px;">X86</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+    </div>
+  </aside>
+
+  
+</div>
+      </div>
+      <footer id="colophon" role="contentinfo">
+    <p>&copy; 2018 cyyzero
+    All rights reserved.</p>
+    <p>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></p>
+</footer>
+    <script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"1","bdMiniList":false,"bdPic":"","bdStyle":"2","bdSize":"16"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+<script src="/js/navigation.js"></script>
+
+<div id="bg"></div>
+
+  </div>
+</body>
+</html>
