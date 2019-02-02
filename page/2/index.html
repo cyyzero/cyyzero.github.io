@@ -61,7 +61,7 @@
       <div id="main" class="wrapper">
         <div id="primary" class="site-content"><div id="content" role="main">
   
-    <article id="post-effective_modern_cpp_three" class="post-effective_modern_cpp_three post type-post status-publish format-standard hentry">
+    <article id="post-effective_modern_cpp_3" class="post-effective_modern_cpp_3 post type-post status-publish format-standard hentry">
     <!---->
 
       <header class="entry-header">
@@ -69,14 +69,121 @@
         
   
     <h1 class="entry-title">
-      <a class="article-title" href="/2018/03/01/effective_modern_cpp_three/">effective modern c++读书笔记(三)</a>
+      <a class="article-title" href="/2018/04/20/effective_modern_cpp_3/">effective modern c++读书笔记(四)</a>
     </h1>
   
 
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/03/01/effective_modern_cpp_three/" data-id="cjnwpxob5000gqu773qt8cs04" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/20/effective_modern_cpp_3/" data-id="cjrnom78p001gic77ahsfnpuw" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <h1 id="lambda-表达式"><a href="#lambda-表达式" class="headerlink" title="lambda 表达式"></a>lambda 表达式</h1><p>首先来明确一下三个概念：</p>
+<ul>
+<li><p>lambda 表达式只是一个表达式。它是源码的一部分。</p>
+</li>
+<li><p><em>closure</em> 是由lambda创造的运行期对象。根据捕获的模式，<em>closure</em> 持有被捕获对象的副本或者引用。</p>
+</li>
+<li><p><em>closure class</em> 是给 <em>closure</em> 实例化的。每个 <em>lambda</em> 会让编译器生成一个独一无二的 <em>closure class</em> 。<em>lambda</em> 内的声明将变成它 <em>closure class</em> 内的成员函数的可执行指令。</p>
+</li>
+</ul>
+<hr>
+<h2 id="Item-31"><a href="#Item-31" class="headerlink" title="Item 31"></a>Item 31</h2><ul>
+<li><p>在C++11里有两种默认的捕获模式： <em>by-reference</em> 和 <em>by-value</em> 。默认的 <em>by-reference</em> 捕获可以导致空悬引用。比如说这个 <em>closure</em> (或者它的副本)比捕获的引用的对象的声明周期长。 (这也应该是处理引用本就应该小心的地方)。应该不使用默认捕获，捕获的时候添上引用的对象。这样可以让程序员注意到引用的对象，从而对它的生命周期有了考量。或者直接就通过传值来捕获。但如果传值的对象是 <em>raw pointer</em> ，那又得考虑是否会出现空悬指针的问题。</p>
+</li>
+<li><p>有种情况 <em>by-value</em> 捕获会造成意想不到的悬垂指针。看个例子：</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::function&lt;<span class="keyword">bool</span>(<span class="keyword">int</span>)&gt;&gt; filters;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Widget</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">int</span> divisor;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">void</span> Widget::addFilter() <span class="keyword">const</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// </span></span><br><span class="line">    filters.emplace_back(</span><br><span class="line">        [=](<span class="keyword">int</span> value)&#123; <span class="keyword">return</span> value % divisor&#125; == <span class="number">0</span>; &#125;</span><br><span class="line">    );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  这里看似 <em>by-value</em> 捕获了divisor，但是却并非如此。首先，divisor是类内 <em>non-static 数据成员</em> ，是不能被捕获的。但是这段代码却可以编译过。原因就在与 <em>this</em> 指针。类的 <em>non-static</em> 函数体中隐含了一个 <em>this</em> 指针，它是个纯右值(prvalue)表达式，表示调用这个函数的对象的地址。所以其实捕获的是 <em>this</em> 指针，而lambda表达式中的 <code>divisor</code> 其实也是 <code>this-&gt;divisor</code> 。</p>
+<p>  所以既然是 <em>by-value</em> 捕获的 <em>this</em> 指针，那么就有可能出现空悬指针。为了避免这种情况，还是老实地在 <code>addFilters</code> 函数体内用一个 local 变量作为 <em>divisor</em> 的副本，然后 <em>by-value</em> 捕获这个副本。</p>
+</li>
+<li><p>还有就是要注意，静态存储周期的对象都是可以直接在lambda 表达式中使用的，而且<em>不能捕获</em> 。所以在lambda表达式中用默认 <em>by-value</em> 捕获，就会让人产生错觉。但实际上什么都没捕获。</p>
+</li>
+</ul>
+<hr>
+<h2 id="Item-32"><a href="#Item-32" class="headerlink" title="Item 32"></a>Item 32</h2><ul>
+<li><p>C++14 提供了 <em>init capture</em> 这种新的捕获方式。具体来说就是在捕获列表中可以通过 <code>=</code> 的方式，等号左边是从 <em>lambda</em> 表达式生成的闭包类的数据成员，右边是表达式，用于初始化左边。可以明显看出，<code>=</code>左边和右边的作用域也不同。所以，通过这种语法，让“移动”捕获成为了可能，而非 C++11 那样只能传值和传引用捕获。</p>
+</li>
+<li><p>不过在C++11中也是可以模拟出“移动”捕获的。</p>
+<ul>
+<li>lambda 表达式可以看成定义一个函数类并构造它的对象。所以没有什么是直接定义一个类不能解决的。类中自然可以通过移动的方式初始化数据成员。</li>
+<li><p>通过 <code>std::bind</code> 来模拟。可以看个例子：</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt; data;</span><br><span class="line"><span class="comment">// In C++14</span></span><br><span class="line"><span class="keyword">auto</span> func = [data = <span class="built_in">std</span>::move(data)]()&#123; <span class="comment">/*uses of data*/</span> &#125;;</span><br><span class="line"><span class="comment">// 以下是等价的版本</span></span><br><span class="line"><span class="comment">// In C++11</span></span><br><span class="line"><span class="keyword">auto</span> func = <span class="built_in">std</span>::bind(</span><br><span class="line">    [](<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt;&amp; data)</span><br><span class="line">    &#123; <span class="comment">/*uses of data*/</span> &#125;,</span><br><span class="line">    <span class="built_in">std</span>::move(data)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p>  <code>std::bind</code>构造的对象持有所有参数的副本。当参数是左值，就拷贝构造；当参数是右值，就移动构造。所以参数<code>data</code>通过移动构造传进了 bind 对象内(姑且称之为d)，然后每次调用 <code>func</code> 的 <code>operator()</code> 的时候，都会调用那个 <em>lambda</em> 表达式的 <code>operator()</code> 。而参数就是 bind 对象内的data对象的副本。由于 <em>lambda</em> 没有加 <code>multable</code>，闭包类内的 <code>operator()</code>是 <code>const</code> 限定的的。而 bind 对象的data的副本却不是const的。为了防止它被修改，所以参数加了<code>const</code>。但其实这样也可以：</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> func =</span><br><span class="line">    <span class="built_in">std</span>::bind(</span><br><span class="line">        [](<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt;&amp; data) <span class="keyword">mutable</span></span><br><span class="line">        &#123; <span class="comment">/* uses of data */</span> &#125;,</span><br><span class="line">        <span class="built_in">std</span>::move(data)</span><br><span class="line">    );</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="Item-33"><a href="#Item-33" class="headerlink" title="Item 33"></a>Item 33</h2><p>C++14 引入了 <em>generic lambdas</em> 的特性。具体来说就是 <em>lambda</em> 表达式的参数列表的类型是 <code>auto</code> 。这个特性的实现也很直观：生成的闭包类的 <code>operator()</code> 函数是个模板。所以，随着来的 <em>universal reference</em> 和完美转发都可以实现了。完美转发的关键还是在对引用折叠和 <code>std::forward</code> 函数实现的理解。看一下完美转发的例子：</p>
+<pre><code><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> f = [](<span class="keyword">auto</span>&amp;&amp; param)</span><br><span class="line">    &#123;</span><br><span class="line">        func(<span class="built_in">std</span>::forward&lt;<span class="keyword">decltype</span>(param)&gt;(param));</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> f = [](<span class="keyword">auto</span>&amp;&amp;... params)</span><br><span class="line">    &#123;</span><br><span class="line">        func(<span class="built_in">std</span>::forward&lt;<span class="keyword">decltype</span>(param)&gt;(params)...);</span><br><span class="line">    &#125;;</span><br></pre></td></tr></table></figure>
+</code></pre><hr>
+<h2 id="Item-34"><a href="#Item-34" class="headerlink" title="Item 34"></a>Item 34</h2><p>用 <em>lambda</em> 表达式与 <code>std::bind</code> 相比有些优势，如下：</p>
+<ul>
+<li><em>lambda</em> 表达式比较清晰。(这里书中给的代码有误，最后再详细讲)</li>
+<li><em>lambda</em> 表达式内可以调用重载的函数，但是<code>std::bind</code>第一个参数是重载函数的话得明确调用的版本(通过<code>static_cast</code>)。而且由于使用的指针，还会减少它被内联优化的可能性。</li>
+<li><p><code>std::bind</code> 默认是将参数拷贝的。想要保存参数的引用，必须要用<code>std::ref</code>。比如：</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> compressRateB = <span class="built_in">std</span>::bind(compress, <span class="built_in">std</span>::ref(w), _1);       <span class="comment">// compressRateB acts as if it holds a reference to w, rather than a copy</span></span><br></pre></td></tr></table></figure>
+<p>  这点就很不如 <em>lambda</em> 表达式直观。</p>
+</li>
+</ul>
+<p>在 C++14 中，<em>lambda</em> 表达式已经十分优秀，再也没有使用 <code>std::bind</code> 的理由了。但是在 C++11 中，<code>std::bind</code> 在以下情况下还是很有用的：</p>
+<ul>
+<li><em>Move capture</em> 。C++11 <em>lambda</em> 表达式没有提供通过移动捕获的方式，但是能通过 <code>std::bind</code> 模拟出来。但 C++14 开始， <em>lambda</em> 表达式通过 <em>init capture</em> 已经能够实现这个。</li>
+<li><em>Polymorphic function objects</em> 。<code>std::bind</code>绑定一个模板函数的时候，它能完美转发任何参数。但是 C++14 开始，<em>lambda</em> 表达式可以通过 <code>auto</code> 实现泛型。</li>
+</ul>
+<p>ps：这章里的代码竟然还有错误的地方，琢磨半天= =。 最后在 <a href="https://stackoverflow.com/questions/42207520/why-nested-bind-can-defer-evaluation-of-the-expression" target="_blank" rel="noopener"><em>StackOverflow</em> 上查到了正确的写法</a>。</p>
+<p>先还原一下问题的引入：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>::chrono;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>::literals;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>::placeholders;          <span class="comment">// needed for use of "_1"</span></span><br><span class="line"><span class="keyword">auto</span> setSoundL = [](Sound s) &#123;</span><br><span class="line">    setAlarm(steady_clock::now()) + <span class="number">1</span>h,</span><br><span class="line">             s,</span><br><span class="line">             <span class="number">30</span>s);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> setSoundB = <span class="built_in">std</span>::bind(setAlarm,</span><br><span class="line">                           steady_clock::now() + <span class="number">1</span>h,</span><br><span class="line">                           _1,</span><br><span class="line">                           <span class="number">30</span>s);</span><br></pre></td></tr></table></figure>
+<p>可以看到 <code>setSoundL</code> 和 <code>setSoundB</code> 看似完成相同的功能，但是实际上却并非如此。因为 在调用 <code>setSoundL</code> 时会调用<code>setAlarm</code>函数。显然，此时才会<code>now</code> 函数。而对于 <code>setSoundB</code> 来说，它在生成的时候就已经被调用了 <code>now()</code> 函数。然后每次调用它的时候，并不会再对 <code>now()</code> 调用。所以可以看到，在语义上双方已经不同了。解决方法也很简单，将后者对 <code>now</code> 函数的调用推迟到它自身被调用的时候。</p>
+<p>书上给出的修改是这样的：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 省略了一系列的 using</span></span><br><span class="line"><span class="keyword">auto</span> setSoundB = <span class="built_in">std</span>::bind(setAlarm,</span><br><span class="line">                           <span class="built_in">std</span>::bind(<span class="built_in">std</span>::plus&lt;&gt;(), steady_clock::now(), <span class="number">1</span>h),       <span class="comment">// 在 C++14 中，标准操作模板的模板参数声明通常可以被省略。注意， C++ 11 并不支持这么写。</span></span><br><span class="line">                           <span class="number">30</span>s);</span><br></pre></td></tr></table></figure>
+<p>但这显然也不能达成目标，<code>now</code> 函数还是会在 <code>setSoundB</code> 生成的时候就调用。不难想到，<code>std::bind</code>第一个参数，即可调用对象，是不会提前被调用的。所以应该这么改：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 省略了一系列的 using</span></span><br><span class="line"><span class="keyword">auto</span> setSoundB = <span class="built_in">std</span>::bind(setAlarm,</span><br><span class="line">                           <span class="built_in">std</span>::bind(<span class="built_in">std</span>::plus&lt;&gt;(), <span class="built_in">std</span>::bind(steady_clock::now()), <span class="number">1</span>h),</span><br><span class="line">                           <span class="number">30</span>s);</span><br></pre></td></tr></table></figure>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2018/04/20/effective_modern_cpp_3/">
+    <time datetime="2018-04-20T04:06:46.000Z" class="entry-date">
+        2018-04-20
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+
+    </footer>
+</article>
+
+
+
+
+
+
+  
+    <article id="post-effective_modern_cpp_2" class="post-effective_modern_cpp_2 post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title">
+      <a class="article-title" href="/2018/03/01/effective_modern_cpp_2/">effective modern c++读书笔记(三)</a>
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/03/01/effective_modern_cpp_2/" data-id="cjrnom778000dic776541jqqd" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -261,7 +368,7 @@
     </div><!-- .entry-content -->
 
     <footer class="entry-meta">
-    <a href="/2018/03/01/effective_modern_cpp_three/">
+    <a href="/2018/03/01/effective_modern_cpp_2/">
     <time datetime="2018-03-01T07:36:06.000Z" class="entry-date">
         2018-03-01
     </time>
@@ -280,7 +387,7 @@
 
 
   
-    <article id="post-effective-modern-cpp-two" class="post-effective-modern-cpp-two post type-post status-publish format-standard hentry">
+    <article id="post-effective_modern_cpp_1" class="post-effective_modern_cpp_1 post type-post status-publish format-standard hentry">
     <!---->
 
       <header class="entry-header">
@@ -288,14 +395,14 @@
         
   
     <h1 class="entry-title">
-      <a class="article-title" href="/2018/02/12/effective-modern-cpp-two/">effective modern c++读书笔记(二)</a>
+      <a class="article-title" href="/2018/02/12/effective_modern_cpp_1/">effective modern c++读书笔记(二)</a>
     </h1>
   
 
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective-modern-cpp-two/" data-id="cjnwpxoax0009qu7723wv19hd" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective_modern_cpp_1/" data-id="cjrnom776000cic77g8pcddfq" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -478,7 +585,7 @@
     </div><!-- .entry-content -->
 
     <footer class="entry-meta">
-    <a href="/2018/02/12/effective-modern-cpp-two/">
+    <a href="/2018/02/12/effective_modern_cpp_1/">
     <time datetime="2018-02-12T08:26:41.000Z" class="entry-date">
         2018-02-12
     </time>
@@ -497,7 +604,7 @@
 
 
   
-    <article id="post-effective_modern_cpp_one" class="post-effective_modern_cpp_one post type-post status-publish format-standard hentry">
+    <article id="post-effective_modern_cpp_0" class="post-effective_modern_cpp_0 post type-post status-publish format-standard hentry">
     <!---->
 
       <header class="entry-header">
@@ -505,14 +612,14 @@
         
   
     <h1 class="entry-title">
-      <a class="article-title" href="/2018/02/12/effective_modern_cpp_one/">effective modern c++读书笔记(一)</a>
+      <a class="article-title" href="/2018/02/12/effective_modern_cpp_0/">effective modern c++读书笔记(一)</a>
     </h1>
   
 
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective_modern_cpp_one/" data-id="cjnwpxocc001cqu77xwhbek26" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective_modern_cpp_0/" data-id="cjrnom7730009ic77afb3081r" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -660,7 +767,7 @@
     </div><!-- .entry-content -->
 
     <footer class="entry-meta">
-    <a href="/2018/02/12/effective_modern_cpp_one/">
+    <a href="/2018/02/12/effective_modern_cpp_0/">
     <time datetime="2018-02-12T07:36:06.000Z" class="entry-date">
         2018-02-12
     </time>
@@ -679,7 +786,7 @@
 
 
   
-    <article id="post-syscall" class="post-syscall post type-post status-publish format-standard hentry">
+    <article id="post-syscall_IA32" class="post-syscall_IA32 post type-post status-publish format-standard hentry">
     <!---->
 
       <header class="entry-header">
@@ -687,14 +794,14 @@
         
   
     <h1 class="entry-title">
-      <a class="article-title" href="/2018/01/29/syscall/">当我们谈论系统调用的时候我们在谈论什么</a>
+      <a class="article-title" href="/2018/01/29/syscall_IA32/">当我们谈论系统调用的时候我们在谈论什么</a>
     </h1>
   
 
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/01/29/syscall/" data-id="cjnwpxocd001equ77h2lz03ux" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/01/29/syscall_IA32/" data-id="cjrnom77t000vic77crxvpe1i" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -741,7 +848,7 @@
     </div><!-- .entry-content -->
 
     <footer class="entry-meta">
-    <a href="/2018/01/29/syscall/">
+    <a href="/2018/01/29/syscall_IA32/">
     <time datetime="2018-01-29T09:59:56.000Z" class="entry-date">
         2018-01-29
     </time>
@@ -775,7 +882,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/13/swap_tow_integer/" data-id="cjnwpxobk000xqu776nyz37qw" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/13/swap_tow_integer/" data-id="cjrnom77r000tic77e8hfuhrp" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -876,7 +983,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/04/nullptr_and_NULL/" data-id="cjnwpxobc000lqu77xhvynfmq" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/04/nullptr_and_NULL/" data-id="cjrnom77h000jic77wlllxaxj" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -927,7 +1034,7 @@
 
 
   
-    <article id="post-c++_switch" class="post-c++_switch post type-post status-publish format-standard hentry">
+    <article id="post-cpp_switch" class="post-cpp_switch post type-post status-publish format-standard hentry">
     <!---->
 
       <header class="entry-header">
@@ -935,14 +1042,14 @@
         
   
     <h1 class="entry-title">
-      <a class="article-title" href="/2017/10/30/c++_switch/">c++ switch内部的变量定义</a>
+      <a class="article-title" href="/2017/10/30/cpp_switch/">c++ switch内部的变量定义</a>
     </h1>
   
 
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/10/30/c++_switch/" data-id="cjnwpxoas0005qu777jthijdo" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/10/30/cpp_switch/" data-id="cjrnom7700008ic775t0cvxes" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -969,7 +1076,7 @@
     </div><!-- .entry-content -->
 
     <footer class="entry-meta">
-    <a href="/2017/10/30/c++_switch/">
+    <a href="/2017/10/30/cpp_switch/">
     <time datetime="2017-10-30T15:59:56.000Z" class="entry-date">
         2017-10-30
     </time>
@@ -988,7 +1095,7 @@
 
 
   
-    <article id="post-name-mangling-and-overload" class="post-name-mangling-and-overload post type-post status-publish format-standard hentry">
+    <article id="post-name_mangling_and_overload" class="post-name_mangling_and_overload post type-post status-publish format-standard hentry">
     <!---->
 
       <header class="entry-header">
@@ -996,14 +1103,14 @@
         
   
     <h1 class="entry-title">
-      <a class="article-title" href="/2017/08/05/name-mangling-and-overload/">浅谈name mangling</a>
+      <a class="article-title" href="/2017/08/05/name_mangling_and_overload/">浅谈name mangling</a>
     </h1>
   
 
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/08/05/name-mangling-and-overload/" data-id="cjnwpxob9000iqu77f3b8iz9m" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/08/05/name_mangling_and_overload/" data-id="cjrnom79n001lic77ncndou10" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -1050,7 +1157,7 @@
     </div><!-- .entry-content -->
 
     <footer class="entry-meta">
-    <a href="/2017/08/05/name-mangling-and-overload/">
+    <a href="/2017/08/05/name_mangling_and_overload/">
     <time datetime="2017-08-05T08:18:38.000Z" class="entry-date">
         2017-08-05
     </time>
@@ -1069,7 +1176,7 @@
 
 
   
-    <article id="post-c++-reference" class="post-c++-reference post type-post status-publish format-standard hentry">
+    <article id="post-cpp_reference" class="post-cpp_reference post type-post status-publish format-standard hentry">
     <!---->
 
       <header class="entry-header">
@@ -1077,14 +1184,14 @@
         
   
     <h1 class="entry-title">
-      <a class="article-title" href="/2017/07/13/c++-reference/">c++引用的实现</a>
+      <a class="article-title" href="/2017/07/13/cpp_reference/">c++引用的实现</a>
     </h1>
   
 
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/07/13/c++-reference/" data-id="cjnwpxoaq0004qu778xo9hpsx" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/07/13/cpp_reference/" data-id="cjrnom76w0005ic77d3ajykfn" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -1117,7 +1224,7 @@
     </div><!-- .entry-content -->
 
     <footer class="entry-meta">
-    <a href="/2017/07/13/c++-reference/">
+    <a href="/2017/07/13/cpp_reference/">
     <time datetime="2017-07-13T15:59:56.000Z" class="entry-date">
         2017-07-13
     </time>
@@ -1126,112 +1233,6 @@
     
   <span class="article-delim">&#8226;</span>
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
-
-    </footer>
-</article>
-
-
-
-
-
-
-  
-    <article id="post-stack-frame" class="post-stack-frame post type-post status-publish format-standard hentry">
-    <!---->
-
-      <header class="entry-header">
-        
-        
-  
-    <h1 class="entry-title">
-      <a class="article-title" href="/2017/07/10/stack-frame/">浅谈栈帧</a>
-    </h1>
-  
-
-        
-        <div class="comments-link">
-            
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/07/10/stack-frame/" data-id="cjnwpxobh000squ77bv8pfge4" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
-        </div><!-- .comments-link -->
-      </header><!-- .entry-header -->
-
-    <div class="entry-content">
-      
-        <p><strong>本文内容是结合《深入理解计算机系统》第三章以及自己对于栈帧、C语言函数调用实现机制的浅薄理解。如有错误，欢迎指正。</strong> （逃~</p>
-<h2 id="什么是栈帧"><a href="#什么是栈帧" class="headerlink" title="什么是栈帧"></a>什么是栈帧</h2><blockquote>
-<p>C语言中，每个栈帧对应着一个未运行完的函数。栈帧中保存了该函数的返回地址和局部变量。</p>
-</blockquote>
-<p>大多数机器用程序栈来支持过程调用。机器用栈来传递过程参数，存储返回信息，保存寄存器用于以后恢复，以及本地存储。为单个过程分配的那部分栈成为栈帧（stack frame）。</p>
-<p><img src="http://www.myhack58.com/Article/UploadPic/2016-7/201674201749615.jpg" alt="stack frame"></p>
-<p>此图描绘了栈帧的通用结构。最顶端的栈帧用两个指针界定。在IA32机器上寄存器%ebp为帧指针，寄存器%esp为栈顶指针。在64位机器上则分别用%rbp和%rsp寄存器。<strong>以下提到的汇编代码如不特别说明一般指的是在32位机器上的汇编结果。</strong></p>
-<p>假设过程P（调用者）调用Q（被调用者）时，P会在自己栈帧存储Q的参数，另外会将P的返回地址也压入栈中。返回地址就是程序从Q返回时应该继续执行的地方。当调用返回时，这个返回地址会被pop进%eip（指令指针寄存器，同理，在64位上%rip）。</p>
-<h2 id="控制转移指令"><a href="#控制转移指令" class="headerlink" title="控制转移指令"></a>控制转移指令</h2><p>控制转移指令主要有call和leave和ret。</p>
-<ul>
-<li><p>call</p>
-<p>call指令有一个目标，即指令被调用过程起始指令的地址。</p>
-<p>call指令的效果是将返回地址入栈。返回地址也就是当前指令指针寄存器（%eip）中指向的指令的下一个指令的地址。然后指令指针寄存器会存储call的目标，即相当于实现了控制的转移。</p>
-<p>call之后会进入另一个函数。此时会建立新的栈帧。建立过程如下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pushl   %ebp</span><br><span class="line">movl    %esp, %ebp</span><br><span class="line">subl    $24, %esp</span><br></pre></td></tr></table></figure>
-<p>首先，保存调用者的%ebp，然后赋予%ebp栈顶的地址，最后，为当前栈帧分配空间（这里举得例子是分配24字节，视实际情况而定），由于栈增长方向为较小地址，所以减去某个值即可分配完成。BTW，GCC分配的空间一般是16字节的整数倍。</p>
-</li>
-<li><p>leave</p>
-<p>leave指令可以使栈做好返回的准备。等价于下面的代码序列：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">movl	%ebp, %esp</span><br><span class="line">pop     %ebp</span><br></pre></td></tr></table></figure>
-<p>将栈顶指针与帧指针同步，然后把当前帧顶，即调用者的帧的最底位置（上一个栈帧的帧底地址）pop给%ebp，实现了调用者帧指针的恢复。</p>
-</li>
-<li><p>ret</p>
-<p>ret的作用就是将call指令时保存的下一个指令的地址，即当前栈顶的数据pop给%eip。此时，调用者%esp也恢复成了调用前的状态。并且指令指针寄存器中的数据也已经变成call指令之后的一条指令的地址。此时，调用完美结束。</p>
-</li>
-</ul>
-<h2 id="实例"><a href="#实例" class="headerlink" title="实例"></a>实例</h2><p><strong>以下汇编代码来自64位机器上 gcc编译产生。</strong></p>
-<p>这是一个极其简单的c函数。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">Q</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	</span><br><span class="line">&#125; </span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">P</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	Q(); </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这是编译结果的节选：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Q:</span><br><span class="line">	pushq   %rbp</span><br><span class="line">	movq	%rsp, %rbp</span><br><span class="line">	popq	%rbp</span><br><span class="line">	ret</span><br><span class="line">P:</span><br><span class="line">	pushq   %rbp</span><br><span class="line">	movq	%rsp, %rbp</span><br><span class="line">	subq	$32, %rsp</span><br><span class="line">	call	Q</span><br></pre></td></tr></table></figure>
-<p>可以看出符合上面的讲解。P首先建立栈帧，然后调用Q，Q保存P的%rbp，建立自己的栈帧，最后返回P的控制。</p>
-<h2 id="小小进阶"><a href="#小小进阶" class="headerlink" title="小小进阶"></a>小小进阶</h2><p>上面举的实例，以及之前的讲解中都是用的P调用Q的情况。其实P、Q是同一函数也可以啊。蛤蛤，这就拓展到了函数递归了。每次函数调用自身的时候也都是一样的原理。都是先call自身，保存下一条指令地址，接着创建新的栈帧。到达终止条件后，这些栈帧就一个个ret上一个栈帧…毅种循环。蛤蛤，知道为什么没有终止条件的递归容易栈溢出了吧。</p>
-<p>以下是一个大家很熟悉的阶乘的递归例子（<strong>64位机器 gcc编译</strong>）</p>
-<p>这是c代码：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">fact</span><span class="params">(<span class="keyword">int</span> n)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">if</span>(n &lt;= <span class="number">1</span>)</span><br><span class="line">		<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">		<span class="keyword">return</span> n*fact(n<span class="number">-1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>以下是汇编节选：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">fact:</span><br><span class="line">	pushq   %rbp</span><br><span class="line">	movq	%rsp, %rbp</span><br><span class="line">	subq	$32, %rsp</span><br><span class="line">	movl	%ecx, 16(%rbp)</span><br><span class="line">	cmpl	$1, 16(%rbp)</span><br><span class="line">	jg	.L2</span><br><span class="line">	movl	$1, %eax</span><br><span class="line">	jmp	.L3</span><br><span class="line">.L2:</span><br><span class="line">	movl	16(%rbp), %eax</span><br><span class="line">	subl	$1, %eax</span><br><span class="line">	movl	%eax, %ecx</span><br><span class="line">	call	fact</span><br><span class="line">	imull   16(%rbp), %eax</span><br><span class="line">.L3:</span><br><span class="line">	addq	$32, %rsp</span><br><span class="line">	popq	%rbp</span><br><span class="line">	ret</span><br></pre></td></tr></table></figure>
-<p>我们可以看到递归调用一个函数本身的结果和调用其它函数是一样的。这种调用机制也适用于更加复杂的情况，比如相互递归调用（P调用Q，Q再调用P）。</p>
-<hr>
-<p>更新（2017.7.18）：</p>
-<p>以上谈的主要是基于X86-32架构的栈帧，而随着X86-64的出现，过程调用有着很大的不同，同时栈帧也不可避免的有一些变化。</p>
-<p><strong>x86-64上的栈帧布局特点:</strong></p>
-<ul>
-<li>参数（最多六个）通过寄存器传递到过程，而不用保存在栈上。</li>
-<li>很多函数不需要栈帧。只有那些不能将所有局部变量都放在寄存器中的函数才需要在栈上分配空间。</li>
-<li>过程的存储空间拓展到了地址低于当前栈指针的存储空间（最多低128byte）。这就可以避免push带来的开销，而且保持栈指针不变。即可以直接通过栈指针定位到存储的数据。</li>
-<li>从上面的描述也可以看出来，帧指针已经没有必要存在了。即<strong>不存在帧指针</strong>。大多数函数在调用开始时分配所需要的整个栈存储，并保持栈指针指向固定的位置。</li>
-</ul>
-<p>每个栈帧的部分就是在栈指针到保存的返回地址之间。X86-64对栈帧使用的减少，并充分发挥寄存器。而且不用帧指针，多了一个可用的寄存器，栈指针兼职了之前帧指针的作用。</p>
-<p>至于其他不同架构上的变化，我就不是很了解了。</p>
-<p>ps：GCC编译的时候提供了一个选项“-fomit-frame-pointer”，用来显式的不使用帧指针。以下是文档说明</p>
-<blockquote>
-<p>Don’t keep the frame pointer in a register for functions that don’t need one. This avoids the instructions to save, set up and restore frame pointers; it also makes an extra register available in many functions. It also makes debugging impossible on some machines.</p>
-<p>On some machines, such as the VAX, this flag has no effect, because the standard calling sequence automatically handles the frame pointer and nothing is saved by pretending it doesn’t exist. The machine-description macro “FRAME_POINTER_REQUIRED” controls whether a target machine supports this flag.</p>
-</blockquote>
-<p>亲测gcc在开启优化的情况下也会省去帧指针。不过缺省情况(不开启优化并且不加“-fomit-frame-pointer”选项)将使用帧指针，建立栈帧的过程与本篇前半段的讲解几乎相同。</p>
-<hr>
-<p>2018.1.29</p>
-<p>update:</p>
-<p>上面主要是根据csapp的内容总结的，实际上函数调用时传递参数和获取返回值的方法，以及对与栈帧的具体用法，还和<strong>调用惯例(calling convention)</strong>。这是ABI的范畴。所以可见c/c++编译的程序要想做到二进制兼容十分困难。</p>
-
-      
-    </div><!-- .entry-content -->
-
-    <footer class="entry-meta">
-    <a href="/2017/07/10/stack-frame/">
-    <time datetime="2017-07-10T11:50:17.000Z" class="entry-date">
-        2017-07-10
-    </time>
-</a>
-    
-    
-  <span class="article-delim">&#8226;</span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a></li></ul>
 
     </footer>
 </article>
@@ -1271,6 +1272,10 @@
       <ul>
         
           <li>
+            <a href="/2019/02/02/syscall_x64/">x64上Linux的系统调用</a>
+          </li>
+        
+          <li>
             <a href="/2018/09/14/parse_ELF/">详细解析 ELF</a>
           </li>
         
@@ -1286,10 +1291,6 @@
             <a href="/2018/08/02/LDK_1/">《Linux内核设计与实现》读书笔记——进程调度</a>
           </li>
         
-          <li>
-            <a href="/2018/07/27/LDK_0/">《Linux内核设计与实现》读书笔记——进程</a>
-          </li>
-        
       </ul>
     </div>
   </aside>
@@ -1299,7 +1300,7 @@
   <aside class="widget">
     <h3 class="widget-title">Tags</h3>
     <div class="widget-content">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </aside>
 
@@ -1316,7 +1317,7 @@
 </div>
       </div>
       <footer id="colophon" role="contentinfo">
-    <p>&copy; 2018 cyyzero
+    <p>&copy; 2019 cyyzero
     All rights reserved.</p>
     <p>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></p>
 </footer>

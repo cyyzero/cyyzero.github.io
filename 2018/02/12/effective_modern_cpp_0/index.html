@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <meta name="description" content="ps:第一本看的英文原版…希望这个寒假能看完吧
+Item 1-5
+（建议直接看书，个人认为很重要
+
+Item 6
+警惕auto被类型推导为某个意想不到的proxy class（ie. vector::operator[]）
+
+Item 7
+大括号可以用来完成uniform initializatio" />
+  
+
+  
+  
+  
+  
+  
+  
+  <title>effective modern c++读书笔记(一) | Pluto&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="ps:第一本看的英文原版…希望这个寒假能看完吧 Item 1-5 （建议直接看书，个人认为很重要  Item 6 警惕auto被类型推导为某个意想不到的proxy class（ie. vector::operator[]）  Item 7 大括号可以用来完成uniform initialization，且不会发生隐式narrowing conversion.  一般来说，Object o{xxx}">
+<meta name="keywords" content="c++">
+<meta property="og:type" content="article">
+<meta property="og:title" content="effective modern c++读书笔记(一)">
+<meta property="og:url" content="http://yoursite.com/2018/02/12/effective_modern_cpp_0/index.html">
+<meta property="og:site_name" content="Pluto&#39;s Blog">
+<meta property="og:description" content="ps:第一本看的英文原版…希望这个寒假能看完吧 Item 1-5 （建议直接看书，个人认为很重要  Item 6 警惕auto被类型推导为某个意想不到的proxy class（ie. vector::operator[]）  Item 7 大括号可以用来完成uniform initialization，且不会发生隐式narrowing conversion.  一般来说，Object o{xxx}">
+<meta property="og:updated_time" content="2019-02-02T15:14:58.001Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="effective modern c++读书笔记(一)">
+<meta name="twitter:description" content="ps:第一本看的英文原版…希望这个寒假能看完吧 Item 1-5 （建议直接看书，个人认为很重要  Item 6 警惕auto被类型推导为某个意想不到的proxy class（ie. vector::operator[]）  Item 7 大括号可以用来完成uniform initialization，且不会发生隐式narrowing conversion.  一般来说，Object o{xxx}">
+  
+  
+    <link rel="icon" href="/css/images/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+  
+  <!-- baidu webmaster push -->
+  <script src='//push.zhanzhang.baidu.com/push.js'></script>
+</head>
+<body class="home blog custom-background custom-font-enabled single-author">
+  <div id="page" class="hfeed site">
+      <header id="masthead" class="site-header" role="banner">
+    <hgroup>
+      <h1 class="site-title">
+        <a href="/" title="Pluto&#39;s Blog" rel="home">Pluto&#39;s Blog</a>
+      </h1>
+      
+        <h2 class="site-description">
+          <a href="/" id="subtitle">失败人士自留地</a>
+        </h2>
+      
+    </hgroup>
+
+    <nav id="site-navigation" class="main-navigation" role="navigation">
+            <button class="menu-toggle">菜单</button>
+            <a class="assistive-text" href="/#content" title="跳至内容">跳至内容</a><!--TODO-->
+            <div class="menu-main-container">
+                <ul id="menu-main" class="nav-menu">
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/">Home</a></li>
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/archives">Archives</a></li>
+                
+                </ul>
+            </div>
+    </nav>
+</header>
+      <div id="main" class="wrapper">
+        <div id="primary" class="site-content"><div id="content" role="main"><article id="post-effective_modern_cpp_0" class="post-effective_modern_cpp_0 post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title article-title">
+      effective modern c++读书笔记(一)
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective_modern_cpp_0/" data-id="cjrnom7730009ic77afb3081r" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p>ps:第一本看的英文原版…希望这个寒假能看完吧</p>
+<h1 id="Item-1-5"><a href="#Item-1-5" class="headerlink" title="Item 1-5"></a>Item 1-5</h1><ul>
+<li>（建议直接看书，个人认为很重要</li>
+</ul>
+<h1 id="Item-6"><a href="#Item-6" class="headerlink" title="Item 6"></a>Item 6</h1><ul>
+<li>警惕<code>auto</code>被类型推导为某个意想不到的proxy class（ie. vector<bool>::operator[]）</bool></li>
+</ul>
+<h1 id="Item-7"><a href="#Item-7" class="headerlink" title="Item 7"></a>Item 7</h1><ul>
+<li><p>大括号可以用来完成uniform initialization，且不会发生隐式narrowing conversion.</p>
+</li>
+<li><p>一般来说，<code>Object o{xxx};</code>会优先匹配参数是std::initializer_list的构造函数</p>
+</li>
+<li><p>类内非静态成员不能用()初始化</p>
+</li>
+</ul>
+<ul>
+<li><p><code>auto t = {xxx};</code>, t类型被推断为std::initializer_list</p>
+</li>
+<li><p>一组对比</p>
+<ul>
+<li><code>Object o();</code> =&gt; Error</li>
+<li><code>Object o{};</code> =&gt; OK</li>
+</ul>
+</li>
+<li><p>另一组对比</p>
+<ul>
+<li><code>Object o{};</code>调用默认构造函数</li>
+<li><code>Object o{ {}};</code>或者<code>Object o( {});</code>调用参数为空的std::initializer_list的构造函数</li>
+</ul>
+</li>
+</ul>
+<h1 id="Item-8"><a href="#Item-8" class="headerlink" title="Item 8"></a>Item 8</h1><ul>
+<li>0，NULL和nullptr三者，用nullptr表示空指针(之前单独总结过，不多说了)（逃</li>
+</ul>
+<h1 id="Item-9"><a href="#Item-9" class="headerlink" title="Item 9"></a>Item 9</h1><ul>
+<li><p>With a alias template:</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;                          <span class="comment">// MyAllocList&lt;T&gt;</span></span><br><span class="line"><span class="keyword">using</span> MyAllocList = <span class="built_in">std</span>::<span class="built_in">list</span>&lt;T, MyAlloc&lt;T&gt;&gt;; <span class="comment">// is synonym for</span></span><br><span class="line">                                              <span class="comment">// std::list&lt;T,</span></span><br><span class="line">                                              <span class="comment">//     MyAlloc&lt;T&gt;&gt;</span></span><br><span class="line"></span><br><span class="line">MyAllocList&lt;Widget&gt; lw;                       <span class="comment">// client code</span></span><br></pre></td></tr></table></figure>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Widget</span> &#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">MyAllocList&lt;T&gt; <span class="built_in">list</span>;</span><br><span class="line">...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>And with a typedef:</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="comment">// MyAllocList&lt;T&gt;::type</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">MyAllocList</span> &#123;</span></span><br><span class="line"><span class="comment">// is synonym for</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="built_in">std</span>::<span class="built_in">list</span>&lt;T, MyAlloc&lt;T&gt;&gt; type; <span class="comment">// std::list&lt;T,</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">//MyAlloc&lt;T&gt;&gt;</span></span><br><span class="line">MyAllocList&lt;Widget&gt;::type lw;</span><br><span class="line"><span class="comment">// client code</span></span><br></pre></td></tr></table></figure>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Widget</span> &#123;</span></span><br><span class="line"><span class="comment">// Widget&lt;T&gt; contains</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line"><span class="comment">// a MyAllocList&lt;T&gt;</span></span><br><span class="line"><span class="keyword">typename</span> MyAllocList&lt;T&gt;::type <span class="built_in">list</span>;</span><br><span class="line"><span class="comment">// as a data member</span></span><br><span class="line">...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>c++14运用alias template的一点改进</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::remove_const&lt;T&gt;::type</span><br><span class="line"><span class="built_in">std</span>::<span class="keyword">remove_const_t</span>&lt;T&gt;</span><br><span class="line"><span class="comment">// C++11: const T → T</span></span><br><span class="line"><span class="comment">// C++14 equivalent</span></span><br><span class="line"><span class="built_in">std</span>::remove_reference&lt;T&gt;::type</span><br><span class="line"><span class="built_in">std</span>::<span class="keyword">remove_reference_t</span>&lt;T&gt;</span><br><span class="line"><span class="comment">// C++11: T&amp;/T&amp;&amp; → T</span></span><br><span class="line"><span class="comment">// C++14 equivalent</span></span><br><span class="line"><span class="built_in">std</span>::add_lvalue_reference&lt;T&gt;::type</span><br><span class="line"><span class="comment">// C++11: T → T&amp;</span></span><br><span class="line"><span class="built_in">std</span>::<span class="keyword">add_lvalue_reference_t</span>&lt;T&gt;</span><br><span class="line"><span class="comment">// C++14 equivalent</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h1 id="Item10"><a href="#Item10" class="headerlink" title="Item10"></a>Item10</h1><ul>
+<li><p>一般来说，用scoped enums代替unscoped enums。</p>
+<ul>
+<li>scoped emums带来了namespace pollution。</li>
+<li>unscoped enums的成员会隐式转化成整数类型。scoped enums则不会（但可以显式转化）。（这个带来了一点好处。见下 </li>
+</ul>
+</li>
+<li><p>tuple和unscoped enum搭配更佳， 免去记住所有参数序列。否则就得…</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> E&gt;</span><br><span class="line"><span class="function"><span class="keyword">constexpr</span> <span class="keyword">auto</span> <span class="title">toUType</span><span class="params">(E enumerator)</span> noexecpt</span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">static_cast</span>&lt;<span class="built_in">std</span>::<span class="keyword">underlying_type_t</span>&lt;E&gt;&gt;(enumerator);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//...</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> val = <span class="built_in">std</span>::get&lt;toUType(UserInFoFields::uiEmail)&gt;(uInfo);</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h1 id="Item-11"><a href="#Item-11" class="headerlink" title="Item 11"></a>Item 11</h1><ul>
+<li><p>c++11前常常将成员函数声明放在private区域而不实现，以防止编译器自动生成。现在有了<code>=delete</code></p>
+</li>
+<li><p><code>=delete</code>不光能用于成员函数。还能通过讲“重载函数”声明为<code>=delete</code>防止函数的参数被隐式转换。</p>
+</li>
+<li><p><code>=delete</code>还能用于阻止template instantiation。</p>
+</li>
+</ul>
+<h1 id="Item-12"><a href="#Item-12" class="headerlink" title="Item 12"></a>Item 12</h1><ul>
+<li><p>override虚函数的时候加上 <code>override</code>关键词。</p>
+</li>
+<li><p>member function reference qualifiers能区分<code>*this</code>的类别（类似于以前的const</p>
+</li>
+</ul>
+<h1 id="Item-13"><a href="#Item-13" class="headerlink" title="Item 13"></a>Item 13</h1><ul>
+<li><p>在c++98的时候，容器的非const对象无法直接获得const_iterator，一般通过强制转化，或者用绑定到一个reference-to-const。</p>
+</li>
+<li><p>在c++98，const_iterator不能用于在插入或者删除的函数指示位置。</p>
+</li>
+<li><p>c++11提供了<code>begin</code>和<code>end</code>函数（包括许多容器的成员函数和非成员函数的通用版本）。但是c++14才提供了（这里指的是non-member版本）<code>cbegin</code>, <code>cend</code>, <code>rbegin</code>, <code>rend</code>和<code>crend</code>。有个用c++11实现<code>cbegin</code>的例子。</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">C</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">auto</span> <span class="title">cbegin</span>(<span class="title">const</span> <span class="title">C</span>&amp; <span class="title">container</span>)-&gt;<span class="title">decltype</span>(<span class="title">std</span>:</span>:begin(container))</span><br><span class="line">&#123;</span><br><span class="line">    retrurn <span class="built_in">std</span>::begin(container)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<h1 id="Item-14"><a href="#Item-14" class="headerlink" title="Item 14"></a>Item 14</h1><ul>
+<li><p>exception-neutral函数(指这类函数：它本身不抛出异常，但是它调用的函数可能会抛出异常)不能加noexcept</p>
+</li>
+<li><p>典型地，move operations，swap，memory deallocation函数， destructor都默认noexcept</p>
+</li>
+</ul>
+<h1 id="Item-15"><a href="#Item-15" class="headerlink" title="Item 15"></a>Item 15</h1><ul>
+<li><p>constexpr对象是编译期常量。(不过准确的说，应该<code>translation</code>期间的常量，包括编译<code>compile</code>和链接<code>link</code>)</p>
+</li>
+<li><p>对于constexpr函数来说，有两种情况。这意味着不需要对运行期和编译期执行的函数进行重载</p>
+<ul>
+<li><p>如果所有参数都是编译期常量，函数将在编译期就得到结果。</p>
+</li>
+<li><p>当一个或多个参数不是编译期常量的时候，就和普通函数一样，在运行期执行。</p>
+</li>
+</ul>
+</li>
+<li><p>constexpr是函数接口的一部分，不能随意去除</p>
+</li>
+</ul>
+<h1 id="Item-16"><a href="#Item-16" class="headerlink" title="Item 16"></a>Item 16</h1><ul>
+<li>对于某个需要同步的对象来说，用std::atomic就够了。但是对于多个对象作为一个整体需要同步的时候，往往需要用到mutex。</li>
+</ul>
+<h1 id="Item-17"><a href="#Item-17" class="headerlink" title="Item 17"></a>Item 17</h1><ul>
+<li><p>c++11开始，特殊成员函数有</p>
+<ul>
+<li>defualt constructor 默认构造函数</li>
+<li>destructor 析构函数</li>
+<li>copy constructor 拷贝构造函数</li>
+<li>copy assignment operator 拷贝赋值函数</li>
+<li>move constructor 移动构造函数</li>
+<li>move assignment operator 移动赋值函数</li>
+</ul>
+</li>
+<li><p>对于后两个移动操作有关的函数(构造和赋值)来说，编译器默认生成的版本的行为是对所有非static成员调用执行对应(构造或赋值)的移动操作。对于带有继承的类来说，还会对基类进行对应的移动操作。但是，遇到不支持移动操作的对象，所以会用copy来替代move操作。</p>
+</li>
+<li><p>完成上述操作的核心是将std::move用于相应的对象(即非static成员或者基类部分)，然后根据函数重载规则，会调用相应的copy和move函数。</p>
+</li>
+<li><p>这两个移动操作不是相互独立的。如果声明了其中一个，编译器将不会自动生成另一个。</p>
+</li>
+<li><p>声明了拷贝操作(拷贝构造函数和拷贝赋值函数),那么编译器将不会生成移动操作的版本。反之亦然。</p>
+</li>
+<li><p>c++98开始就有个<code>Rule of Three</code>，即析构函数，拷贝构造函数，拷贝赋值函数三者自定义了任意一个，那一般来说其他两个也得自定义，编译器生成的很可能是错误的行为。</p>
+</li>
+<li><p>总结：下面三个条件都成立，则移动操作将会被编译器生成：</p>
+<ul>
+<li>没有声明拷贝操作</li>
+<li>没有声明移动操作</li>
+<li>没有声明析构函数</li>
+</ul>
+</li>
+<li><p>想让编译器生成可以显示地用<code>=default</code>。尽量别依赖编译器隐式生成的规则，一是能规避复杂规则带来的bug，二是让代码意图明显。</p>
+</li>
+<li><p>成员函数模板不会影响编译器生成这些特殊成员函数。</p>
+</li>
+</ul>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2018/02/12/effective_modern_cpp_0/">
+    <time datetime="2018-02-12T07:36:06.000Z" class="entry-date">
+        2018-02-12
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+
+    </footer>
+</article>
+
+
+    
+<nav class="nav-single">
+    <h3 class="assistive-text">文章导航</h3>
+    
+        <span class="nav-previous"><a href="/2018/02/12/effective_modern_cpp_1/" rel="prev"><span class="meta-nav">←</span> effective modern c++读书笔记(二)</a></span>
+    
+    
+        <span class="nav-next"><a href="/2018/01/29/syscall_IA32/" rel="next">当我们谈论系统调用的时候我们在谈论什么 <span class="meta-nav">→</span></a></span>
+    
+</nav><!-- .nav-single -->
+
+
+
+
+
+
+
+</div></div>
+        <div id="secondary" class="widget-area" role="complementary">
+  
+    <aside id="search" class="widget widget_search"><form role="search" method="get" accept-charset="utf-8" id="searchform" class="searchform" action="//google.com/search">
+    <div>
+        <input type="text" value="" name="s" id="s" />
+        <input type="submit" id="searchsubmit" value="搜索" />
+    </div>
+</form></aside>
+  
+    
+  
+    
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget-content">
+      <ul>
+        
+          <li>
+            <a href="/2019/02/02/syscall_x64/">x64上Linux的系统调用</a>
+          </li>
+        
+          <li>
+            <a href="/2018/09/14/parse_ELF/">详细解析 ELF</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/31/tlpi_thread_multijoin_bug/">记 TLPI 上一个多线程代码例子的bug</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/23/LDK_2/">《Linux内核设计与实现》读书笔记——系统调用</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/02/LDK_1/">《Linux内核设计与实现》读书笔记——进程调度</a>
+          </li>
+        
+      </ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget-content">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget-content tagcloud">
+      <a href="/tags/C/" style="font-size: 10px;">C</a> <a href="/tags/Linux/" style="font-size: 15px;">Linux</a> <a href="/tags/X86/" style="font-size: 10px;">X86</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+    </div>
+  </aside>
+
+  
+</div>
+      </div>
+      <footer id="colophon" role="contentinfo">
+    <p>&copy; 2019 cyyzero
+    All rights reserved.</p>
+    <p>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></p>
+</footer>
+    <script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"1","bdMiniList":false,"bdPic":"","bdStyle":"2","bdSize":"16"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+<script src="/js/navigation.js"></script>
+
+<div id="bg"></div>
+
+  </div>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <meta name="description" content="ps:句式“当我们谈论XX时我们在谈论什么”引用自美国作家卡佛(Ramond Carver)的作品《当我们谈论爱情时我们谈论什么》(What We Talk About When We Talk About Love)。当然，我又标题党了，应该换成浅析IA32 Linux 系统调用过程比较合适。
+当" />
+  
+
+  
+  
+  
+  
+  
+  
+  <title>当我们谈论系统调用的时候我们在谈论什么 | Pluto&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="ps:句式“当我们谈论XX时我们在谈论什么”引用自美国作家卡佛(Ramond Carver)的作品《当我们谈论爱情时我们谈论什么》(What We Talk About When We Talk About Love)。当然，我又标题党了，应该换成浅析IA32 Linux 系统调用过程比较合适。 当说到Linux下的系统调用(System Call)的时候，程序员都不会陌生。但一般都会联想到for">
+<meta name="keywords" content="Linux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="当我们谈论系统调用的时候我们在谈论什么">
+<meta property="og:url" content="http://yoursite.com/2018/01/29/syscall_IA32/index.html">
+<meta property="og:site_name" content="Pluto&#39;s Blog">
+<meta property="og:description" content="ps:句式“当我们谈论XX时我们在谈论什么”引用自美国作家卡佛(Ramond Carver)的作品《当我们谈论爱情时我们谈论什么》(What We Talk About When We Talk About Love)。当然，我又标题党了，应该换成浅析IA32 Linux 系统调用过程比较合适。 当说到Linux下的系统调用(System Call)的时候，程序员都不会陌生。但一般都会联想到for">
+<meta property="og:updated_time" content="2019-02-02T15:16:05.918Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="当我们谈论系统调用的时候我们在谈论什么">
+<meta name="twitter:description" content="ps:句式“当我们谈论XX时我们在谈论什么”引用自美国作家卡佛(Ramond Carver)的作品《当我们谈论爱情时我们谈论什么》(What We Talk About When We Talk About Love)。当然，我又标题党了，应该换成浅析IA32 Linux 系统调用过程比较合适。 当说到Linux下的系统调用(System Call)的时候，程序员都不会陌生。但一般都会联想到for">
+  
+  
+    <link rel="icon" href="/css/images/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+  
+  <!-- baidu webmaster push -->
+  <script src='//push.zhanzhang.baidu.com/push.js'></script>
+</head>
+<body class="home blog custom-background custom-font-enabled single-author">
+  <div id="page" class="hfeed site">
+      <header id="masthead" class="site-header" role="banner">
+    <hgroup>
+      <h1 class="site-title">
+        <a href="/" title="Pluto&#39;s Blog" rel="home">Pluto&#39;s Blog</a>
+      </h1>
+      
+        <h2 class="site-description">
+          <a href="/" id="subtitle">失败人士自留地</a>
+        </h2>
+      
+    </hgroup>
+
+    <nav id="site-navigation" class="main-navigation" role="navigation">
+            <button class="menu-toggle">菜单</button>
+            <a class="assistive-text" href="/#content" title="跳至内容">跳至内容</a><!--TODO-->
+            <div class="menu-main-container">
+                <ul id="menu-main" class="nav-menu">
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/">Home</a></li>
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/archives">Archives</a></li>
+                
+                </ul>
+            </div>
+    </nav>
+</header>
+      <div id="main" class="wrapper">
+        <div id="primary" class="site-content"><div id="content" role="main"><article id="post-syscall_IA32" class="post-syscall_IA32 post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title article-title">
+      当我们谈论系统调用的时候我们在谈论什么
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/01/29/syscall_IA32/" data-id="cjrnom77t000vic77crxvpe1i" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p>ps:句式“当我们谈论XX时我们在谈论什么”引用自美国作家卡佛(Ramond Carver)的作品《当我们谈论爱情时我们谈论什么》(What We Talk About When We Talk About Love)。当然，我又标题党了，应该换成<strong>浅析IA32 Linux 系统调用过程</strong>比较合适。</p>
+<p>当说到Linux下的系统调用(<strong>System Call</strong>)的时候，程序员都不会陌生。但一般都会联想到fork()，execve()等这些函数。这就是很多人(包括以前我自己)的误区所在了。</p>
+<p>诸如fork() 这些，是c语言函数库(linux下常见如glibc)实现的<strong>外壳(wrapper)函数</strong>，由它们来引发真正的系统调用。从C语言编程的角度来看，调用C语言函数库的外壳函数等同于发起系统调用。也就是说，当我们在代码中使用诸如fork()这类函数时，意味着调用外壳函数，然后由外壳函数去调用系统调用(可能有点绕)。</p>
+<p>区分了狭义上的外壳(wrapper)函数和系统调用后，就能进入本文的主题了:<strong>IA32上Linux系统调用的过程</strong>。(因为其他的不懂…</p>
+<hr>
+<p>首先描述两个概念，<strong>中断(interruption)</strong>和<strong>异常(execption)</strong>。从<a href="https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf" target="_blank" rel="noopener">Intel的手册</a>上找的简单介绍。</p>
+<blockquote>
+<p>The processor provides two mechanisms for interrupting program execution, interrupts and exceptions: </p>
+<p>• An interrupt  is an asynchronous event that is typically triggered by an I/O device.</p>
+<p>• An exception is a synchronous event that is generated when the processor detects one or more predefined conditions while executing an instruction. The IA-32 architecture specifies three classes of exceptions: faults, traps, and aborts. </p>
+</blockquote>
+<p>简单地说，中断和异常是处理器提供的中断程序执行的机制，能引起X86挂起当前指令流的执行并相应事件。在这两种情况下处理器都会保存当前进程的上下文，并将转至一个预先定义的子程序来执行特殊的服务。</p>
+<p>虽说中断和异常概念上有所区别，但在IA32上处理它们却是用了相同的方式。系统为每种类型的中断和异常分配了唯一的一个无符号整型作为一个向量(vector)，即可以理解为索引。然后内核维护的一张叫做<strong>中断描述符表</strong>(interrupt descriptor table， 一般简称为<strong>IDT</strong>)的结构，表中每一项都是某个中断或者异常对应的处理程序的入口地址。然后每次发生了某个中断和异常，就能通过它的向量，就在IDT中找到相应的处理程序并调用。</p>
+<p>具体到汇编语言，就是通过INT指令来实现。INT(interrupt的缩写)指令的作用是引发中断和异常的处理程序，格式形如INT n。</p>
+<p>从<a href="https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf" target="_blank" rel="noopener">Intel的手册</a>上找的INT指令的简单介绍。</p>
+<blockquote>
+<p>The INT n instruction generates a call to the interrupt or exception handler specified with the destination operand The destination operand specifies a vector from 0 to 255, encoded as an 8-bit unsigned intermediate value. Each vector provides an index to a gate descriptor in the IDT. The first 32 vectors are reserved by Intel for system use. Some of these vectors are used for internally generated exceptions.</p>
+</blockquote>
+<p>大意就是INT n用来调用特定的中断或者异常的处理程序。n取值从0x00-0xFF(8位无符号整型)。N就作为上述提到的向量。举一些简单的例子，比如说0x1表示除法上溢或者被零除，0x12表示栈故障(越界或者栈段不存在)，0x14表示缺页…</p>
+<p>当调用处理程序时，系统栈保存处理器的状态。下列事件将发生:</p>
+<ul>
+<li>若转移涉及特权指令改变，则当前栈段寄存器和当前拓展的栈指针(esp)寄存器的内容被压入栈。</li>
+<li>EFLAGS寄存器的当前值压入栈。</li>
+<li>中断(IF)和自陷(TF)两个标志被清除。这就禁止了INTR中断，自陷或单步中断。</li>
+<li>当前代码段(CS)寄存器和当前指令指针寄存器(IP或者EIP)寄存器被压入栈。</li>
+<li>若中断向量伴随错误代码，则错误代码也入栈。</li>
+<li>读取中断向量表对应项的内容，将其装入CS和IP(或EIP)寄存器。控制转移到终端服务子程序继续执行。</li>
+</ul>
+<p>为从中断返回，中断服务程序执行一条IRET指令。这使得所有保存在栈上的值被取回，并由中断点恢复执行。</p>
+<hr>
+<p>铺垫了这么久，又回到了系统调用。没猜错，IA32的Linux上系统调用就是通过INT 0x80调用的。</p>
+<p>下面讲一下具体过程：</p>
+<p>响应中断0x80，内核调用system_call()。可以再展开说一下，这里通过各个寄存器用于传递参数，EAX寄存器用于表示系统调用的接口号，比如EAX=1用于退出进程(exit)；EAX=2表示创建进程(fork)；EAX=3表示读取文件或者IO(read)等，每个系统调用都对应内核源代码中的一个函数，他们都是以“sys_”开头的，比如说exit调用对应于内核中的sys_exit函数。你没猜错，和IDT一样，系统也维护着一张系统调用表，通过类似*sys_call_table(0,%eax,4)，的跳转，可以通过eax所记录的系统调用号调用对应的系统调用函数。如果系统调用带有函数参数(一般也是通过寄存器传递)，那么还会检查参数的有效性。随后，该函数会执行必要的任务。接着，将状态返回sys_call()函数。从内核栈中恢复各寄存器值，并将系统调用返回结果置于栈中。最后返回外壳函数，中断结束。</p>
+<p>至此，系统调用算是结束了，但是我们调用的外壳(wrapper)函数还没算完。它还有个扫尾工作。如果返回值表明调用有错误，外壳(wrapper)函数就会设置全局变量errno。最后，外壳(wrapper)函数会返回到调用它的地方，并返回一个整型，以表明系统调用是否成功。</p>
+<p>终于调用结束，大功告成了…</p>
+<p>(取好几本书内容的子集东拼西凑写出来的…真是艰难</p>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2018/01/29/syscall_IA32/">
+    <time datetime="2018-01-29T09:59:56.000Z" class="entry-date">
+        2018-01-29
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li></ul>
+
+    </footer>
+</article>
+
+
+    
+<nav class="nav-single">
+    <h3 class="assistive-text">文章导航</h3>
+    
+        <span class="nav-previous"><a href="/2018/02/12/effective_modern_cpp_0/" rel="prev"><span class="meta-nav">←</span> effective modern c++读书笔记(一)</a></span>
+    
+    
+        <span class="nav-next"><a href="/2017/11/13/swap_tow_integer/" rel="next">c++的ub还真是无处不在啊 <span class="meta-nav">→</span></a></span>
+    
+</nav><!-- .nav-single -->
+
+
+
+
+
+
+
+</div></div>
+        <div id="secondary" class="widget-area" role="complementary">
+  
+    <aside id="search" class="widget widget_search"><form role="search" method="get" accept-charset="utf-8" id="searchform" class="searchform" action="//google.com/search">
+    <div>
+        <input type="text" value="" name="s" id="s" />
+        <input type="submit" id="searchsubmit" value="搜索" />
+    </div>
+</form></aside>
+  
+    
+  
+    
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget-content">
+      <ul>
+        
+          <li>
+            <a href="/2019/02/02/syscall_x64/">x64上Linux的系统调用</a>
+          </li>
+        
+          <li>
+            <a href="/2018/09/14/parse_ELF/">详细解析 ELF</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/31/tlpi_thread_multijoin_bug/">记 TLPI 上一个多线程代码例子的bug</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/23/LDK_2/">《Linux内核设计与实现》读书笔记——系统调用</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/02/LDK_1/">《Linux内核设计与实现》读书笔记——进程调度</a>
+          </li>
+        
+      </ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget-content">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget-content tagcloud">
+      <a href="/tags/C/" style="font-size: 10px;">C</a> <a href="/tags/Linux/" style="font-size: 15px;">Linux</a> <a href="/tags/X86/" style="font-size: 10px;">X86</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+    </div>
+  </aside>
+
+  
+</div>
+      </div>
+      <footer id="colophon" role="contentinfo">
+    <p>&copy; 2019 cyyzero
+    All rights reserved.</p>
+    <p>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></p>
+</footer>
+    <script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"1","bdMiniList":false,"bdPic":"","bdStyle":"2","bdSize":"16"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+<script src="/js/navigation.js"></script>
+
+<div id="bg"></div>
+
+  </div>
+</body>
+</html>

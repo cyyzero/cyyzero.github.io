@@ -25,12 +25,12 @@ executable file: 可执行文件。操作系统可以将" />
 <meta property="og:url" content="http://yoursite.com/2018/09/14/parse_ELF/index.html">
 <meta property="og:site_name" content="Pluto&#39;s Blog">
 <meta property="og:description" content="写在前面： 本文主要针对 64位 linux 上的 ELF 文件。为了避免造成歧义(比如 section 和 segment 都能翻译成“段”)，一些专有名词我都保留了英文。 什么是目标文件目标文件(object file)共有这三种：  executable file: 可执行文件。操作系统可以将其加载并执行(execl)。  relocatable file: 可重定位文件。一般来说一个 tr">
-<meta property="og:image" content="http://staff.cs.psu.ac.th/iew/cs323-650/Binary%20file%20formats%20(BFF">
-<meta property="og:updated_time" content="2018-10-31T05:26:03.645Z">
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Elf-layout--en.svg/740px-Elf-layout--en.svg.png">
+<meta property="og:updated_time" content="2018-11-01T11:54:54.566Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="详细解析 ELF">
 <meta name="twitter:description" content="写在前面： 本文主要针对 64位 linux 上的 ELF 文件。为了避免造成歧义(比如 section 和 segment 都能翻译成“段”)，一些专有名词我都保留了英文。 什么是目标文件目标文件(object file)共有这三种：  executable file: 可执行文件。操作系统可以将其加载并执行(execl)。  relocatable file: 可重定位文件。一般来说一个 tr">
-<meta name="twitter:image" content="http://staff.cs.psu.ac.th/iew/cs323-650/Binary%20file%20formats%20(BFF">
+<meta name="twitter:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Elf-layout--en.svg/740px-Elf-layout--en.svg.png">
   
   
     <link rel="icon" href="/css/images/favicon.ico">
@@ -86,7 +86,7 @@ executable file: 可执行文件。操作系统可以将" />
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/09/14/parse_ELF/" data-id="cjnwpxobd000nqu77arqri7fg" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/09/14/parse_ELF/" data-id="cjrnom77k000lic77umal1a4h" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -104,7 +104,7 @@ executable file: 可执行文件。操作系统可以将" />
 </ul>
 <p>目标文件在不同的系统上有着不同的格式。现代 x86-64 Linux 和 Unix 系统使用可执行链接格式(Executable and Linking Format)。</p>
 <h2 id="LEF-文件里有什么"><a href="#LEF-文件里有什么" class="headerlink" title="LEF 文件里有什么"></a>LEF 文件里有什么</h2><p>目标文件参与了程序链接和程序执行的过程。所以为了便利和效率，ELF 从链接和执行的角度来看，所需要的信息不太一样。</p>
-<p><img src="http://staff.cs.psu.ac.th/iew/cs323-650/Binary%20file%20formats%20(BFF" alt="ELF 文件示意图">_files/IMG00010.gif)</p>
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Elf-layout--en.svg/740px-Elf-layout--en.svg.png" alt="ELF 文件示意图"></p>
 <p>如图所示，ELF 文件不论是从链接还是执行的角度来看，都有着一个 <em>ELF file header</em> 。这个文件头起始于文件开始处(偏移量为0的地方)。然后保存着跟文件整体组织相关的信息。后面会再详细介绍。</p>
 <p>从链接的角度来看，ELF 文件中有着有着一个 <em>section header table</em> 和若干个 <em>section</em>。 <em>section header table</em> 中的每一项对应一个 <em>section</em> ，用于描述其基本信息，比如段名、大小、偏移位置等。 目标文件将链接时需要的信息按照不用的属性以 <em>section</em> 的形式存储。比如说保存机器指令的 <em>.text</em> 代码段和保存全局变量和局部静态变量的 <em>.data</em> 数据段。</p>
 <p>从执行的角度来看，ELF 文件中有着一个 <em>program header table</em> 和若干个 <em>segment</em>。 Linux 就是通过读取 <em>program header table</em> 来得知如何创建一个进程映像(或者说如何执行一个程序)。对于可重定位目标文件来说，它并不能加载执行，所以显然它并不需要 <em>program header table</em> 。</p>
@@ -134,6 +134,8 @@ executable file: 可执行文件。操作系统可以将" />
     
 <nav class="nav-single">
     <h3 class="assistive-text">文章导航</h3>
+    
+        <span class="nav-previous"><a href="/2019/02/02/syscall_x64/" rel="prev"><span class="meta-nav">←</span> x64上Linux的系统调用</a></span>
     
     
         <span class="nav-next"><a href="/2018/08/31/tlpi_thread_multijoin_bug/" rel="next">记 TLPI 上一个多线程代码例子的bug <span class="meta-nav">→</span></a></span>
@@ -167,6 +169,10 @@ executable file: 可执行文件。操作系统可以将" />
       <ul>
         
           <li>
+            <a href="/2019/02/02/syscall_x64/">x64上Linux的系统调用</a>
+          </li>
+        
+          <li>
             <a href="/2018/09/14/parse_ELF/">详细解析 ELF</a>
           </li>
         
@@ -182,10 +188,6 @@ executable file: 可执行文件。操作系统可以将" />
             <a href="/2018/08/02/LDK_1/">《Linux内核设计与实现》读书笔记——进程调度</a>
           </li>
         
-          <li>
-            <a href="/2018/07/27/LDK_0/">《Linux内核设计与实现》读书笔记——进程</a>
-          </li>
-        
       </ul>
     </div>
   </aside>
@@ -195,7 +197,7 @@ executable file: 可执行文件。操作系统可以将" />
   <aside class="widget">
     <h3 class="widget-title">Tags</h3>
     <div class="widget-content">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </aside>
 
@@ -212,7 +214,7 @@ executable file: 可执行文件。操作系统可以将" />
 </div>
       </div>
       <footer id="colophon" role="contentinfo">
-    <p>&copy; 2018 cyyzero
+    <p>&copy; 2019 cyyzero
     All rights reserved.</p>
     <p>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></p>
 </footer>

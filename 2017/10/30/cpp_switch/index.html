@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <meta name="description" content="c++中的switch语句大家肯定都很熟悉。switch执行流程是匹配相应的case。很显然，可能会跳过某些case标签，忽略某些代码。那么就带来了一个有意思的话题：如果被忽略的代码中有变量的定义该怎么办？
+先来看一个简单的例子：12345678switch(1)&amp;#123;case 1:	int " />
+  
+
+  
+  
+  
+  
+  
+  
+  <title>c++ switch内部的变量定义 | Pluto&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="c++中的switch语句大家肯定都很熟悉。switch执行流程是匹配相应的case。很显然，可能会跳过某些case标签，忽略某些代码。那么就带来了一个有意思的话题：如果被忽略的代码中有变量的定义该怎么办？ 先来看一个简单的例子：12345678switch(1)&amp;#123;case 1:	int a = 10;	break;case 0:	break;&amp;#125; 然后编译就错了：  error">
+<meta name="keywords" content="c++">
+<meta property="og:type" content="article">
+<meta property="og:title" content="c++ switch内部的变量定义">
+<meta property="og:url" content="http://yoursite.com/2017/10/30/cpp_switch/index.html">
+<meta property="og:site_name" content="Pluto&#39;s Blog">
+<meta property="og:description" content="c++中的switch语句大家肯定都很熟悉。switch执行流程是匹配相应的case。很显然，可能会跳过某些case标签，忽略某些代码。那么就带来了一个有意思的话题：如果被忽略的代码中有变量的定义该怎么办？ 先来看一个简单的例子：12345678switch(1)&amp;#123;case 1:	int a = 10;	break;case 0:	break;&amp;#125; 然后编译就错了：  error">
+<meta property="og:updated_time" content="2019-02-02T15:14:47.407Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="c++ switch内部的变量定义">
+<meta name="twitter:description" content="c++中的switch语句大家肯定都很熟悉。switch执行流程是匹配相应的case。很显然，可能会跳过某些case标签，忽略某些代码。那么就带来了一个有意思的话题：如果被忽略的代码中有变量的定义该怎么办？ 先来看一个简单的例子：12345678switch(1)&amp;#123;case 1:	int a = 10;	break;case 0:	break;&amp;#125; 然后编译就错了：  error">
+  
+  
+    <link rel="icon" href="/css/images/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+
+  
+  <!-- baidu webmaster push -->
+  <script src='//push.zhanzhang.baidu.com/push.js'></script>
+</head>
+<body class="home blog custom-background custom-font-enabled single-author">
+  <div id="page" class="hfeed site">
+      <header id="masthead" class="site-header" role="banner">
+    <hgroup>
+      <h1 class="site-title">
+        <a href="/" title="Pluto&#39;s Blog" rel="home">Pluto&#39;s Blog</a>
+      </h1>
+      
+        <h2 class="site-description">
+          <a href="/" id="subtitle">失败人士自留地</a>
+        </h2>
+      
+    </hgroup>
+
+    <nav id="site-navigation" class="main-navigation" role="navigation">
+            <button class="menu-toggle">菜单</button>
+            <a class="assistive-text" href="/#content" title="跳至内容">跳至内容</a><!--TODO-->
+            <div class="menu-main-container">
+                <ul id="menu-main" class="nav-menu">
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/">Home</a></li>
+                
+                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/archives">Archives</a></li>
+                
+                </ul>
+            </div>
+    </nav>
+</header>
+      <div id="main" class="wrapper">
+        <div id="primary" class="site-content"><div id="content" role="main"><article id="post-cpp_switch" class="post-cpp_switch post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title article-title">
+      c++ switch内部的变量定义
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/10/30/cpp_switch/" data-id="cjrnom7700008ic775t0cvxes" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p>c++中的switch语句大家肯定都很熟悉。switch执行流程是匹配相应的case。很显然，可能会跳过某些case标签，忽略某些代码。那么就带来了一个有意思的话题：<strong>如果被忽略的代码中有变量的定义该怎么办</strong>？</p>
+<p>先来看一个简单的例子：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span>(<span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">	<span class="keyword">int</span> a = <span class="number">10</span>;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>然后编译就错了：</p>
+<ul>
+<li><code>error: jump to case label [-fpermissive]</code></li>
+<li><code>error: crosses initialization of ‘int a’</code></li>
+</ul>
+<p>编译器的意思是控制流跳过了变量的初始化。乍看之下似乎不太好理解为什么出错。其实如果在case 0标签中要使用的变量a的时候，问题就来了。试图在未初始化的时候使用对象，这显然是行不通的。可能由于举的例子中变量是内置类型，所以不太好理解到问题的严重性，再来看一个例子：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span>(<span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">string</span> s1;</span><br><span class="line">	<span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">s2</span><span class="params">(<span class="string">"hello"</span>)</span></span>;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">	<span class="comment">//可能会使用s1或者s2</span></span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这样就跳过了类的隐式或者显式初始化。</p>
+<p>因此c++规定，不允许跨过变量的初始化语句直接跳转到变量作用域的另一个位置。</p>
+<p>然而，对于内置类型来说，定义的时候并非一定要初始化。<br>比如：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span>(<span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">	<span class="keyword">int</span> a;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">	a = <span class="number">20</span>;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>这段代码就不会报错，因为变量并没有初始化。可以从底层来理解。</p>
+<p>首先，switch下的大括号是一个完整的作用域，不要被case标签的缩进所欺骗，认为每个case有一个作用域（除非显示地加大括号）。</p>
+<p>其次，定义变量并不存在“执行动作”，有的只是改变栈指针从而在栈上分配空间。编译器会保证在相应的作用域之中这个变量的空间是被分配了。大部分编译器实现会选择在函数开始把所有局部变量的空间都分配好。但是变量的初始化是有”执行动作“的，比如说<code>int a = 10</code>，就会在栈上某4个字节存入10（假设机器上int占4字节）。再比如某个类初始化，也会调用相应的构造函数。所以控制流程的跳转可能造成某个对象没有正常的初始化就使用。</p>
+<p>所以，就可以回答一开始的问题了。如果被忽略的代码中的定义包含了初始化的过程，就会编译失败。如果是内置类型的定义（不含初始化），那么就能通过编译。</p>
+<p>当然，为了不出现上述的问题，可以直接用大括号将case标签下构成一个单独的作用域。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span>(<span class="number">0</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">std</span>::<span class="built_in">string</span> s;</span><br><span class="line">		<span class="keyword">int</span> a = <span class="number">10</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">	<span class="comment">//显然，这里也不可能再使用对象s或者a</span></span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2017/10/30/cpp_switch/">
+    <time datetime="2017-10-30T15:59:56.000Z" class="entry-date">
+        2017-10-30
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+
+    </footer>
+</article>
+
+
+    
+<nav class="nav-single">
+    <h3 class="assistive-text">文章导航</h3>
+    
+        <span class="nav-previous"><a href="/2017/11/04/nullptr_and_NULL/" rel="prev"><span class="meta-nav">←</span> nullptr vs NULL</a></span>
+    
+    
+        <span class="nav-next"><a href="/2017/08/05/name_mangling_and_overload/" rel="next">浅谈name mangling <span class="meta-nav">→</span></a></span>
+    
+</nav><!-- .nav-single -->
+
+
+
+
+
+
+
+</div></div>
+        <div id="secondary" class="widget-area" role="complementary">
+  
+    <aside id="search" class="widget widget_search"><form role="search" method="get" accept-charset="utf-8" id="searchform" class="searchform" action="//google.com/search">
+    <div>
+        <input type="text" value="" name="s" id="s" />
+        <input type="submit" id="searchsubmit" value="搜索" />
+    </div>
+</form></aside>
+  
+    
+  
+    
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Recents</h3>
+    <div class="widget-content">
+      <ul>
+        
+          <li>
+            <a href="/2019/02/02/syscall_x64/">x64上Linux的系统调用</a>
+          </li>
+        
+          <li>
+            <a href="/2018/09/14/parse_ELF/">详细解析 ELF</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/31/tlpi_thread_multijoin_bug/">记 TLPI 上一个多线程代码例子的bug</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/23/LDK_2/">《Linux内核设计与实现》读书笔记——系统调用</a>
+          </li>
+        
+          <li>
+            <a href="/2018/08/02/LDK_1/">《Linux内核设计与实现》读书笔记——进程调度</a>
+          </li>
+        
+      </ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget-content">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </aside>
+
+  
+    
+  <aside class="widget">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget-content tagcloud">
+      <a href="/tags/C/" style="font-size: 10px;">C</a> <a href="/tags/Linux/" style="font-size: 15px;">Linux</a> <a href="/tags/X86/" style="font-size: 10px;">X86</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+    </div>
+  </aside>
+
+  
+</div>
+      </div>
+      <footer id="colophon" role="contentinfo">
+    <p>&copy; 2019 cyyzero
+    All rights reserved.</p>
+    <p>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></p>
+</footer>
+    <script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"1","bdMiniList":false,"bdPic":"","bdStyle":"2","bdSize":"16"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+
+<script src="/js/jquery-2.0.3.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+<script src="/js/navigation.js"></script>
+
+<div id="bg"></div>
+
+  </div>
+</body>
+</html>

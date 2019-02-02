@@ -61,6 +61,58 @@
       <div id="main" class="wrapper">
         <div id="primary" class="site-content"><div id="content" role="main">
   
+    <article id="post-syscall_x64" class="post-syscall_x64 post type-post status-publish format-standard hentry">
+    <!---->
+
+      <header class="entry-header">
+        
+        
+  
+    <h1 class="entry-title">
+      <a class="article-title" href="/2019/02/02/syscall_x64/">x64上Linux的系统调用</a>
+    </h1>
+  
+
+        
+        <div class="comments-link">
+            
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2019/02/02/syscall_x64/" data-id="cjrnom77u000yic770i8c5i3u" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+        </div><!-- .comments-link -->
+      </header><!-- .entry-header -->
+
+    <div class="entry-content">
+      
+        <p><strong>写在前面</strong>：本文希望读者有一定的Linux基础，了解过系统调用和crt的包装函数的区别。可以看我之前写过的关于<a href="">IA32上Linux系统调用的简介</a>，以及<a href="">《Linux内核设计与实现》一书中对系统调用的笔记</a>。</p>
+<p>众所周知，在IA32上，Linux的系统调用是通过<code>int 0x80</code>中断，访问中断向量表，调用<code>sys_call()</code>。它通过<code>eax</code>传递系统调用号；其他一系列寄存器传递参数，分别存储在<code>ebx</code>，<code>ecx</code>，<code>edx</code>，<code>esi</code>，<code>edi</code>，<code>ebp</code>；返回值存储在<code>eax</code>。</p>
+<p>现今，x86 64体系结构引入了一条专用指令<code>syscall</code>。它不访问中断描述符表，速度更快。它通过<code>rax</code>传递系统调用号；其他一系列寄存器传递参数，分别存储在<code>rdi</code>，<code>rsi</code>，<code>rdx</code>，<code>r10</code>，<code>r8</code>，<code>r9</code>；返回值存储在<code>rax</code>。</p>
+<p>很明显，系统调用的ABI发生了剧烈的改变。进行系统调用的指令，传递系统调用号的寄存器，传递参数的寄存器，返回值的寄存器，甚至系统调用对应的编号，32位与64位都存在着很大的差异。理论上系统调用表都是向后兼容的，每次更新时只能往后添加系统调用号，已有的系统调用号则保持。我在Stack Exchange上找到了一个<a href="https://stackoverflow.com/questions/10281567/why-are-the-system-call-numbers-different-in-amd64-linux/10281881#10281881" target="_blank" rel="noopener">回答</a>，解释了从32位到64位系统调用表更改的原因：x86 64体系结构出现时，ABI(传递参数、返回值)是不同的，因此内核开发人员利用这个机会带来了期待已久的更改，为了对高速缓存行使用级别进行优化。比如，常用的<code>sys_read/sys_write/sys_open/sys_close</code>分别位于前四个系统调用号；<code>sys_exit</code>原本很靠前(原本系统调用号为1)，但每个进程都在退出时才调用一次，所以现在是靠后的60作为系统调用号。</p>
+<p>目测是为了兼容，我在内核版本为4.14.0的ubuntu上仍然能通<code>int 0x80</code>进行系统调用，下面是测试的代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">section .data</span><br><span class="line">str: db &quot;Hello world&quot;</span><br><span class="line">str_len equ $-str</span><br><span class="line"></span><br><span class="line">section .text</span><br><span class="line">global _start</span><br><span class="line">[bits 64]</span><br><span class="line">_start:</span><br><span class="line">    mov eax, 4           ; sys_write的系统调用号</span><br><span class="line">    mov ebx, 1           ; 第一个参数为int fd</span><br><span class="line">    mov ecx, str         ; 第二个参数为char *buf</span><br><span class="line">    mov edx, str_len     ; 第三个参数为size_t count</span><br><span class="line">    int 0x80</span><br><span class="line"></span><br><span class="line">    mov eax, 1           ; sys_exit的系统调用号</span><br><span class="line">    mov ebx, 0           ; 第一个参数为int status</span><br><span class="line">    int 0x80</span><br></pre></td></tr></table></figure>
+<p>不过，x86_64的Linux最好还是通过<code>syscall</code>进行系统调用：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">section .data</span><br><span class="line">str: db &quot;Hello world&quot;</span><br><span class="line">str_len equ $-str</span><br><span class="line"></span><br><span class="line">section .text</span><br><span class="line">global _start</span><br><span class="line">[bits 64]</span><br><span class="line">_start:</span><br><span class="line">    mov eax, 1           ; 代表sys_write</span><br><span class="line">    mov rdi, 1           ; 第一个参数为int fd</span><br><span class="line">    mov rsi, str         ; 第二个参数为char *buf</span><br><span class="line">    mov rdx, str_len     ; 第三个参数为size_t count</span><br><span class="line">    syscall</span><br><span class="line"></span><br><span class="line">    mov eax, 60          ; sys_exit的系统调用号</span><br><span class="line">    mov rdi, 0           ; 第一个参数为int status</span><br><span class="line">    syscall</span><br></pre></td></tr></table></figure>
+      
+    </div><!-- .entry-content -->
+
+    <footer class="entry-meta">
+    <a href="/2019/02/02/syscall_x64/">
+    <time datetime="2019-02-02T10:16:00.000Z" class="entry-date">
+        2019-02-02
+    </time>
+</a>
+    
+    
+  <span class="article-delim">&#8226;</span>
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li></ul>
+
+    </footer>
+</article>
+
+
+
+
+
+
+  
     <article id="post-parse_ELF" class="post-parse_ELF post type-post status-publish format-standard hentry">
     <!---->
 
@@ -76,7 +128,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/09/14/parse_ELF/" data-id="cjnwpxobd000nqu77arqri7fg" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/09/14/parse_ELF/" data-id="cjrnom77k000lic77umal1a4h" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -94,7 +146,7 @@
 </ul>
 <p>目标文件在不同的系统上有着不同的格式。现代 x86-64 Linux 和 Unix 系统使用可执行链接格式(Executable and Linking Format)。</p>
 <h2 id="LEF-文件里有什么"><a href="#LEF-文件里有什么" class="headerlink" title="LEF 文件里有什么"></a>LEF 文件里有什么</h2><p>目标文件参与了程序链接和程序执行的过程。所以为了便利和效率，ELF 从链接和执行的角度来看，所需要的信息不太一样。</p>
-<p><img src="http://staff.cs.psu.ac.th/iew/cs323-650/Binary%20file%20formats%20(BFF" alt="ELF 文件示意图">_files/IMG00010.gif)</p>
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Elf-layout--en.svg/740px-Elf-layout--en.svg.png" alt="ELF 文件示意图"></p>
 <p>如图所示，ELF 文件不论是从链接还是执行的角度来看，都有着一个 <em>ELF file header</em> 。这个文件头起始于文件开始处(偏移量为0的地方)。然后保存着跟文件整体组织相关的信息。后面会再详细介绍。</p>
 <p>从链接的角度来看，ELF 文件中有着有着一个 <em>section header table</em> 和若干个 <em>section</em>。 <em>section header table</em> 中的每一项对应一个 <em>section</em> ，用于描述其基本信息，比如段名、大小、偏移位置等。 目标文件将链接时需要的信息按照不用的属性以 <em>section</em> 的形式存储。比如说保存机器指令的 <em>.text</em> 代码段和保存全局变量和局部静态变量的 <em>.data</em> 数据段。</p>
 <p>从执行的角度来看，ELF 文件中有着一个 <em>program header table</em> 和若干个 <em>segment</em>。 Linux 就是通过读取 <em>program header table</em> 来得知如何创建一个进程映像(或者说如何执行一个程序)。对于可重定位目标文件来说，它并不能加载执行，所以显然它并不需要 <em>program header table</em> 。</p>
@@ -141,7 +193,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/08/31/tlpi_thread_multijoin_bug/" data-id="cjnwpxobl0010qu773umxswzh" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/08/31/tlpi_thread_multijoin_bug/" data-id="cjrnom77w0010ic77x6ovq7z4" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -216,7 +268,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/08/23/LDK_2/" data-id="cjnwpxobi000vqu77q0knw3z5" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/08/23/LDK_2/" data-id="cjrnom76g0000ic77v59gv2f5" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -313,7 +365,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/08/02/LDK_1/" data-id="cjnwpxob2000dqu77ipsw6h2v" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/08/02/LDK_1/" data-id="cjrnom77f000hic772fx0yrts" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -437,7 +489,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/07/27/LDK_0/" data-id="cjnwpxoad0000qu77zt94b13d" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/07/27/LDK_0/" data-id="cjrnom76n0001ic77zcxkt5or" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -554,7 +606,7 @@
 
 
   
-    <article id="post-IntegerConstant" class="post-IntegerConstant post type-post status-publish format-standard hentry">
+    <article id="post-integer_constant" class="post-integer_constant post type-post status-publish format-standard hentry">
     <!---->
 
       <header class="entry-header">
@@ -562,14 +614,14 @@
         
   
     <h1 class="entry-title">
-      <a class="article-title" href="/2018/07/24/IntegerConstant/">扭曲的INT_MIN</a>
+      <a class="article-title" href="/2018/07/24/integer_constant/">扭曲的INT_MIN</a>
     </h1>
   
 
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/07/24/IntegerConstant/" data-id="cjnwpxoaj0001qu77g420vgd2" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/07/24/integer_constant/" data-id="cjrnom798001iic77sqmlgenf" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -618,7 +670,7 @@
     </div><!-- .entry-content -->
 
     <footer class="entry-meta">
-    <a href="/2018/07/24/IntegerConstant/">
+    <a href="/2018/07/24/integer_constant/">
     <time datetime="2018-07-24T01:17:46.000Z" class="entry-date">
         2018-07-24
     </time>
@@ -652,7 +704,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/05/25/concepts_of_address/" data-id="cjnwpxoav0008qu77r2xvh3ak" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/05/25/concepts_of_address/" data-id="cjrnom77b000gic77ygbxdiso" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -726,7 +778,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/05/20/about_SFINAE/" data-id="cjnwpxoao0003qu77gv535s6w" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/05/20/about_SFINAE/" data-id="cjrnom76v0004ic77mh0z850c" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -815,7 +867,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/22/about_do_while(0)/" data-id="cjnwpxoca001bqu7732hd9zre" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/22/about_do_while(0)/" data-id="cjrnom76t0003ic777iv8qhff" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -872,113 +924,6 @@
 
 
   
-    <article id="post-effective_modern_cpp_four" class="post-effective_modern_cpp_four post type-post status-publish format-standard hentry">
-    <!---->
-
-      <header class="entry-header">
-        
-        
-  
-    <h1 class="entry-title">
-      <a class="article-title" href="/2018/04/20/effective_modern_cpp_four/">effective modern c++读书笔记(四)</a>
-    </h1>
-  
-
-        
-        <div class="comments-link">
-            
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/20/effective_modern_cpp_four/" data-id="cjnwpxob0000bqu777qdhc89i" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
-        </div><!-- .comments-link -->
-      </header><!-- .entry-header -->
-
-    <div class="entry-content">
-      
-        <h1 id="lambda-表达式"><a href="#lambda-表达式" class="headerlink" title="lambda 表达式"></a>lambda 表达式</h1><p>首先来明确一下三个概念：</p>
-<ul>
-<li><p>lambda 表达式只是一个表达式。它是源码的一部分。</p>
-</li>
-<li><p><em>closure</em> 是由lambda创造的运行期对象。根据捕获的模式，<em>closure</em> 持有被捕获对象的副本或者引用。</p>
-</li>
-<li><p><em>closure class</em> 是给 <em>closure</em> 实例化的。每个 <em>lambda</em> 会让编译器生成一个独一无二的 <em>closure class</em> 。<em>lambda</em> 内的声明将变成它 <em>closure class</em> 内的成员函数的可执行指令。</p>
-</li>
-</ul>
-<hr>
-<h2 id="Item-31"><a href="#Item-31" class="headerlink" title="Item 31"></a>Item 31</h2><ul>
-<li><p>在C++11里有两种默认的捕获模式： <em>by-reference</em> 和 <em>by-value</em> 。默认的 <em>by-reference</em> 捕获可以导致空悬引用。比如说这个 <em>closure</em> (或者它的副本)比捕获的引用的对象的声明周期长。 (这也应该是处理引用本就应该小心的地方)。应该不使用默认捕获，捕获的时候添上引用的对象。这样可以让程序员注意到引用的对象，从而对它的生命周期有了考量。或者直接就通过传值来捕获。但如果传值的对象是 <em>raw pointer</em> ，那又得考虑是否会出现空悬指针的问题。</p>
-</li>
-<li><p>有种情况 <em>by-value</em> 捕获会造成意想不到的悬垂指针。看个例子：</p>
-  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::function&lt;<span class="keyword">bool</span>(<span class="keyword">int</span>)&gt;&gt; filters;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Widget</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    ...</span><br><span class="line">    <span class="keyword">int</span> divisor;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">void</span> Widget::addFilter() <span class="keyword">const</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// </span></span><br><span class="line">    filters.emplace_back(</span><br><span class="line">        [=](<span class="keyword">int</span> value)&#123; <span class="keyword">return</span> value % divisor&#125; == <span class="number">0</span>; &#125;</span><br><span class="line">    );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>  这里看似 <em>by-value</em> 捕获了divisor，但是却并非如此。首先，divisor是类内 <em>non-static 数据成员</em> ，是不能被捕获的。但是这段代码却可以编译过。原因就在与 <em>this</em> 指针。类的 <em>non-static</em> 函数体中隐含了一个 <em>this</em> 指针，它是个纯右值(prvalue)表达式，表示调用这个函数的对象的地址。所以其实捕获的是 <em>this</em> 指针，而lambda表达式中的 <code>divisor</code> 其实也是 <code>this-&gt;divisor</code> 。</p>
-<p>  所以既然是 <em>by-value</em> 捕获的 <em>this</em> 指针，那么就有可能出现空悬指针。为了避免这种情况，还是老实地在 <code>addFilters</code> 函数体内用一个 local 变量作为 <em>divisor</em> 的副本，然后 <em>by-value</em> 捕获这个副本。</p>
-</li>
-<li><p>还有就是要注意，静态存储周期的对象都是可以直接在lambda 表达式中使用的，而且<em>不能捕获</em> 。所以在lambda表达式中用默认 <em>by-value</em> 捕获，就会让人产生错觉。但实际上什么都没捕获。</p>
-</li>
-</ul>
-<hr>
-<h2 id="Item-32"><a href="#Item-32" class="headerlink" title="Item 32"></a>Item 32</h2><ul>
-<li><p>C++14 提供了 <em>init capture</em> 这种新的捕获方式。具体来说就是在捕获列表中可以通过 <code>=</code> 的方式，等号左边是从 <em>lambda</em> 表达式生成的闭包类的数据成员，右边是表达式，用于初始化左边。可以明显看出，<code>=</code>左边和右边的作用域也不同。所以，通过这种语法，让“移动”捕获成为了可能，而非 C++11 那样只能传值和传引用捕获。</p>
-</li>
-<li><p>不过在C++11中也是可以模拟出“移动”捕获的。</p>
-<ul>
-<li>lambda 表达式可以看成定义一个函数类并构造它的对象。所以没有什么是直接定义一个类不能解决的。类中自然可以通过移动的方式初始化数据成员。</li>
-<li><p>通过 <code>std::bind</code> 来模拟。可以看个例子：</p>
-  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt; data;</span><br><span class="line"><span class="comment">// In C++14</span></span><br><span class="line"><span class="keyword">auto</span> func = [data = <span class="built_in">std</span>::move(data)]()&#123; <span class="comment">/*uses of data*/</span> &#125;;</span><br><span class="line"><span class="comment">// 以下是等价的版本</span></span><br><span class="line"><span class="comment">// In C++11</span></span><br><span class="line"><span class="keyword">auto</span> func = <span class="built_in">std</span>::bind(</span><br><span class="line">    [](<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt;&amp; data)</span><br><span class="line">    &#123; <span class="comment">/*uses of data*/</span> &#125;,</span><br><span class="line">    <span class="built_in">std</span>::move(data)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
-<p>  <code>std::bind</code>构造的对象持有所有参数的副本。当参数是左值，就拷贝构造；当参数是右值，就移动构造。所以参数<code>data</code>通过移动构造传进了 bind 对象内(姑且称之为d)，然后每次调用 <code>func</code> 的 <code>operator()</code> 的时候，都会调用那个 <em>lambda</em> 表达式的 <code>operator()</code> 。而参数就是 bind 对象内的data对象的副本。由于 <em>lambda</em> 没有加 <code>multable</code>，闭包类内的 <code>operator()</code>是 <code>const</code> 限定的的。而 bind 对象的data的副本却不是const的。为了防止它被修改，所以参数加了<code>const</code>。但其实这样也可以：</p>
-  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> func =</span><br><span class="line">    <span class="built_in">std</span>::bind(</span><br><span class="line">        [](<span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt;&amp; data) <span class="keyword">mutable</span></span><br><span class="line">        &#123; <span class="comment">/* uses of data */</span> &#125;,</span><br><span class="line">        <span class="built_in">std</span>::move(data)</span><br><span class="line">    );</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-</ul>
-<hr>
-<h2 id="Item-33"><a href="#Item-33" class="headerlink" title="Item 33"></a>Item 33</h2><p>C++14 引入了 <em>generic lambdas</em> 的特性。具体来说就是 <em>lambda</em> 表达式的参数列表的类型是 <code>auto</code> 。这个特性的实现也很直观：生成的闭包类的 <code>operator()</code> 函数是个模板。所以，随着来的 <em>universal reference</em> 和完美转发都可以实现了。完美转发的关键还是在对引用折叠和 <code>std::forward</code> 函数实现的理解。看一下完美转发的例子：</p>
-<pre><code><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> f = [](<span class="keyword">auto</span>&amp;&amp; param)</span><br><span class="line">    &#123;</span><br><span class="line">        func(<span class="built_in">std</span>::forward&lt;<span class="keyword">decltype</span>(param)&gt;(param));</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> f = [](<span class="keyword">auto</span>&amp;&amp;... params)</span><br><span class="line">    &#123;</span><br><span class="line">        func(<span class="built_in">std</span>::forward&lt;<span class="keyword">decltype</span>(param)&gt;(params)...);</span><br><span class="line">    &#125;;</span><br></pre></td></tr></table></figure>
-</code></pre><hr>
-<h2 id="Item-34"><a href="#Item-34" class="headerlink" title="Item 34"></a>Item 34</h2><p>用 <em>lambda</em> 表达式与 <code>std::bind</code> 相比有些优势，如下：</p>
-<ul>
-<li><em>lambda</em> 表达式比较清晰。(这里书中给的代码有误，最后再详细讲)</li>
-<li><em>lambda</em> 表达式内可以调用重载的函数，但是<code>std::bind</code>第一个参数是重载函数的话得明确调用的版本(通过<code>static_cast</code>)。而且由于使用的指针，还会减少它被内联优化的可能性。</li>
-<li><p><code>std::bind</code> 默认是将参数拷贝的。想要保存参数的引用，必须要用<code>std::ref</code>。比如：</p>
-  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> compressRateB = <span class="built_in">std</span>::bind(compress, <span class="built_in">std</span>::ref(w), _1);       <span class="comment">// compressRateB acts as if it holds a reference to w, rather than a copy</span></span><br></pre></td></tr></table></figure>
-<p>  这点就很不如 <em>lambda</em> 表达式直观。</p>
-</li>
-</ul>
-<p>在 C++14 中，<em>lambda</em> 表达式已经十分优秀，再也没有使用 <code>std::bind</code> 的理由了。但是在 C++11 中，<code>std::bind</code> 在以下情况下还是很有用的：</p>
-<ul>
-<li><em>Move capture</em> 。C++11 <em>lambda</em> 表达式没有提供通过移动捕获的方式，但是能通过 <code>std::bind</code> 模拟出来。但 C++14 开始， <em>lambda</em> 表达式通过 <em>init capture</em> 已经能够实现这个。</li>
-<li><em>Polymorphic function objects</em> 。<code>std::bind</code>绑定一个模板函数的时候，它能完美转发任何参数。但是 C++14 开始，<em>lambda</em> 表达式可以通过 <code>auto</code> 实现泛型。</li>
-</ul>
-<p>ps：这章里的代码竟然还有错误的地方，琢磨半天= =。 最后在 <a href="https://stackoverflow.com/questions/42207520/why-nested-bind-can-defer-evaluation-of-the-expression" target="_blank" rel="noopener"><em>StackOverflow</em> 上查到了正确的写法</a>。</p>
-<p>先还原一下问题的引入：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>::chrono;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>::literals;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> <span class="built_in">std</span>::placeholders;          <span class="comment">// needed for use of "_1"</span></span><br><span class="line"><span class="keyword">auto</span> setSoundL = [](Sound s) &#123;</span><br><span class="line">    setAlarm(steady_clock::now()) + <span class="number">1</span>h,</span><br><span class="line">             s,</span><br><span class="line">             <span class="number">30</span>s);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> setSoundB = <span class="built_in">std</span>::bind(setAlarm,</span><br><span class="line">                           steady_clock::now() + <span class="number">1</span>h,</span><br><span class="line">                           _1,</span><br><span class="line">                           <span class="number">30</span>s);</span><br></pre></td></tr></table></figure>
-<p>可以看到 <code>setSoundL</code> 和 <code>setSoundB</code> 看似完成相同的功能，但是实际上却并非如此。因为 在调用 <code>setSoundL</code> 时会调用<code>setAlarm</code>函数。显然，此时才会<code>now</code> 函数。而对于 <code>setSoundB</code> 来说，它在生成的时候就已经被调用了 <code>now()</code> 函数。然后每次调用它的时候，并不会再对 <code>now()</code> 调用。所以可以看到，在语义上双方已经不同了。解决方法也很简单，将后者对 <code>now</code> 函数的调用推迟到它自身被调用的时候。</p>
-<p>书上给出的修改是这样的：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 省略了一系列的 using</span></span><br><span class="line"><span class="keyword">auto</span> setSoundB = <span class="built_in">std</span>::bind(setAlarm,</span><br><span class="line">                           <span class="built_in">std</span>::bind(<span class="built_in">std</span>::plus&lt;&gt;(), steady_clock::now(), <span class="number">1</span>h),       <span class="comment">// 在 C++14 中，标准操作模板的模板参数声明通常可以被省略。注意， C++ 11 并不支持这么写。</span></span><br><span class="line">                           <span class="number">30</span>s);</span><br></pre></td></tr></table></figure>
-<p>但这显然也不能达成目标，<code>now</code> 函数还是会在 <code>setSoundB</code> 生成的时候就调用。不难想到，<code>std::bind</code>第一个参数，即可调用对象，是不会提前被调用的。所以应该这么改：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 省略了一系列的 using</span></span><br><span class="line"><span class="keyword">auto</span> setSoundB = <span class="built_in">std</span>::bind(setAlarm,</span><br><span class="line">                           <span class="built_in">std</span>::bind(<span class="built_in">std</span>::plus&lt;&gt;(), <span class="built_in">std</span>::bind(steady_clock::now()), <span class="number">1</span>h),</span><br><span class="line">                           <span class="number">30</span>s);</span><br></pre></td></tr></table></figure>
-
-      
-    </div><!-- .entry-content -->
-
-    <footer class="entry-meta">
-    <a href="/2018/04/20/effective_modern_cpp_four/">
-    <time datetime="2018-04-20T04:06:46.000Z" class="entry-date">
-        2018-04-20
-    </time>
-</a>
-    
-    
-  <span class="article-delim">&#8226;</span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
-
-    </footer>
-</article>
-
-
-
-
-
-
-  
   
     <nav id="pagination">
       <nav id="page-nav">
@@ -1008,6 +953,10 @@
       <ul>
         
           <li>
+            <a href="/2019/02/02/syscall_x64/">x64上Linux的系统调用</a>
+          </li>
+        
+          <li>
             <a href="/2018/09/14/parse_ELF/">详细解析 ELF</a>
           </li>
         
@@ -1023,10 +972,6 @@
             <a href="/2018/08/02/LDK_1/">《Linux内核设计与实现》读书笔记——进程调度</a>
           </li>
         
-          <li>
-            <a href="/2018/07/27/LDK_0/">《Linux内核设计与实现》读书笔记——进程</a>
-          </li>
-        
       </ul>
     </div>
   </aside>
@@ -1036,7 +981,7 @@
   <aside class="widget">
     <h3 class="widget-title">Tags</h3>
     <div class="widget-content">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
     </div>
   </aside>
 
@@ -1053,7 +998,7 @@
 </div>
       </div>
       <footer id="colophon" role="contentinfo">
-    <p>&copy; 2018 cyyzero
+    <p>&copy; 2019 cyyzero
     All rights reserved.</p>
     <p>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></p>
 </footer>
