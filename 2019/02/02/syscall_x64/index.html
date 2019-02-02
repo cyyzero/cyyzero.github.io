@@ -23,7 +23,7 @@
 <meta property="og:url" content="http://yoursite.com/2019/02/02/syscall_x64/index.html">
 <meta property="og:site_name" content="Pluto&#39;s Blog">
 <meta property="og:description" content="写在前面：本文希望读者有一定的Linux基础，了解过系统调用和crt的包装函数的区别。可以看我之前写过的关于IA32上Linux系统调用的简介，以及《Linux内核设计与实现》一书中对系统调用的笔记。 众所周知，在IA32上，Linux的系统调用是通过int 0x80中断，访问中断向量表，调用sys_call()。它通过eax传递系统调用号；其他一系列寄存器传递参数，分别存储在ebx，ecx，ed">
-<meta property="og:updated_time" content="2019-02-02T16:20:27.791Z">
+<meta property="og:updated_time" content="2019-02-02T16:23:01.250Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="x64上Linux的系统调用">
 <meta name="twitter:description" content="写在前面：本文希望读者有一定的Linux基础，了解过系统调用和crt的包装函数的区别。可以看我之前写过的关于IA32上Linux系统调用的简介，以及《Linux内核设计与实现》一书中对系统调用的笔记。 众所周知，在IA32上，Linux的系统调用是通过int 0x80中断，访问中断向量表，调用sys_call()。它通过eax传递系统调用号；其他一系列寄存器传递参数，分别存储在ebx，ecx，ed">
@@ -82,13 +82,13 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2019/02/02/syscall_x64/" data-id="cjrnom77u000yic770i8c5i3u" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2019/02/02/syscall_x64/" data-id="cjrnos5520017ot77fs1wwb0h" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
     <div class="entry-content">
       
-        <p><strong>写在前面</strong>：本文希望读者有一定的Linux基础，了解过系统调用和crt的包装函数的区别。可以看我之前写过的关于<a href="">IA32上Linux系统调用的简介</a>，以及<a href="">《Linux内核设计与实现》一书中对系统调用的笔记</a>。</p>
+        <p><strong>写在前面</strong>：本文希望读者有一定的Linux基础，了解过系统调用和crt的包装函数的区别。可以看我之前写过的关于<a href="https://cyyzero.herokuapp.com/articles/8" target="_blank" rel="noopener">IA32上Linux系统调用的简介</a>，以及<a href="https://cyyzero.herokuapp.com/articles/19" target="_blank" rel="noopener">《Linux内核设计与实现》一书中对系统调用的笔记</a>。</p>
 <p>众所周知，在IA32上，Linux的系统调用是通过<code>int 0x80</code>中断，访问中断向量表，调用<code>sys_call()</code>。它通过<code>eax</code>传递系统调用号；其他一系列寄存器传递参数，分别存储在<code>ebx</code>，<code>ecx</code>，<code>edx</code>，<code>esi</code>，<code>edi</code>，<code>ebp</code>；返回值存储在<code>eax</code>。</p>
 <p>现今，x86 64体系结构引入了一条专用指令<code>syscall</code>。它不访问中断描述符表，速度更快。它通过<code>rax</code>传递系统调用号；其他一系列寄存器传递参数，分别存储在<code>rdi</code>，<code>rsi</code>，<code>rdx</code>，<code>r10</code>，<code>r8</code>，<code>r9</code>；返回值存储在<code>rax</code>。</p>
 <p>很明显，系统调用的ABI发生了剧烈的改变。进行系统调用的指令，传递系统调用号的寄存器，传递参数的寄存器，返回值的寄存器，甚至系统调用对应的编号，32位与64位都存在着很大的差异。理论上系统调用表都是向后兼容的，每次更新时只能往后添加系统调用号，已有的系统调用号则保持。我在Stack Exchange上找到了一个<a href="https://stackoverflow.com/questions/10281567/why-are-the-system-call-numbers-different-in-amd64-linux/10281881#10281881" target="_blank" rel="noopener">回答</a>，解释了从32位到64位系统调用表更改的原因：x86 64体系结构出现时，ABI(传递参数、返回值)是不同的，因此内核开发人员利用这个机会带来了期待已久的更改，为了对高速缓存行使用级别进行优化。比如，常用的<code>sys_read/sys_write/sys_open/sys_close</code>分别位于前四个系统调用号；<code>sys_exit</code>原本很靠前(原本系统调用号为1)，但每个进程都在退出时才调用一次，所以现在是靠后的60作为系统调用号。</p>

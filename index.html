@@ -76,13 +76,13 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2019/02/02/syscall_x64/" data-id="cjrnom77u000yic770i8c5i3u" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2019/02/02/syscall_x64/" data-id="cjrnos5520017ot77fs1wwb0h" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
     <div class="entry-content">
       
-        <p><strong>写在前面</strong>：本文希望读者有一定的Linux基础，了解过系统调用和crt的包装函数的区别。可以看我之前写过的关于<a href="">IA32上Linux系统调用的简介</a>，以及<a href="">《Linux内核设计与实现》一书中对系统调用的笔记</a>。</p>
+        <p><strong>写在前面</strong>：本文希望读者有一定的Linux基础，了解过系统调用和crt的包装函数的区别。可以看我之前写过的关于<a href="https://cyyzero.herokuapp.com/articles/8" target="_blank" rel="noopener">IA32上Linux系统调用的简介</a>，以及<a href="https://cyyzero.herokuapp.com/articles/19" target="_blank" rel="noopener">《Linux内核设计与实现》一书中对系统调用的笔记</a>。</p>
 <p>众所周知，在IA32上，Linux的系统调用是通过<code>int 0x80</code>中断，访问中断向量表，调用<code>sys_call()</code>。它通过<code>eax</code>传递系统调用号；其他一系列寄存器传递参数，分别存储在<code>ebx</code>，<code>ecx</code>，<code>edx</code>，<code>esi</code>，<code>edi</code>，<code>ebp</code>；返回值存储在<code>eax</code>。</p>
 <p>现今，x86 64体系结构引入了一条专用指令<code>syscall</code>。它不访问中断描述符表，速度更快。它通过<code>rax</code>传递系统调用号；其他一系列寄存器传递参数，分别存储在<code>rdi</code>，<code>rsi</code>，<code>rdx</code>，<code>r10</code>，<code>r8</code>，<code>r9</code>；返回值存储在<code>rax</code>。</p>
 <p>很明显，系统调用的ABI发生了剧烈的改变。进行系统调用的指令，传递系统调用号的寄存器，传递参数的寄存器，返回值的寄存器，甚至系统调用对应的编号，32位与64位都存在着很大的差异。理论上系统调用表都是向后兼容的，每次更新时只能往后添加系统调用号，已有的系统调用号则保持。我在Stack Exchange上找到了一个<a href="https://stackoverflow.com/questions/10281567/why-are-the-system-call-numbers-different-in-amd64-linux/10281881#10281881" target="_blank" rel="noopener">回答</a>，解释了从32位到64位系统调用表更改的原因：x86 64体系结构出现时，ABI(传递参数、返回值)是不同的，因此内核开发人员利用这个机会带来了期待已久的更改，为了对高速缓存行使用级别进行优化。比如，常用的<code>sys_read/sys_write/sys_open/sys_close</code>分别位于前四个系统调用号；<code>sys_exit</code>原本很靠前(原本系统调用号为1)，但每个进程都在退出时才调用一次，所以现在是靠后的60作为系统调用号。</p>
@@ -128,7 +128,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/09/14/parse_ELF/" data-id="cjrnom77k000lic77umal1a4h" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/09/14/parse_ELF/" data-id="cjrnos54u000vot77pbxw9o53" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -193,7 +193,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/08/31/tlpi_thread_multijoin_bug/" data-id="cjrnom77w0010ic77x6ovq7z4" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/08/31/tlpi_thread_multijoin_bug/" data-id="cjrnos554001aot77wnvm59gn" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -268,7 +268,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/08/23/LDK_2/" data-id="cjrnom76g0000ic77v59gv2f5" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/08/23/LDK_2/" data-id="cjrnos5410003ot77617l2rpk" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -365,7 +365,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/08/02/LDK_1/" data-id="cjrnom77f000hic772fx0yrts" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/08/02/LDK_1/" data-id="cjrnos53u0001ot775zvm6vqz" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -489,7 +489,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/07/27/LDK_0/" data-id="cjrnom76n0001ic77zcxkt5or" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/07/27/LDK_0/" data-id="cjrnos53o0000ot77ajpxz4tt" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -621,7 +621,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/07/24/integer_constant/" data-id="cjrnom798001iic77sqmlgenf" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/07/24/integer_constant/" data-id="cjrnos54p000not77484jyg2n" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -704,7 +704,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/05/25/concepts_of_address/" data-id="cjrnom77b000gic77ygbxdiso" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/05/25/concepts_of_address/" data-id="cjrnos5440005ot77lyps01ww" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -778,7 +778,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/05/20/about_SFINAE/" data-id="cjrnom76v0004ic77mh0z850c" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/05/20/about_SFINAE/" data-id="cjrnos5430004ot77tcaufdak" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
@@ -867,7 +867,7 @@
         
         <div class="comments-link">
             
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/22/about_do_while(0)/" data-id="cjrnom76t0003ic777iv8qhff" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
+            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/22/about_do_while(0)/" data-id="cjrnos5480008ot77thgmb54j" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
         </div><!-- .comments-link -->
       </header><!-- .entry-header -->
 
