@@ -3,97 +3,94 @@
 <head>
   <meta charset="utf-8">
   
-  
-  <meta name="description" content="ps:第一本看的英文原版…希望这个寒假能看完吧
-Item 1-5
-（建议直接看书，个人认为很重要
-
-Item 6
-警惕auto被类型推导为某个意想不到的proxy class（ie. vector::operator[]）
-
-Item 7
-大括号可以用来完成uniform initializatio" />
-  
 
   
-  
-  
-  
-  
-  
-  <title>effective modern c++读书笔记(一) | Pluto&#39;s Blog</title>
+  <title>effective modern C++读书笔记(一) | Pluto&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="ps:第一本看的英文原版…希望这个寒假能看完吧 Item 1-5 （建议直接看书，个人认为很重要  Item 6 警惕auto被类型推导为某个意想不到的proxy class（ie. vector::operator[]）  Item 7 大括号可以用来完成uniform initialization，且不会发生隐式narrowing conversion.  一般来说，Object o{xxx}">
-<meta name="keywords" content="c++">
+<meta name="keywords" content="Cpp">
 <meta property="og:type" content="article">
-<meta property="og:title" content="effective modern c++读书笔记(一)">
-<meta property="og:url" content="http://yoursite.com/2018/02/12/effective_modern_cpp_0/index.html">
+<meta property="og:title" content="effective modern C++读书笔记(一)">
+<meta property="og:url" content="http://cyyzero.github.io/2018/02/12/effective_modern_cpp_0/index.html">
 <meta property="og:site_name" content="Pluto&#39;s Blog">
 <meta property="og:description" content="ps:第一本看的英文原版…希望这个寒假能看完吧 Item 1-5 （建议直接看书，个人认为很重要  Item 6 警惕auto被类型推导为某个意想不到的proxy class（ie. vector::operator[]）  Item 7 大括号可以用来完成uniform initialization，且不会发生隐式narrowing conversion.  一般来说，Object o{xxx}">
-<meta property="og:updated_time" content="2019-02-02T15:14:58.001Z">
+<meta property="og:updated_time" content="2019-02-14T19:40:58.404Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="effective modern c++读书笔记(一)">
+<meta name="twitter:title" content="effective modern C++读书笔记(一)">
 <meta name="twitter:description" content="ps:第一本看的英文原版…希望这个寒假能看完吧 Item 1-5 （建议直接看书，个人认为很重要  Item 6 警惕auto被类型推导为某个意想不到的proxy class（ie. vector::operator[]）  Item 7 大括号可以用来完成uniform initialization，且不会发生隐式narrowing conversion.  一般来说，Object o{xxx}">
   
+    <link rel="alternate" href="/atom.xml" title="Pluto&#39;s Blog" type="application/atom+xml">
   
-    <link rel="icon" href="/css/images/favicon.ico">
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
   
   <link rel="stylesheet" href="/css/style.css">
-  
-
-  
-  <!-- baidu webmaster push -->
-  <script src='//push.zhanzhang.baidu.com/push.js'></script>
 </head>
-<body class="home blog custom-background custom-font-enabled single-author">
-  <div id="page" class="hfeed site">
-      <header id="masthead" class="site-header" role="banner">
-    <hgroup>
-      <h1 class="site-title">
-        <a href="/" title="Pluto&#39;s Blog" rel="home">Pluto&#39;s Blog</a>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Pluto&#39;s Blog</a>
       </h1>
       
-        <h2 class="site-description">
+        <h2 id="subtitle-wrap">
           <a href="/" id="subtitle">失败人士自留地</a>
         </h2>
       
-    </hgroup>
-
-    <nav id="site-navigation" class="main-navigation" role="navigation">
-            <button class="menu-toggle">菜单</button>
-            <a class="assistive-text" href="/#content" title="跳至内容">跳至内容</a><!--TODO-->
-            <div class="menu-main-container">
-                <ul id="menu-main" class="nav-menu">
-                
-                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/">Home</a></li>
-                
-                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/archives">Archives</a></li>
-                
-                </ul>
-            </div>
-    </nav>
-</header>
-      <div id="main" class="wrapper">
-        <div id="primary" class="site-content"><div id="content" role="main"><article id="post-effective_modern_cpp_0" class="post-effective_modern_cpp_0 post type-post status-publish format-standard hentry">
-    <!---->
-
-      <header class="entry-header">
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
         
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/about">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Suche"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://cyyzero.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-effective_modern_cpp_0" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/02/12/effective_modern_cpp_0/" class="article-date">
+  <time datetime="2018-02-12T07:36:06.000Z" itemprop="datePublished">2018-02-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
         
   
-    <h1 class="entry-title article-title">
-      effective modern c++读书笔记(一)
+    <h1 class="article-title" itemprop="name">
+      effective modern C++读书笔记(一)
     </h1>
   
 
-        
-        <div class="comments-link">
-            
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective_modern_cpp_0/" data-id="cjrnos54g000eot77na6rlbz8" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
-        </div><!-- .comments-link -->
-      </header><!-- .entry-header -->
-
-    <div class="entry-content">
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
       
         <p>ps:第一本看的英文原版…希望这个寒假能看完吧</p>
 <h1 id="Item-1-5"><a href="#Item-1-5" class="headerlink" title="Item 1-5"></a>Item 1-5</h1><ul>
@@ -138,7 +135,7 @@ Item 7
   <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="comment">// MyAllocList&lt;T&gt;::type</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">MyAllocList</span> &#123;</span></span><br><span class="line"><span class="comment">// is synonym for</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="built_in">std</span>::<span class="built_in">list</span>&lt;T, MyAlloc&lt;T&gt;&gt; type; <span class="comment">// std::list&lt;T,</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">//MyAlloc&lt;T&gt;&gt;</span></span><br><span class="line">MyAllocList&lt;Widget&gt;::type lw;</span><br><span class="line"><span class="comment">// client code</span></span><br></pre></td></tr></table></figure>
   <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Widget</span> &#123;</span></span><br><span class="line"><span class="comment">// Widget&lt;T&gt; contains</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line"><span class="comment">// a MyAllocList&lt;T&gt;</span></span><br><span class="line"><span class="keyword">typename</span> MyAllocList&lt;T&gt;::type <span class="built_in">list</span>;</span><br><span class="line"><span class="comment">// as a data member</span></span><br><span class="line">...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>c++14运用alias template的一点改进</p>
+<li><p>C++14运用alias template的一点改进</p>
   <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::remove_const&lt;T&gt;::type</span><br><span class="line"><span class="built_in">std</span>::<span class="keyword">remove_const_t</span>&lt;T&gt;</span><br><span class="line"><span class="comment">// C++11: const T → T</span></span><br><span class="line"><span class="comment">// C++14 equivalent</span></span><br><span class="line"><span class="built_in">std</span>::remove_reference&lt;T&gt;::type</span><br><span class="line"><span class="built_in">std</span>::<span class="keyword">remove_reference_t</span>&lt;T&gt;</span><br><span class="line"><span class="comment">// C++11: T&amp;/T&amp;&amp; → T</span></span><br><span class="line"><span class="comment">// C++14 equivalent</span></span><br><span class="line"><span class="built_in">std</span>::add_lvalue_reference&lt;T&gt;::type</span><br><span class="line"><span class="comment">// C++11: T → T&amp;</span></span><br><span class="line"><span class="built_in">std</span>::<span class="keyword">add_lvalue_reference_t</span>&lt;T&gt;</span><br><span class="line"><span class="comment">// C++14 equivalent</span></span><br></pre></td></tr></table></figure>
 </li>
 </ul>
@@ -154,7 +151,7 @@ Item 7
 </li>
 </ul>
 <h1 id="Item-11"><a href="#Item-11" class="headerlink" title="Item 11"></a>Item 11</h1><ul>
-<li><p>c++11前常常将成员函数声明放在private区域而不实现，以防止编译器自动生成。现在有了<code>=delete</code></p>
+<li><p>C++11前常常将成员函数声明放在private区域而不实现，以防止编译器自动生成。现在有了<code>=delete</code></p>
 </li>
 <li><p><code>=delete</code>不光能用于成员函数。还能通过讲“重载函数”声明为<code>=delete</code>防止函数的参数被隐式转换。</p>
 </li>
@@ -168,11 +165,11 @@ Item 7
 </li>
 </ul>
 <h1 id="Item-13"><a href="#Item-13" class="headerlink" title="Item 13"></a>Item 13</h1><ul>
-<li><p>在c++98的时候，容器的非const对象无法直接获得const_iterator，一般通过强制转化，或者用绑定到一个reference-to-const。</p>
+<li><p>在C++98的时候，容器的非const对象无法直接获得const_iterator，一般通过强制转化，或者用绑定到一个reference-to-const。</p>
 </li>
-<li><p>在c++98，const_iterator不能用于在插入或者删除的函数指示位置。</p>
+<li><p>在C++98，const_iterator不能用于在插入或者删除的函数指示位置。</p>
 </li>
-<li><p>c++11提供了<code>begin</code>和<code>end</code>函数（包括许多容器的成员函数和非成员函数的通用版本）。但是c++14才提供了（这里指的是non-member版本）<code>cbegin</code>, <code>cend</code>, <code>rbegin</code>, <code>rend</code>和<code>crend</code>。有个用c++11实现<code>cbegin</code>的例子。</p>
+<li><p>C++11提供了<code>begin</code>和<code>end</code>函数（包括许多容器的成员函数和非成员函数的通用版本）。但是C++14才提供了（这里指的是non-member版本）<code>cbegin</code>, <code>cend</code>, <code>rbegin</code>, <code>rend</code>和<code>crend</code>。有个用C++11实现<code>cbegin</code>的例子。</p>
   <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">C</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">auto</span> <span class="title">cbegin</span>(<span class="title">const</span> <span class="title">C</span>&amp; <span class="title">container</span>)-&gt;<span class="title">decltype</span>(<span class="title">std</span>:</span>:begin(container))</span><br><span class="line">&#123;</span><br><span class="line">    retrurn <span class="built_in">std</span>::begin(container)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 </li>
 </ul>
@@ -200,7 +197,7 @@ Item 7
 <li>对于某个需要同步的对象来说，用std::atomic就够了。但是对于多个对象作为一个整体需要同步的时候，往往需要用到mutex。</li>
 </ul>
 <h1 id="Item-17"><a href="#Item-17" class="headerlink" title="Item 17"></a>Item 17</h1><ul>
-<li><p>c++11开始，特殊成员函数有</p>
+<li><p>C++11开始，特殊成员函数有</p>
 <ul>
 <li>defualt constructor 默认构造函数</li>
 <li>destructor 析构函数</li>
@@ -218,7 +215,7 @@ Item 7
 </li>
 <li><p>声明了拷贝操作(拷贝构造函数和拷贝赋值函数),那么编译器将不会生成移动操作的版本。反之亦然。</p>
 </li>
-<li><p>c++98开始就有个<code>Rule of Three</code>，即析构函数，拷贝构造函数，拷贝赋值函数三者自定义了任意一个，那一般来说其他两个也得自定义，编译器生成的很可能是错误的行为。</p>
+<li><p>C++98开始就有个<code>Rule of Three</code>，即析构函数，拷贝构造函数，拷贝赋值函数三者自定义了任意一个，那一般来说其他两个也得自定义，编译器生成的很可能是错误的行为。</p>
 </li>
 <li><p>总结：下面三个条件都成立，则移动操作将会被编译器生成：</p>
 <ul>
@@ -234,58 +231,79 @@ Item 7
 </ul>
 
       
-    </div><!-- .entry-content -->
-
-    <footer class="entry-meta">
-    <a href="/2018/02/12/effective_modern_cpp_0/">
-    <time datetime="2018-02-12T07:36:06.000Z" class="entry-date">
-        2018-02-12
-    </time>
-</a>
-    
-    
-  <span class="article-delim">&#8226;</span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://cyyzero.github.io/2018/02/12/effective_modern_cpp_0/" data-id="cjs51m45z000h2d77nipdeh8x" class="article-share-link">Teilen</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Cpp/">Cpp</a></li></ul>
 
     </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/02/12/effective_modern_cpp_1/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Neuer</strong>
+      <div class="article-nav-title">
+        
+          effective modern C++读书笔记(二)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/01/29/syscall_IA32/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Älter</strong>
+      <div class="article-nav-title">当我们谈论系统调用的时候我们在谈论什么</div>
+    </a>
+  
+</nav>
+
+  
 </article>
 
-
-    
-<nav class="nav-single">
-    <h3 class="assistive-text">文章导航</h3>
-    
-        <span class="nav-previous"><a href="/2018/02/12/effective_modern_cpp_1/" rel="prev"><span class="meta-nav">←</span> effective modern c++读书笔记(二)</a></span>
-    
-    
-        <span class="nav-next"><a href="/2018/01/29/syscall_IA32/" rel="next">当我们谈论系统调用的时候我们在谈论什么 <span class="meta-nav">→</span></a></span>
-    
-</nav><!-- .nav-single -->
-
-
-
-
-
-
-
-</div></div>
-        <div id="secondary" class="widget-area" role="complementary">
+</section>
+        
+          <aside id="sidebar">
   
-    <aside id="search" class="widget widget_search"><form role="search" method="get" accept-charset="utf-8" id="searchform" class="searchform" action="//google.com/search">
-    <div>
-        <input type="text" value="" name="s" id="s" />
-        <input type="submit" id="searchsubmit" value="搜索" />
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cpp/">Cpp</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
     </div>
-</form></aside>
+  </div>
+
+
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C/" style="font-size: 10px;">C</a> <a href="/tags/Cpp/" style="font-size: 20px;">Cpp</a> <a href="/tags/Linux/" style="font-size: 16.67px;">Linux</a> <a href="/tags/X86/" style="font-size: 13.33px;">X86</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+    </div>
+  </div>
+
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archiv</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">February 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">April 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">October 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a><span class="archive-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
   
     
-  <aside class="widget">
-    <h3 class="widget-title">Recents</h3>
-    <div class="widget-content">
+  <div class="widget-wrap">
+    <h3 class="widget-title">letzter Beitrag</h3>
+    <div class="widget">
       <ul>
         
           <li>
@@ -310,37 +328,34 @@ Item 7
         
       </ul>
     </div>
-  </aside>
+  </div>
 
   
-    
-  <aside class="widget">
-    <h3 class="widget-title">Tags</h3>
-    <div class="widget-content">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
-    </div>
-  </aside>
-
-  
-    
-  <aside class="widget">
-    <h3 class="widget-title">Tag Cloud</h3>
-    <div class="widget-content tagcloud">
-      <a href="/tags/C/" style="font-size: 10px;">C</a> <a href="/tags/Linux/" style="font-size: 15px;">Linux</a> <a href="/tags/X86/" style="font-size: 10px;">X86</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
-    </div>
-  </aside>
-
-  
-</div>
+</aside>
+        
       </div>
-      <footer id="colophon" role="contentinfo">
-    <p>&copy; 2019 cyyzero
-    All rights reserved.</p>
-    <p>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></p>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 cyyzero<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
 </footer>
-    <script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"1","bdMiniList":false,"bdPic":"","bdStyle":"2","bdSize":"16"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/about" class="mobile-nav-link">About</a>
+  
+</nav>
+    
 
-<script src="/js/jquery-2.0.3.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 
   <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
@@ -349,9 +364,7 @@ Item 7
 
 <script src="/js/script.js"></script>
 
-<script src="/js/navigation.js"></script>
 
-<div id="bg"></div>
 
   </div>
 </body>

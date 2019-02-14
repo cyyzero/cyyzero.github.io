@@ -3,92 +3,94 @@
 <head>
   <meta charset="utf-8">
   
-  
-  <meta name="description" content="大家都知道,在C语言中,NULL被用来表示空指针常量(null pointer constant),用来与任何指向真实对象的指针区分.
-c99标准里这么描述:
 
-3An integer constant expression with the value 0, or such an expressi" />
-  
-
-  
-  
-  
-  
-  
   
   <title>nullptr vs NULL | Pluto&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="大家都知道,在C语言中,NULL被用来表示空指针常量(null pointer constant),用来与任何指向真实对象的指针区分. c99标准里这么描述:  3An integer constant expression with the value 0, or such an expression cast to type void *, is called a null pointer c">
-<meta name="keywords" content="c++">
+<meta name="keywords" content="Cpp">
 <meta property="og:type" content="article">
 <meta property="og:title" content="nullptr vs NULL">
-<meta property="og:url" content="http://yoursite.com/2017/11/04/nullptr_and_NULL/index.html">
+<meta property="og:url" content="http://cyyzero.github.io/2017/11/04/nullptr_and_NULL/index.html">
 <meta property="og:site_name" content="Pluto&#39;s Blog">
 <meta property="og:description" content="大家都知道,在C语言中,NULL被用来表示空指针常量(null pointer constant),用来与任何指向真实对象的指针区分. c99标准里这么描述:  3An integer constant expression with the value 0, or such an expression cast to type void *, is called a null pointer c">
-<meta property="og:updated_time" content="2018-01-29T14:13:40.349Z">
+<meta property="og:updated_time" content="2019-02-14T19:41:23.948Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="nullptr vs NULL">
 <meta name="twitter:description" content="大家都知道,在C语言中,NULL被用来表示空指针常量(null pointer constant),用来与任何指向真实对象的指针区分. c99标准里这么描述:  3An integer constant expression with the value 0, or such an expression cast to type void *, is called a null pointer c">
   
+    <link rel="alternate" href="/atom.xml" title="Pluto&#39;s Blog" type="application/atom+xml">
   
-    <link rel="icon" href="/css/images/favicon.ico">
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
   
   <link rel="stylesheet" href="/css/style.css">
-  
-
-  
-  <!-- baidu webmaster push -->
-  <script src='//push.zhanzhang.baidu.com/push.js'></script>
 </head>
-<body class="home blog custom-background custom-font-enabled single-author">
-  <div id="page" class="hfeed site">
-      <header id="masthead" class="site-header" role="banner">
-    <hgroup>
-      <h1 class="site-title">
-        <a href="/" title="Pluto&#39;s Blog" rel="home">Pluto&#39;s Blog</a>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Pluto&#39;s Blog</a>
       </h1>
       
-        <h2 class="site-description">
+        <h2 id="subtitle-wrap">
           <a href="/" id="subtitle">失败人士自留地</a>
         </h2>
       
-    </hgroup>
-
-    <nav id="site-navigation" class="main-navigation" role="navigation">
-            <button class="menu-toggle">菜单</button>
-            <a class="assistive-text" href="/#content" title="跳至内容">跳至内容</a><!--TODO-->
-            <div class="menu-main-container">
-                <ul id="menu-main" class="nav-menu">
-                
-                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/">Home</a></li>
-                
-                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/archives">Archives</a></li>
-                
-                </ul>
-            </div>
-    </nav>
-</header>
-      <div id="main" class="wrapper">
-        <div id="primary" class="site-content"><div id="content" role="main"><article id="post-nullptr_and_NULL" class="post-nullptr_and_NULL post type-post status-publish format-standard hentry">
-    <!---->
-
-      <header class="entry-header">
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
         
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/about">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Suche"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://cyyzero.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-nullptr_and_NULL" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/11/04/nullptr_and_NULL/" class="article-date">
+  <time datetime="2017-11-04T02:13:15.000Z" itemprop="datePublished">2017-11-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
         
   
-    <h1 class="entry-title article-title">
+    <h1 class="article-title" itemprop="name">
       nullptr vs NULL
     </h1>
   
 
-        
-        <div class="comments-link">
-            
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/04/nullptr_and_NULL/" data-id="cjrnos54s000sot77zt8ch1dd" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
-        </div><!-- .comments-link -->
-      </header><!-- .entry-header -->
-
-    <div class="entry-content">
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
       
         <p>大家都知道,在C语言中,NULL被用来表示空指针常量(null pointer constant),用来与任何指向真实对象的指针区分.</p>
 <p>c99标准里这么描述:</p>
@@ -97,74 +99,99 @@ c99标准里这么描述:
 </blockquote>
 <p>而且NULL属于implementation defined,所以编译器一般都把NULL宏定义为常量0(或者0L)或者 (void*)0…</p>
 <p>因为c语言允许void<em> 指针向其他指针类型隐式转化(比如说很常用的malloc函数的返回值就是void</em> ),所以可以通过NULL给任意类型的指针赋null pointer constant.</p>
-<p>但是在c++中就有不同了.c++不支持void<em> 隐式转化为其他指针类型,NULL宏定义成(void</em>)0就没什么意义. 于是,c++中NULL一般宏定义为0. </p>
-<p>但是这么以来,问题就出现了<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">void</span> *)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"arg: pointer"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"arg: int"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> *p  = <span class="literal">NULL</span>;</span><br><span class="line">	f(p);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>编译出错:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">test.cpp:14:8: error: call of overloaded ‘f(NULL)’ is ambiguous</span><br><span class="line">  f(NULL);</span><br><span class="line">        ^</span><br><span class="line">test.cpp:2:6: note: candidate: void f(int*)</span><br><span class="line"> void f(int *)</span><br><span class="line">      ^</span><br><span class="line">test.cpp:7:6: note: candidate: void f(int)</span><br><span class="line"> void f(int )</span><br><span class="line">      ^</span><br></pre></td></tr></table></figure></p>
+<p>但是在C++中就有不同了.C++不支持void<em> 隐式转化为其他指针类型,NULL宏定义成(void</em>)0就没什么意义. 于是,C++中NULL一般宏定义为0. </p>
+<p>但是这么以来,问题就出现了</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">void</span> *)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"arg: pointer"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"arg: int"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> *p  = <span class="literal">NULL</span>;</span><br><span class="line">	f(p);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>编译出错:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">test.cpp:14:8: error: call of overloaded ‘f(NULL)’ is ambiguous</span><br><span class="line">  f(NULL);</span><br><span class="line">        ^</span><br><span class="line">test.cpp:2:6: note: candidate: void f(int*)</span><br><span class="line"> void f(int *)</span><br><span class="line">      ^</span><br><span class="line">test.cpp:7:6: note: candidate: void f(int)</span><br><span class="line"> void f(int )</span><br><span class="line">      ^</span><br></pre></td></tr></table></figure>
 <p>因为函数调用的时候两个重载版本都会匹配.</p>
 <p>还有就是模板推断参数类型的时候,也会由于NULL而把指针类型推断成int(当然,如果宏定义是0L就推断成long long),造成编译错误.</p>
-<p>当然,随着c++11版本的出现,引入了一个新的关键字nullptr,c++终于有了正式的null pointer constant.</p>
+<p>当然,随着C++11版本的出现,引入了一个新的关键字nullptr,C++终于有了正式的null pointer constant.</p>
 <blockquote>
 <p>The keyword nullptr denotes the pointer literal. It is a prvalue of type std::nullptr_t. There exist implicit conversions from nullptr to null pointer value of any pointer type and any pointer to member type. Similar conversions exist for any null pointer constant, which includes values of type std::nullptr_t as well as the macro NULL. </p>
 </blockquote>
 <p>大概意思就是nullptr类型是std::nullptr_t(大概可以理解成true和false之于bool类型的关系),是个纯右值(prvalue).nullptr可以隐式转化成任意指针类型的空指针值(null pointer value).</p>
-<p>再来看一个例子:<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cstddef&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">F</span>, <span class="title">class</span> <span class="title">A</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> <span class="title">Fwd</span>(<span class="title">F</span> <span class="title">f</span>, <span class="title">A</span> <span class="title">a</span>)</span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    f(a);</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">g</span><span class="params">(<span class="keyword">int</span>* i)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Function g called\n"</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    g(<span class="literal">NULL</span>);           <span class="comment">// Fine</span></span><br><span class="line">    g(<span class="number">0</span>);              <span class="comment">// Fine</span></span><br><span class="line"> </span><br><span class="line">    Fwd(g, <span class="literal">nullptr</span>);   <span class="comment">// Fine</span></span><br><span class="line">    Fwd(g, <span class="literal">NULL</span>);      <span class="comment">// ERROR: No function g(int)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>再来看一个例子:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cstddef&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">F</span>, <span class="title">class</span> <span class="title">A</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> <span class="title">Fwd</span>(<span class="title">F</span> <span class="title">f</span>, <span class="title">A</span> <span class="title">a</span>)</span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    f(a);</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">g</span><span class="params">(<span class="keyword">int</span>* i)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Function g called\n"</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    g(<span class="literal">NULL</span>);           <span class="comment">// Fine</span></span><br><span class="line">    g(<span class="number">0</span>);              <span class="comment">// Fine</span></span><br><span class="line"> </span><br><span class="line">    Fwd(g, <span class="literal">nullptr</span>);   <span class="comment">// Fine</span></span><br><span class="line">    Fwd(g, <span class="literal">NULL</span>);      <span class="comment">// ERROR: No function g(int)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>有了nullptr就解决了NULL模板推断的一些问题.</p>
 <p>所以给指针赋值尽量用nullptr…</p>
-<p>ps: 还要就是std::nullptr_t类型的定义比较奇怪= =.  这样真的大丈夫?<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef decltype(nullptr) nullptr_t;</span><br></pre></td></tr></table></figure></p>
+<p>ps: 还要就是std::nullptr_t类型的定义比较奇怪= =.  这样真的大丈夫?</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef decltype(nullptr) nullptr_t;</span><br></pre></td></tr></table></figure>
 
       
-    </div><!-- .entry-content -->
-
-    <footer class="entry-meta">
-    <a href="/2017/11/04/nullptr_and_NULL/">
-    <time datetime="2017-11-04T02:13:15.000Z" class="entry-date">
-        2017-11-04
-    </time>
-</a>
-    
-    
-  <span class="article-delim">&#8226;</span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://cyyzero.github.io/2017/11/04/nullptr_and_NULL/" data-id="cjs51m46a000r2d77ls8ruall" class="article-share-link">Teilen</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Cpp/">Cpp</a></li></ul>
 
     </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2017/11/13/swap_tow_integer/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Neuer</strong>
+      <div class="article-nav-title">
+        
+          C++的ub还真是无处不在啊
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2017/10/30/cpp_switch/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Älter</strong>
+      <div class="article-nav-title">C++ switch内部的变量定义</div>
+    </a>
+  
+</nav>
+
+  
 </article>
 
-
-    
-<nav class="nav-single">
-    <h3 class="assistive-text">文章导航</h3>
-    
-        <span class="nav-previous"><a href="/2017/11/13/swap_tow_integer/" rel="prev"><span class="meta-nav">←</span> c++的ub还真是无处不在啊</a></span>
-    
-    
-        <span class="nav-next"><a href="/2017/10/30/cpp_switch/" rel="next">c++ switch内部的变量定义 <span class="meta-nav">→</span></a></span>
-    
-</nav><!-- .nav-single -->
-
-
-
-
-
-
-
-</div></div>
-        <div id="secondary" class="widget-area" role="complementary">
+</section>
+        
+          <aside id="sidebar">
   
-    <aside id="search" class="widget widget_search"><form role="search" method="get" accept-charset="utf-8" id="searchform" class="searchform" action="//google.com/search">
-    <div>
-        <input type="text" value="" name="s" id="s" />
-        <input type="submit" id="searchsubmit" value="搜索" />
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cpp/">Cpp</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
     </div>
-</form></aside>
+  </div>
+
+
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C/" style="font-size: 10px;">C</a> <a href="/tags/Cpp/" style="font-size: 20px;">Cpp</a> <a href="/tags/Linux/" style="font-size: 16.67px;">Linux</a> <a href="/tags/X86/" style="font-size: 13.33px;">X86</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+    </div>
+  </div>
+
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archiv</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">February 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">April 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">October 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a><span class="archive-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
   
     
-  <aside class="widget">
-    <h3 class="widget-title">Recents</h3>
-    <div class="widget-content">
+  <div class="widget-wrap">
+    <h3 class="widget-title">letzter Beitrag</h3>
+    <div class="widget">
       <ul>
         
           <li>
@@ -189,37 +216,34 @@ c99标准里这么描述:
         
       </ul>
     </div>
-  </aside>
+  </div>
 
   
-    
-  <aside class="widget">
-    <h3 class="widget-title">Tags</h3>
-    <div class="widget-content">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
-    </div>
-  </aside>
-
-  
-    
-  <aside class="widget">
-    <h3 class="widget-title">Tag Cloud</h3>
-    <div class="widget-content tagcloud">
-      <a href="/tags/C/" style="font-size: 10px;">C</a> <a href="/tags/Linux/" style="font-size: 15px;">Linux</a> <a href="/tags/X86/" style="font-size: 10px;">X86</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
-    </div>
-  </aside>
-
-  
-</div>
+</aside>
+        
       </div>
-      <footer id="colophon" role="contentinfo">
-    <p>&copy; 2019 cyyzero
-    All rights reserved.</p>
-    <p>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></p>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 cyyzero<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
 </footer>
-    <script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"1","bdMiniList":false,"bdPic":"","bdStyle":"2","bdSize":"16"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/about" class="mobile-nav-link">About</a>
+  
+</nav>
+    
 
-<script src="/js/jquery-2.0.3.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 
   <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
@@ -228,9 +252,7 @@ c99标准里这么描述:
 
 <script src="/js/script.js"></script>
 
-<script src="/js/navigation.js"></script>
 
-<div id="bg"></div>
 
   </div>
 </body>

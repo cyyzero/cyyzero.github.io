@@ -3,84 +3,91 @@
 <head>
   <meta charset="utf-8">
   
-  
 
-  
-  
-  
-  
-  
   
   <title>Pluto&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta property="og:type" content="website">
 <meta property="og:title" content="Pluto&#39;s Blog">
-<meta property="og:url" content="http://yoursite.com/page/2/index.html">
+<meta property="og:url" content="http://cyyzero.github.io/page/2/index.html">
 <meta property="og:site_name" content="Pluto&#39;s Blog">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Pluto&#39;s Blog">
   
+    <link rel="alternate" href="/atom.xml" title="Pluto&#39;s Blog" type="application/atom+xml">
   
-    <link rel="icon" href="/css/images/favicon.ico">
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
   
   <link rel="stylesheet" href="/css/style.css">
-  
-
-  
-  <!-- baidu webmaster push -->
-  <script src='//push.zhanzhang.baidu.com/push.js'></script>
 </head>
-<body class="home blog custom-background custom-font-enabled single-author">
-  <div id="page" class="hfeed site">
-      <header id="masthead" class="site-header" role="banner">
-    <hgroup>
-      <h1 class="site-title">
-        <a href="/" title="Pluto&#39;s Blog" rel="home">Pluto&#39;s Blog</a>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Pluto&#39;s Blog</a>
       </h1>
       
-        <h2 class="site-description">
+        <h2 id="subtitle-wrap">
           <a href="/" id="subtitle">失败人士自留地</a>
         </h2>
       
-    </hgroup>
-
-    <nav id="site-navigation" class="main-navigation" role="navigation">
-            <button class="menu-toggle">菜单</button>
-            <a class="assistive-text" href="/#content" title="跳至内容">跳至内容</a><!--TODO-->
-            <div class="menu-main-container">
-                <ul id="menu-main" class="nav-menu">
-                
-                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/">Home</a></li>
-                
-                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/archives">Archives</a></li>
-                
-                </ul>
-            </div>
-    </nav>
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/about">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Suche"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://cyyzero.github.io"></form>
+      </div>
+    </div>
+  </div>
 </header>
-      <div id="main" class="wrapper">
-        <div id="primary" class="site-content"><div id="content" role="main">
+      <div class="outer">
+        <section id="main">
   
-    <article id="post-effective_modern_cpp_3" class="post-effective_modern_cpp_3 post type-post status-publish format-standard hentry">
-    <!---->
-
-      <header class="entry-header">
-        
+    <article id="post-effective_modern_cpp_3" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/04/20/effective_modern_cpp_3/" class="article-date">
+  <time datetime="2018-04-20T04:06:46.000Z" itemprop="datePublished">2018-04-20</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
         
   
-    <h1 class="entry-title">
-      <a class="article-title" href="/2018/04/20/effective_modern_cpp_3/">effective modern c++读书笔记(四)</a>
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/04/20/effective_modern_cpp_3/">effective modern C++读书笔记(四)</a>
     </h1>
   
 
-        
-        <div class="comments-link">
-            
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/04/20/effective_modern_cpp_3/" data-id="cjrnos54n000lot77hoob33le" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
-        </div><!-- .comments-link -->
-      </header><!-- .entry-header -->
-
-    <div class="entry-content">
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
       
         <h1 id="lambda-表达式"><a href="#lambda-表达式" class="headerlink" title="lambda 表达式"></a>lambda 表达式</h1><p>首先来明确一下三个概念：</p>
 <ul>
@@ -146,48 +153,41 @@
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 省略了一系列的 using</span></span><br><span class="line"><span class="keyword">auto</span> setSoundB = <span class="built_in">std</span>::bind(setAlarm,</span><br><span class="line">                           <span class="built_in">std</span>::bind(<span class="built_in">std</span>::plus&lt;&gt;(), <span class="built_in">std</span>::bind(steady_clock::now()), <span class="number">1</span>h),</span><br><span class="line">                           <span class="number">30</span>s);</span><br></pre></td></tr></table></figure>
 
       
-    </div><!-- .entry-content -->
-
-    <footer class="entry-meta">
-    <a href="/2018/04/20/effective_modern_cpp_3/">
-    <time datetime="2018-04-20T04:06:46.000Z" class="entry-date">
-        2018-04-20
-    </time>
-</a>
-    
-    
-  <span class="article-delim">&#8226;</span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://cyyzero.github.io/2018/04/20/effective_modern_cpp_3/" data-id="cjs51m466000n2d77ddx4ewzh" class="article-share-link">Teilen</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Cpp/">Cpp</a></li></ul>
 
     </footer>
+  </div>
+  
 </article>
 
 
-
-
-
-
   
-    <article id="post-effective_modern_cpp_2" class="post-effective_modern_cpp_2 post type-post status-publish format-standard hentry">
-    <!---->
-
-      <header class="entry-header">
-        
+    <article id="post-effective_modern_cpp_2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/03/01/effective_modern_cpp_2/" class="article-date">
+  <time datetime="2018-03-01T07:36:06.000Z" itemprop="datePublished">2018-03-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
         
   
-    <h1 class="entry-title">
-      <a class="article-title" href="/2018/03/01/effective_modern_cpp_2/">effective modern c++读书笔记(三)</a>
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/03/01/effective_modern_cpp_2/">effective modern C++读书笔记(三)</a>
     </h1>
   
 
-        
-        <div class="comments-link">
-            
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/03/01/effective_modern_cpp_2/" data-id="cjrnos54l000iot77n2hcz1yu" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
-        </div><!-- .comments-link -->
-      </header><!-- .entry-header -->
-
-    <div class="entry-content">
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
       
         <h1 id="右值引用，移动语义和完美转发"><a href="#右值引用，移动语义和完美转发" class="headerlink" title="右值引用，移动语义和完美转发"></a>右值引用，移动语义和完美转发</h1><ul>
 <li><p><em>移动语义(Move semantics)</em>往往可以用来替代copy操作，减小开销。而且还要某些对象(比如<code>std::unique_ptr</code>, <code>std::futrue</code>, <code>std::thread</code>)只允许move，禁止copy。可是在某些情况下，它的开销并不一定比copy小。</p>
@@ -365,48 +365,41 @@
 </ul>
 
       
-    </div><!-- .entry-content -->
-
-    <footer class="entry-meta">
-    <a href="/2018/03/01/effective_modern_cpp_2/">
-    <time datetime="2018-03-01T07:36:06.000Z" class="entry-date">
-        2018-03-01
-    </time>
-</a>
-    
-    
-  <span class="article-delim">&#8226;</span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://cyyzero.github.io/2018/03/01/effective_modern_cpp_2/" data-id="cjs51m464000l2d77vt1fwm01" class="article-share-link">Teilen</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Cpp/">Cpp</a></li></ul>
 
     </footer>
+  </div>
+  
 </article>
 
 
-
-
-
-
   
-    <article id="post-effective_modern_cpp_1" class="post-effective_modern_cpp_1 post type-post status-publish format-standard hentry">
-    <!---->
-
-      <header class="entry-header">
-        
+    <article id="post-effective_modern_cpp_1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/02/12/effective_modern_cpp_1/" class="article-date">
+  <time datetime="2018-02-12T08:26:41.000Z" itemprop="datePublished">2018-02-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
         
   
-    <h1 class="entry-title">
-      <a class="article-title" href="/2018/02/12/effective_modern_cpp_1/">effective modern c++读书笔记(二)</a>
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/02/12/effective_modern_cpp_1/">effective modern C++读书笔记(二)</a>
     </h1>
   
 
-        
-        <div class="comments-link">
-            
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective_modern_cpp_1/" data-id="cjrnos54i000hot774izi83er" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
-        </div><!-- .comments-link -->
-      </header><!-- .entry-header -->
-
-    <div class="entry-content">
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
       
         <h1 id="智能指针"><a href="#智能指针" class="headerlink" title="智能指针"></a>智能指针</h1><p>首先，raw pointer有着诸多缺陷</p>
 <ul>
@@ -415,7 +408,7 @@
 <li>析构的时机、次数容易出错</li>
 <li>容易出现dangling pointer</li>
 </ul>
-<p>所以，c++11有了智能指针。</p>
+<p>所以，C++11有了智能指针。</p>
 <hr>
 <h2 id="Item-18"><a href="#Item-18" class="headerlink" title="Item 18"></a>Item 18</h2><ul>
 <li><p>资源紧缺的机器上也可以用<code>std::unique_ptr</code>，因为当它使用默认或者stateless lambda作为删除器的时候，和raw pointer大小一样。而且对于很多操作(比如解引用)，它们执行相同的指令。</p>
@@ -424,7 +417,7 @@
 </li>
 <li><p>对于层级继承关系来说，可以用工厂函数返回<code>std::unique_ptr</code>。并且调用方可以用<code>std::shared_ptr</code>来接收工厂函数的返回值。</p>
 </li>
-<li><p><code>std::unique_ptr</code>有两种形式，一个是单独的对象(<code>std::unique_ptr&lt;T&gt;</code>)，另一个是数组(<code>std::unique_ptr&lt;T[]&gt;</code>)。不过对于后者来说，c++中已经有了足够多足够好的替代品(比如说<code>std::array</code>、<code>std::vector</code>、<code>std::string</code>)。最好在使用返回一个裸指针的C-like API的时候才使用std::unique_ptr<t[]>。</t[]></p>
+<li><p><code>std::unique_ptr</code>有两种形式，一个是单独的对象(<code>std::unique_ptr&lt;T&gt;</code>)，另一个是数组(<code>std::unique_ptr&lt;T[]&gt;</code>)。不过对于后者来说，C++中已经有了足够多足够好的替代品(比如说<code>std::array</code>、<code>std::vector</code>、<code>std::string</code>)。最好在使用返回一个裸指针的C-like API的时候才使用std::unique_ptr<t[]>。</t[]></p>
 </li>
 </ul>
 <hr>
@@ -502,7 +495,7 @@
 <h2 id="Item-21"><a href="#Item-21" class="headerlink" title="Item 21"></a>Item 21</h2><ul>
 <li><p>有三个make函数，作用都是完美转发参数然后构造某个对象，并让智能指针指向它。分别是</p>
 <ul>
-<li><p><code>std::make_unique</code>.c++14才加入了标准库。不过自己也可以写个类似很简单的实现</p>
+<li><p><code>std::make_unique</code>.C++14才加入了标准库。不过自己也可以写个类似很简单的实现</p>
   <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span>... Ts&gt;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;T&gt; make_unique(Ts&amp;&amp;... params)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;T&gt;(<span class="keyword">new</span> T(<span class="built_in">std</span>::forward&lt;Ts&gt;(params)...));</span><br><span class="line">&#125;</span><br><span class="line">`</span><br></pre></td></tr></table></figure>
 </li>
 <li><p><code>std::make_shared</code>。和<code>std::make_unique</code>大同小异。</p>
@@ -564,7 +557,7 @@
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// in "widget.h"</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Widget</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Widget();</span><br><span class="line">...</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Impl</span>;</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Impl&gt; pImpl;</span><br></pre></td></tr></table></figure>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// in "widget.cpp"</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"widget.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"gadget.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Widget</span>:</span>:Impl &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> name;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt; data;</span><br><span class="line">    Gadget g1, g2, g3;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Widget::Widget()</span><br><span class="line">: pImpl(<span class="built_in">std</span>::make_unique&lt;Impl&gt;()) &#123;&#125;</span><br></pre></td></tr></table></figure>
 <p>可能注意到了，由于用智能指针管理资源，似乎用编译器生成的析构函数就能正常工作了的样子。编译没问题。不过，当你写下<code>WIdget w;</code>，想要使用它的时候，却会编译出错。</p>
-<p>问题出在试图析构w，生成代码的时候。此时，析构函数将会被调用。根据编译器生成特殊成员函数的规则(详情见Item 17)，编译器试图生成一个析构函数。这个生成的析构函数会调用plmpl(一个使用默认删除器的std::unique_ptr)的析构函数。在这个指针的析构函数中，将会直接用<code>delete</code>作用于一个raw pointer。要注意到，在这时，Impl还是个不完全类型。但是，由于在实现在实现作用，默认deleter通常会用c++11的static_assert来确保指针指向完整类型。所以当编译器生成析构函数的时候，它就碰到了一个失败的static_assert。</p>
+<p>问题出在试图析构w，生成代码的时候。此时，析构函数将会被调用。根据编译器生成特殊成员函数的规则(详情见Item 17)，编译器试图生成一个析构函数。这个生成的析构函数会调用plmpl(一个使用默认删除器的std::unique_ptr)的析构函数。在这个指针的析构函数中，将会直接用<code>delete</code>作用于一个raw pointer。要注意到，在这时，Impl还是个不完全类型。但是，由于在实现在实现作用，默认deleter通常会用C++11的static_assert来确保指针指向完整类型。所以当编译器生成析构函数的时候，它就碰到了一个失败的static_assert。</p>
 <p>要解决这个问题也很简单，做到在析构的时候Impl是完整类型就可以了。</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// in file "widget.h"</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Widget</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Widget();</span><br><span class="line">    ~Widget();                          <span class="comment">// 只声明</span></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Impl</span>;</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Impl&gt; pImpl;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// in file "widget.cpp"</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"widget.h"</span> </span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"gadget.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Widget</span>:</span>:Impl &#123; </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> name; </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt; data;</span><br><span class="line">    Gadget g1, g2, g3;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Widget::Widget() </span><br><span class="line">: pImpl(<span class="built_in">std</span>::make_unique&lt;Impl&gt;())</span><br><span class="line">&#123;&#125;</span><br><span class="line"></span><br><span class="line">Widget::~Widget()                       <span class="comment">// ~Widget的定义</span></span><br><span class="line">&#123;&#125;</span><br></pre></td></tr></table></figure>
@@ -582,48 +575,41 @@
 </ul>
 
       
-    </div><!-- .entry-content -->
-
-    <footer class="entry-meta">
-    <a href="/2018/02/12/effective_modern_cpp_1/">
-    <time datetime="2018-02-12T08:26:41.000Z" class="entry-date">
-        2018-02-12
-    </time>
-</a>
-    
-    
-  <span class="article-delim">&#8226;</span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://cyyzero.github.io/2018/02/12/effective_modern_cpp_1/" data-id="cjs51m461000j2d773ce63h0o" class="article-share-link">Teilen</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Cpp/">Cpp</a></li></ul>
 
     </footer>
+  </div>
+  
 </article>
 
 
-
-
-
-
   
-    <article id="post-effective_modern_cpp_0" class="post-effective_modern_cpp_0 post type-post status-publish format-standard hentry">
-    <!---->
-
-      <header class="entry-header">
-        
+    <article id="post-effective_modern_cpp_0" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/02/12/effective_modern_cpp_0/" class="article-date">
+  <time datetime="2018-02-12T07:36:06.000Z" itemprop="datePublished">2018-02-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
         
   
-    <h1 class="entry-title">
-      <a class="article-title" href="/2018/02/12/effective_modern_cpp_0/">effective modern c++读书笔记(一)</a>
+    <h1 itemprop="name">
+      <a class="article-title" href="/2018/02/12/effective_modern_cpp_0/">effective modern C++读书笔记(一)</a>
     </h1>
   
 
-        
-        <div class="comments-link">
-            
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective_modern_cpp_0/" data-id="cjrnos54g000eot77na6rlbz8" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
-        </div><!-- .comments-link -->
-      </header><!-- .entry-header -->
-
-    <div class="entry-content">
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
       
         <p>ps:第一本看的英文原版…希望这个寒假能看完吧</p>
 <h1 id="Item-1-5"><a href="#Item-1-5" class="headerlink" title="Item 1-5"></a>Item 1-5</h1><ul>
@@ -668,7 +654,7 @@
   <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="comment">// MyAllocList&lt;T&gt;::type</span></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">MyAllocList</span> &#123;</span></span><br><span class="line"><span class="comment">// is synonym for</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="built_in">std</span>::<span class="built_in">list</span>&lt;T, MyAlloc&lt;T&gt;&gt; type; <span class="comment">// std::list&lt;T,</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="comment">//MyAlloc&lt;T&gt;&gt;</span></span><br><span class="line">MyAllocList&lt;Widget&gt;::type lw;</span><br><span class="line"><span class="comment">// client code</span></span><br></pre></td></tr></table></figure>
   <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Widget</span> &#123;</span></span><br><span class="line"><span class="comment">// Widget&lt;T&gt; contains</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line"><span class="comment">// a MyAllocList&lt;T&gt;</span></span><br><span class="line"><span class="keyword">typename</span> MyAllocList&lt;T&gt;::type <span class="built_in">list</span>;</span><br><span class="line"><span class="comment">// as a data member</span></span><br><span class="line">...</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 </li>
-<li><p>c++14运用alias template的一点改进</p>
+<li><p>C++14运用alias template的一点改进</p>
   <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::remove_const&lt;T&gt;::type</span><br><span class="line"><span class="built_in">std</span>::<span class="keyword">remove_const_t</span>&lt;T&gt;</span><br><span class="line"><span class="comment">// C++11: const T → T</span></span><br><span class="line"><span class="comment">// C++14 equivalent</span></span><br><span class="line"><span class="built_in">std</span>::remove_reference&lt;T&gt;::type</span><br><span class="line"><span class="built_in">std</span>::<span class="keyword">remove_reference_t</span>&lt;T&gt;</span><br><span class="line"><span class="comment">// C++11: T&amp;/T&amp;&amp; → T</span></span><br><span class="line"><span class="comment">// C++14 equivalent</span></span><br><span class="line"><span class="built_in">std</span>::add_lvalue_reference&lt;T&gt;::type</span><br><span class="line"><span class="comment">// C++11: T → T&amp;</span></span><br><span class="line"><span class="built_in">std</span>::<span class="keyword">add_lvalue_reference_t</span>&lt;T&gt;</span><br><span class="line"><span class="comment">// C++14 equivalent</span></span><br></pre></td></tr></table></figure>
 </li>
 </ul>
@@ -684,7 +670,7 @@
 </li>
 </ul>
 <h1 id="Item-11"><a href="#Item-11" class="headerlink" title="Item 11"></a>Item 11</h1><ul>
-<li><p>c++11前常常将成员函数声明放在private区域而不实现，以防止编译器自动生成。现在有了<code>=delete</code></p>
+<li><p>C++11前常常将成员函数声明放在private区域而不实现，以防止编译器自动生成。现在有了<code>=delete</code></p>
 </li>
 <li><p><code>=delete</code>不光能用于成员函数。还能通过讲“重载函数”声明为<code>=delete</code>防止函数的参数被隐式转换。</p>
 </li>
@@ -698,11 +684,11 @@
 </li>
 </ul>
 <h1 id="Item-13"><a href="#Item-13" class="headerlink" title="Item 13"></a>Item 13</h1><ul>
-<li><p>在c++98的时候，容器的非const对象无法直接获得const_iterator，一般通过强制转化，或者用绑定到一个reference-to-const。</p>
+<li><p>在C++98的时候，容器的非const对象无法直接获得const_iterator，一般通过强制转化，或者用绑定到一个reference-to-const。</p>
 </li>
-<li><p>在c++98，const_iterator不能用于在插入或者删除的函数指示位置。</p>
+<li><p>在C++98，const_iterator不能用于在插入或者删除的函数指示位置。</p>
 </li>
-<li><p>c++11提供了<code>begin</code>和<code>end</code>函数（包括许多容器的成员函数和非成员函数的通用版本）。但是c++14才提供了（这里指的是non-member版本）<code>cbegin</code>, <code>cend</code>, <code>rbegin</code>, <code>rend</code>和<code>crend</code>。有个用c++11实现<code>cbegin</code>的例子。</p>
+<li><p>C++11提供了<code>begin</code>和<code>end</code>函数（包括许多容器的成员函数和非成员函数的通用版本）。但是C++14才提供了（这里指的是non-member版本）<code>cbegin</code>, <code>cend</code>, <code>rbegin</code>, <code>rend</code>和<code>crend</code>。有个用C++11实现<code>cbegin</code>的例子。</p>
   <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="class"><span class="keyword">class</span> <span class="title">C</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">auto</span> <span class="title">cbegin</span>(<span class="title">const</span> <span class="title">C</span>&amp; <span class="title">container</span>)-&gt;<span class="title">decltype</span>(<span class="title">std</span>:</span>:begin(container))</span><br><span class="line">&#123;</span><br><span class="line">    retrurn <span class="built_in">std</span>::begin(container)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 </li>
 </ul>
@@ -730,7 +716,7 @@
 <li>对于某个需要同步的对象来说，用std::atomic就够了。但是对于多个对象作为一个整体需要同步的时候，往往需要用到mutex。</li>
 </ul>
 <h1 id="Item-17"><a href="#Item-17" class="headerlink" title="Item 17"></a>Item 17</h1><ul>
-<li><p>c++11开始，特殊成员函数有</p>
+<li><p>C++11开始，特殊成员函数有</p>
 <ul>
 <li>defualt constructor 默认构造函数</li>
 <li>destructor 析构函数</li>
@@ -748,7 +734,7 @@
 </li>
 <li><p>声明了拷贝操作(拷贝构造函数和拷贝赋值函数),那么编译器将不会生成移动操作的版本。反之亦然。</p>
 </li>
-<li><p>c++98开始就有个<code>Rule of Three</code>，即析构函数，拷贝构造函数，拷贝赋值函数三者自定义了任意一个，那一般来说其他两个也得自定义，编译器生成的很可能是错误的行为。</p>
+<li><p>C++98开始就有个<code>Rule of Three</code>，即析构函数，拷贝构造函数，拷贝赋值函数三者自定义了任意一个，那一般来说其他两个也得自定义，编译器生成的很可能是错误的行为。</p>
 </li>
 <li><p>总结：下面三个条件都成立，则移动操作将会被编译器生成：</p>
 <ul>
@@ -764,48 +750,41 @@
 </ul>
 
       
-    </div><!-- .entry-content -->
-
-    <footer class="entry-meta">
-    <a href="/2018/02/12/effective_modern_cpp_0/">
-    <time datetime="2018-02-12T07:36:06.000Z" class="entry-date">
-        2018-02-12
-    </time>
-</a>
-    
-    
-  <span class="article-delim">&#8226;</span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://cyyzero.github.io/2018/02/12/effective_modern_cpp_0/" data-id="cjs51m45z000h2d77nipdeh8x" class="article-share-link">Teilen</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Cpp/">Cpp</a></li></ul>
 
     </footer>
+  </div>
+  
 </article>
 
 
-
-
-
-
   
-    <article id="post-syscall_IA32" class="post-syscall_IA32 post type-post status-publish format-standard hentry">
-    <!---->
-
-      <header class="entry-header">
-        
+    <article id="post-syscall_IA32" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/01/29/syscall_IA32/" class="article-date">
+  <time datetime="2018-01-29T09:59:56.000Z" itemprop="datePublished">2018-01-29</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
         
   
-    <h1 class="entry-title">
+    <h1 itemprop="name">
       <a class="article-title" href="/2018/01/29/syscall_IA32/">当我们谈论系统调用的时候我们在谈论什么</a>
     </h1>
   
 
-        
-        <div class="comments-link">
-            
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/01/29/syscall_IA32/" data-id="cjrnos5510015ot770in4jr73" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
-        </div><!-- .comments-link -->
-      </header><!-- .entry-header -->
-
-    <div class="entry-content">
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
       
         <p>ps:句式“当我们谈论XX时我们在谈论什么”引用自美国作家卡佛(Ramond Carver)的作品《当我们谈论爱情时我们谈论什么》(What We Talk About When We Talk About Love)。当然，我又标题党了，应该换成<strong>浅析IA32 Linux 系统调用过程</strong>比较合适。</p>
 <p>当说到Linux下的系统调用(<strong>System Call</strong>)的时候，程序员都不会陌生。但一般都会联想到fork()，execve()等这些函数。这就是很多人(包括以前我自己)的误区所在了。</p>
@@ -845,52 +824,45 @@
 <p>(取好几本书内容的子集东拼西凑写出来的…真是艰难</p>
 
       
-    </div><!-- .entry-content -->
-
-    <footer class="entry-meta">
-    <a href="/2018/01/29/syscall_IA32/">
-    <time datetime="2018-01-29T09:59:56.000Z" class="entry-date">
-        2018-01-29
-    </time>
-</a>
-    
-    
-  <span class="article-delim">&#8226;</span>
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://cyyzero.github.io/2018/01/29/syscall_IA32/" data-id="cjs51m46h00102d77crv7h61b" class="article-share-link">Teilen</a>
+      
+      
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li></ul>
 
     </footer>
+  </div>
+  
 </article>
 
 
-
-
-
-
   
-    <article id="post-swap_tow_integer" class="post-swap_tow_integer post type-post status-publish format-standard hentry">
-    <!---->
-
-      <header class="entry-header">
-        
+    <article id="post-swap_tow_integer" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/11/13/swap_tow_integer/" class="article-date">
+  <time datetime="2017-11-13T15:59:56.000Z" itemprop="datePublished">2017-11-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
         
   
-    <h1 class="entry-title">
-      <a class="article-title" href="/2017/11/13/swap_tow_integer/">c++的ub还真是无处不在啊</a>
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/11/13/swap_tow_integer/">C++的ub还真是无处不在啊</a>
     </h1>
   
 
-        
-        <div class="comments-link">
-            
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/13/swap_tow_integer/" data-id="cjrnos5500012ot77wg9ki3fg" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
-        </div><!-- .comments-link -->
-      </header><!-- .entry-header -->
-
-    <div class="entry-content">
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
       
         <p>最近发现了一个有意思的东西，所以特意分享下。</p>
 <p>问题的引入是如何交换两个整型变量?最简单的就是引入第三个变量,然后完成三次赋值达到交换的目的。<br>然后，也有一些不使用第三个变量达到这个目的的方法。我所知道的有两个，一个是通过位运算的异或（原理是对于任意位模式ｘ^x = 0,在此不展开），还有一个就是通过以下的方法：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> = <span class="keyword">typename</span> <span class="built_in">std</span>::enable_if&lt;<span class="built_in">std</span>::is_integral&lt;T&gt;::value&gt;::type&gt;</span><br><span class="line"><span class="keyword">void</span> swap_ingeter(T&amp; x, T&amp; y)</span><br><span class="line">&#123;</span><br><span class="line">	x = x+y;</span><br><span class="line">	y = x-y;</span><br><span class="line">	x = x-y;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> = <span class="keyword">typename</span> <span class="built_in">std</span>::enable_if&lt;<span class="built_in">std</span>::is_integral&lt;T&gt;::value&gt;::type&gt;</span><br><span class="line"><span class="keyword">void</span> swap_ingeter(T&amp; x, T&amp; y)</span><br><span class="line">&#123;</span><br><span class="line">	x = x+y;</span><br><span class="line">	y = x-y;</span><br><span class="line">	x = x-y;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>（可以看到我这里没有说明具体变量类型，原因往下看就知道了=。=）</p>
 <p>肯定有人一眼就看出了这个方法的问题：<code>x+y</code>有可能会溢出。</p>
 <p>一般程序猿看到溢出就头疼，感觉肯定潜藏着bug，然而事实真是如此吗？这正是本篇文章的想要探讨的问题：<strong>这种方法最终结果还能保证交换结果正确吗？</strong></p>
@@ -923,7 +895,7 @@
 </tbody>
 </table>
 <p>可以看到根据取模加法<strong>可交换可结合</strong>的特点<code>x</code>最后的结果是<code>x+y-x-y+y=y</code>，<code>y</code>最后的结果<code>x+y-y=x</code>。</p>
-<p>到这里似乎完事大吉,但是心头隐隐有些不安。而且某次在某个群里讨论这个话题的时候也被dalao喷过：-（  所以感觉这个还和语言的标准有关。后来查了下c++对于有符号数无符号数，以及溢出的资料，果然如此…</p>
+<p>到这里似乎完事大吉,但是心头隐隐有些不安。而且某次在某个群里讨论这个话题的时候也被dalao喷过：-（  所以感觉这个还和语言的标准有关。后来查了下C++对于有符号数无符号数，以及溢出的资料，果然如此…</p>
 <p>对于无符号整型来说：</p>
 <p>C++11,§6.9.1</p>
 <blockquote>
@@ -946,48 +918,41 @@
 <p>ps：不过现在大部分PC机都是x86体系结构的，有符号整型这么交换也是可以的…毕竟cpu运算结果就是那样 orz</p>
 
       
-    </div><!-- .entry-content -->
-
-    <footer class="entry-meta">
-    <a href="/2017/11/13/swap_tow_integer/">
-    <time datetime="2017-11-13T15:59:56.000Z" class="entry-date">
-        2017-11-13
-    </time>
-</a>
-    
-    
-  <span class="article-delim">&#8226;</span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://cyyzero.github.io/2017/11/13/swap_tow_integer/" data-id="cjs51m46f000x2d77f3j4pg66" class="article-share-link">Teilen</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Cpp/">Cpp</a></li></ul>
 
     </footer>
+  </div>
+  
 </article>
 
 
-
-
-
-
   
-    <article id="post-nullptr_and_NULL" class="post-nullptr_and_NULL post type-post status-publish format-standard hentry">
-    <!---->
-
-      <header class="entry-header">
-        
+    <article id="post-nullptr_and_NULL" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/11/04/nullptr_and_NULL/" class="article-date">
+  <time datetime="2017-11-04T02:13:15.000Z" itemprop="datePublished">2017-11-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
         
   
-    <h1 class="entry-title">
+    <h1 itemprop="name">
       <a class="article-title" href="/2017/11/04/nullptr_and_NULL/">nullptr vs NULL</a>
     </h1>
   
 
-        
-        <div class="comments-link">
-            
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/11/04/nullptr_and_NULL/" data-id="cjrnos54s000sot77zt8ch1dd" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
-        </div><!-- .comments-link -->
-      </header><!-- .entry-header -->
-
-    <div class="entry-content">
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
       
         <p>大家都知道,在C语言中,NULL被用来表示空指针常量(null pointer constant),用来与任何指向真实对象的指针区分.</p>
 <p>c99标准里这么描述:</p>
@@ -996,125 +961,118 @@
 </blockquote>
 <p>而且NULL属于implementation defined,所以编译器一般都把NULL宏定义为常量0(或者0L)或者 (void*)0…</p>
 <p>因为c语言允许void<em> 指针向其他指针类型隐式转化(比如说很常用的malloc函数的返回值就是void</em> ),所以可以通过NULL给任意类型的指针赋null pointer constant.</p>
-<p>但是在c++中就有不同了.c++不支持void<em> 隐式转化为其他指针类型,NULL宏定义成(void</em>)0就没什么意义. 于是,c++中NULL一般宏定义为0. </p>
-<p>但是这么以来,问题就出现了<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">void</span> *)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"arg: pointer"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"arg: int"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> *p  = <span class="literal">NULL</span>;</span><br><span class="line">	f(p);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-<p>编译出错:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">test.cpp:14:8: error: call of overloaded ‘f(NULL)’ is ambiguous</span><br><span class="line">  f(NULL);</span><br><span class="line">        ^</span><br><span class="line">test.cpp:2:6: note: candidate: void f(int*)</span><br><span class="line"> void f(int *)</span><br><span class="line">      ^</span><br><span class="line">test.cpp:7:6: note: candidate: void f(int)</span><br><span class="line"> void f(int )</span><br><span class="line">      ^</span><br></pre></td></tr></table></figure></p>
+<p>但是在C++中就有不同了.C++不支持void<em> 隐式转化为其他指针类型,NULL宏定义成(void</em>)0就没什么意义. 于是,C++中NULL一般宏定义为0. </p>
+<p>但是这么以来,问题就出现了</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">void</span> *)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"arg: pointer"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> )</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"arg: int"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> *p  = <span class="literal">NULL</span>;</span><br><span class="line">	f(p);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>编译出错:</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">test.cpp:14:8: error: call of overloaded ‘f(NULL)’ is ambiguous</span><br><span class="line">  f(NULL);</span><br><span class="line">        ^</span><br><span class="line">test.cpp:2:6: note: candidate: void f(int*)</span><br><span class="line"> void f(int *)</span><br><span class="line">      ^</span><br><span class="line">test.cpp:7:6: note: candidate: void f(int)</span><br><span class="line"> void f(int )</span><br><span class="line">      ^</span><br></pre></td></tr></table></figure>
 <p>因为函数调用的时候两个重载版本都会匹配.</p>
 <p>还有就是模板推断参数类型的时候,也会由于NULL而把指针类型推断成int(当然,如果宏定义是0L就推断成long long),造成编译错误.</p>
-<p>当然,随着c++11版本的出现,引入了一个新的关键字nullptr,c++终于有了正式的null pointer constant.</p>
+<p>当然,随着C++11版本的出现,引入了一个新的关键字nullptr,C++终于有了正式的null pointer constant.</p>
 <blockquote>
 <p>The keyword nullptr denotes the pointer literal. It is a prvalue of type std::nullptr_t. There exist implicit conversions from nullptr to null pointer value of any pointer type and any pointer to member type. Similar conversions exist for any null pointer constant, which includes values of type std::nullptr_t as well as the macro NULL. </p>
 </blockquote>
 <p>大概意思就是nullptr类型是std::nullptr_t(大概可以理解成true和false之于bool类型的关系),是个纯右值(prvalue).nullptr可以隐式转化成任意指针类型的空指针值(null pointer value).</p>
-<p>再来看一个例子:<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cstddef&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">F</span>, <span class="title">class</span> <span class="title">A</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> <span class="title">Fwd</span>(<span class="title">F</span> <span class="title">f</span>, <span class="title">A</span> <span class="title">a</span>)</span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    f(a);</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">g</span><span class="params">(<span class="keyword">int</span>* i)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Function g called\n"</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    g(<span class="literal">NULL</span>);           <span class="comment">// Fine</span></span><br><span class="line">    g(<span class="number">0</span>);              <span class="comment">// Fine</span></span><br><span class="line"> </span><br><span class="line">    Fwd(g, <span class="literal">nullptr</span>);   <span class="comment">// Fine</span></span><br><span class="line">    Fwd(g, <span class="literal">NULL</span>);      <span class="comment">// ERROR: No function g(int)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>再来看一个例子:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cstddef&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="keyword">template</span>&lt;<span class="class"><span class="keyword">class</span> <span class="title">F</span>, <span class="title">class</span> <span class="title">A</span>&gt;</span></span><br><span class="line"><span class="class"><span class="title">void</span> <span class="title">Fwd</span>(<span class="title">F</span> <span class="title">f</span>, <span class="title">A</span> <span class="title">a</span>)</span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    f(a);</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">g</span><span class="params">(<span class="keyword">int</span>* i)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Function g called\n"</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    g(<span class="literal">NULL</span>);           <span class="comment">// Fine</span></span><br><span class="line">    g(<span class="number">0</span>);              <span class="comment">// Fine</span></span><br><span class="line"> </span><br><span class="line">    Fwd(g, <span class="literal">nullptr</span>);   <span class="comment">// Fine</span></span><br><span class="line">    Fwd(g, <span class="literal">NULL</span>);      <span class="comment">// ERROR: No function g(int)</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>有了nullptr就解决了NULL模板推断的一些问题.</p>
 <p>所以给指针赋值尽量用nullptr…</p>
-<p>ps: 还要就是std::nullptr_t类型的定义比较奇怪= =.  这样真的大丈夫?<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef decltype(nullptr) nullptr_t;</span><br></pre></td></tr></table></figure></p>
+<p>ps: 还要就是std::nullptr_t类型的定义比较奇怪= =.  这样真的大丈夫?</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef decltype(nullptr) nullptr_t;</span><br></pre></td></tr></table></figure>
 
       
-    </div><!-- .entry-content -->
-
-    <footer class="entry-meta">
-    <a href="/2017/11/04/nullptr_and_NULL/">
-    <time datetime="2017-11-04T02:13:15.000Z" class="entry-date">
-        2017-11-04
-    </time>
-</a>
-    
-    
-  <span class="article-delim">&#8226;</span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://cyyzero.github.io/2017/11/04/nullptr_and_NULL/" data-id="cjs51m46a000r2d77ls8ruall" class="article-share-link">Teilen</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Cpp/">Cpp</a></li></ul>
 
     </footer>
+  </div>
+  
 </article>
 
 
-
-
-
-
   
-    <article id="post-cpp_switch" class="post-cpp_switch post type-post status-publish format-standard hentry">
-    <!---->
-
-      <header class="entry-header">
-        
+    <article id="post-cpp_switch" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/10/30/cpp_switch/" class="article-date">
+  <time datetime="2017-10-30T15:59:56.000Z" itemprop="datePublished">2017-10-30</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
         
   
-    <h1 class="entry-title">
-      <a class="article-title" href="/2017/10/30/cpp_switch/">c++ switch内部的变量定义</a>
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/10/30/cpp_switch/">C++ switch内部的变量定义</a>
     </h1>
   
 
-        
-        <div class="comments-link">
-            
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/10/30/cpp_switch/" data-id="cjrnos54e000cot77bkh5j84m" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
-        </div><!-- .comments-link -->
-      </header><!-- .entry-header -->
-
-    <div class="entry-content">
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
       
-        <p>c++中的switch语句大家肯定都很熟悉。switch执行流程是匹配相应的case。很显然，可能会跳过某些case标签，忽略某些代码。那么就带来了一个有意思的话题：<strong>如果被忽略的代码中有变量的定义该怎么办</strong>？</p>
-<p>先来看一个简单的例子：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span>(<span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">	<span class="keyword">int</span> a = <span class="number">10</span>;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+        <p>C++中的switch语句大家肯定都很熟悉。switch执行流程是匹配相应的case。很显然，可能会跳过某些case标签，忽略某些代码。那么就带来了一个有意思的话题：<strong>如果被忽略的代码中有变量的定义该怎么办</strong>？</p>
+<p>先来看一个简单的例子：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span>(<span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">	<span class="keyword">int</span> a = <span class="number">10</span>;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>然后编译就错了：</p>
 <ul>
 <li><code>error: jump to case label [-fpermissive]</code></li>
 <li><code>error: crosses initialization of ‘int a’</code></li>
 </ul>
-<p>编译器的意思是控制流跳过了变量的初始化。乍看之下似乎不太好理解为什么出错。其实如果在case 0标签中要使用的变量a的时候，问题就来了。试图在未初始化的时候使用对象，这显然是行不通的。可能由于举的例子中变量是内置类型，所以不太好理解到问题的严重性，再来看一个例子：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span>(<span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">string</span> s1;</span><br><span class="line">	<span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">s2</span><span class="params">(<span class="string">"hello"</span>)</span></span>;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">	<span class="comment">//可能会使用s1或者s2</span></span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>编译器的意思是控制流跳过了变量的初始化。乍看之下似乎不太好理解为什么出错。其实如果在case 0标签中要使用的变量a的时候，问题就来了。试图在未初始化的时候使用对象，这显然是行不通的。可能由于举的例子中变量是内置类型，所以不太好理解到问题的严重性，再来看一个例子：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span>(<span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">	<span class="built_in">std</span>::<span class="built_in">string</span> s1;</span><br><span class="line">	<span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">s2</span><span class="params">(<span class="string">"hello"</span>)</span></span>;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">	<span class="comment">//可能会使用s1或者s2</span></span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>这样就跳过了类的隐式或者显式初始化。</p>
-<p>因此c++规定，不允许跨过变量的初始化语句直接跳转到变量作用域的另一个位置。</p>
-<p>然而，对于内置类型来说，定义的时候并非一定要初始化。<br>比如：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span>(<span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">	<span class="keyword">int</span> a;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">	a = <span class="number">20</span>;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>因此C++规定，不允许跨过变量的初始化语句直接跳转到变量作用域的另一个位置。</p>
+<p>然而，对于内置类型来说，定义的时候并非一定要初始化。<br>比如：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span>(<span class="number">1</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">	<span class="keyword">int</span> a;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">	a = <span class="number">20</span>;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>这段代码就不会报错，因为变量并没有初始化。可以从底层来理解。</p>
 <p>首先，switch下的大括号是一个完整的作用域，不要被case标签的缩进所欺骗，认为每个case有一个作用域（除非显示地加大括号）。</p>
 <p>其次，定义变量并不存在“执行动作”，有的只是改变栈指针从而在栈上分配空间。编译器会保证在相应的作用域之中这个变量的空间是被分配了。大部分编译器实现会选择在函数开始把所有局部变量的空间都分配好。但是变量的初始化是有”执行动作“的，比如说<code>int a = 10</code>，就会在栈上某4个字节存入10（假设机器上int占4字节）。再比如某个类初始化，也会调用相应的构造函数。所以控制流程的跳转可能造成某个对象没有正常的初始化就使用。</p>
 <p>所以，就可以回答一开始的问题了。如果被忽略的代码中的定义包含了初始化的过程，就会编译失败。如果是内置类型的定义（不含初始化），那么就能通过编译。</p>
-<p>当然，为了不出现上述的问题，可以直接用大括号将case标签下构成一个单独的作用域。<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span>(<span class="number">0</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">std</span>::<span class="built_in">string</span> s;</span><br><span class="line">		<span class="keyword">int</span> a = <span class="number">10</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">	<span class="comment">//显然，这里也不可能再使用对象s或者a</span></span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
-
+<p>当然，为了不出现上述的问题，可以直接用大括号将case标签下构成一个单独的作用域。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span>(<span class="number">0</span>)</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="built_in">std</span>::<span class="built_in">string</span> s;</span><br><span class="line">		<span class="keyword">int</span> a = <span class="number">10</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line"><span class="keyword">case</span> <span class="number">0</span>:</span><br><span class="line">	<span class="comment">//显然，这里也不可能再使用对象s或者a</span></span><br><span class="line">	<span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
       
-    </div><!-- .entry-content -->
-
-    <footer class="entry-meta">
-    <a href="/2017/10/30/cpp_switch/">
-    <time datetime="2017-10-30T15:59:56.000Z" class="entry-date">
-        2017-10-30
-    </time>
-</a>
-    
-    
-  <span class="article-delim">&#8226;</span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://cyyzero.github.io/2017/10/30/cpp_switch/" data-id="cjs51m45x000f2d773w5elcbb" class="article-share-link">Teilen</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Cpp/">Cpp</a></li></ul>
 
     </footer>
+  </div>
+  
 </article>
 
 
-
-
-
-
   
-    <article id="post-name_mangling_and_overload" class="post-name_mangling_and_overload post type-post status-publish format-standard hentry">
-    <!---->
-
-      <header class="entry-header">
-        
+    <article id="post-name_mangling_and_overload" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/08/05/name_mangling_and_overload/" class="article-date">
+  <time datetime="2017-08-05T08:18:38.000Z" itemprop="datePublished">2017-08-05</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
         
   
-    <h1 class="entry-title">
+    <h1 itemprop="name">
       <a class="article-title" href="/2017/08/05/name_mangling_and_overload/">浅谈name mangling</a>
     </h1>
   
 
-        
-        <div class="comments-link">
-            
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/08/05/name_mangling_and_overload/" data-id="cjrnos54r000qot77536ams3e" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
-        </div><!-- .comments-link -->
-      </header><!-- .entry-header -->
-
-    <div class="entry-content">
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
       
         <p>很多语言都允许重载函数，这些函数在源代码中有相同的名字，却又不同的参数列表。这用到了一种叫做name mangling的技术。</p>
 <blockquote>
@@ -1122,8 +1080,8 @@
 <p>它提供了在函数、结构体、类或其它的数据类型的名字中编码附加信息一种方法，用于从编译器中向链接器传递更多语义信息。</p>
 <p>该需求产生于程序设计语言允许不同的条目使用相同的标识符，包括它们占据不同的命名空间（典型的命名空间是由一个模块、一个类或显式的<em>namespace</em>指示来定义的）或者有不同的签名（例如函数重载）。</p>
 </blockquote>
-<p>接下来主要以c++的<strong>函数重载</strong>为例，来简要介绍一下name mangling。（当然，其他语言中也有name mangling，而且也c++还有很多其他地方需要name mangling，比如namespace，class，template等）。</p>
-<h2 id="name-mangling出现的原因"><a href="#name-mangling出现的原因" class="headerlink" title="name mangling出现的原因"></a>name mangling出现的原因</h2><p>c++源文件经过编译器和汇编器生成可重定位目标文件。链接器生成可执行目标文件。</p>
+<p>接下来主要以C++的<strong>函数重载</strong>为例，来简要介绍一下name mangling。（当然，其他语言中也有name mangling，而且也C++还有很多其他地方需要name mangling，比如namespace，class，template等）。</p>
+<h2 id="name-mangling出现的原因"><a href="#name-mangling出现的原因" class="headerlink" title="name mangling出现的原因"></a>name mangling出现的原因</h2><p>C++源文件经过编译器和汇编器生成可重定位目标文件。链接器生成可执行目标文件。</p>
 <p>不同的系统之间，目标文件的格式都不同，但基本的概念都是相同的。</p>
 <p>每个可重定位目标模块中包含一个叫做符号表（.symtab）的部分。符号表包含了m所定义和引用的符号。一般分为三种：</p>
 <ul>
@@ -1134,141 +1092,146 @@
 <p>要注意到，符号表中不包含对应于本地非静态程序变量的任何符号。因为这些符号在运行时栈中管理，链接器不care。</p>
 <p>（可能有人对上面几段中<strong>模块</strong>一词比较疑惑。一个目标模块（object module）就是一个字节序列，而一个目标文件（object file）就是存储在存储器中的目标模块。）</p>
 <p>而链接器做的主要工作，就是进行<strong>符号解析</strong>和重定位。而链接器解析符号引用的方法是将每个引用与它输入的可重定位目标文件的符号表中的<strong>一个确定的符号定义</strong>联系起来。</p>
-<p>从这里已经可以看出一些倪端了。c++要实现重载，必须让链接器能够区分这些重载函数。而不能像c语言中一样简单的将函数名作为符号。这就必须要用到name mangling。</p>
+<p>从这里已经可以看出一些倪端了。C++要实现重载，必须让链接器能够区分这些重载函数。而不能像c语言中一样简单的将函数名作为符号。这就必须要用到name mangling。</p>
 <p>ps：关于编译链接的过程我也不是很懂，这方面还需要后续的学习。</p>
 <h2 id="name-mangling的基本方式"><a href="#name-mangling的基本方式" class="headerlink" title="name mangling的基本方式"></a>name mangling的基本方式</h2><p>name mangling的基本原理就是将每个唯一的函数和参数列表组合编码成一个对链接器来说唯一的名字。换句话说，编译器和链接器需要一定的协议来规范符号的组织格式。</p>
-<p>c++中的重载函数区分在于参数数量和某个参数类型的不同。所以区分函数的时候，需要充分考虑参数数量和参数类型这两个语义信息。</p>
-<p>然而，c++并没有规定一个标准的name mangling方式，所以不同的编译器采用的各自的name mangling方式（甚至相同编译器的不同版本，或相同编译器在不同平台上，name mangling规则都截然不同）。所以几乎没有链接器可以链接不同编译器产生的目标代码。</p>
+<p>C++中的重载函数区分在于参数数量和某个参数类型的不同。所以区分函数的时候，需要充分考虑参数数量和参数类型这两个语义信息。</p>
+<p>然而，C++并没有规定一个标准的name mangling方式，所以不同的编译器采用的各自的name mangling方式（甚至相同编译器的不同版本，或相同编译器在不同平台上，name mangling规则都截然不同）。所以几乎没有链接器可以链接不同编译器产生的目标代码。</p>
 <p>以下就以gcc为例子来初步了解一下。</p>
 <p>一个简单的例子：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">(<span class="keyword">void</span>)</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">g</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i = f(), j = f(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">(<span class="keyword">void</span>)</span> </span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">g</span><span class="params">(<span class="keyword">void</span>)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> i = f(), j = f(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>编译得到可重定位目标文件，然后用gcc工具链中的<a href="https://sourceware.org/binutils/docs/binutils/nm.html" target="_blank" rel="noopener">nm</a>列出目标文件的符号，可以看到</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">0000000000000000 b .bss</span><br><span class="line">0000000000000000 d .data</span><br><span class="line">0000000000000000 p .pdata</span><br><span class="line">0000000000000000 r .rdata$zzz</span><br><span class="line">0000000000000000 t .text</span><br><span class="line">0000000000000000 r .xdata</span><br><span class="line">000000000000000b T _Z1fi</span><br><span class="line">0000000000000000 T _Z1fv</span><br><span class="line">0000000000000019 T _Z1gv</span><br></pre></td></tr></table></figure>
 <p>这三列分别是 symbol value，symbol type， symbol name。 现在主要关注的就是最后一列的符号名(主要是因为前两个我也不知道是个啥= =。以后再填坑吧)。</p>
 <p>可以看到<code>int f(void)</code> 在符号表中是<code>_Z1fv</code>，<code>int f(int)</code>是<code>_Z1fi</code>，<code>void g(void)</code>是<code>_Z1gv</code>。</p>
 <p>大家也可以从这个简单的例子窥见gcc中name mangling的方式。不过本文只是简单的介绍一下name mangling出现的理由和通用策略，并非意在介绍具体某种编译器的name mangling编码规则，所以不会在这块深入。（啊，其实是因为我也不懂）。</p>
 <p>最后再做一个实验，看一下涉及到namespace和class的name mangling。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> t &#123;</span><br><span class="line">	<span class="class"><span class="keyword">class</span> <span class="title">c</span></span></span><br><span class="line"><span class="class">	&#123;</span></span><br><span class="line">        <span class="keyword">public</span>:</span><br><span class="line">            <span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">	&#125;;</span><br><span class="line">	<span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">	<span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span> </span>&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	t::c objc;</span><br><span class="line">	objc.f();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> t &#123;</span><br><span class="line">	<span class="class"><span class="keyword">class</span> <span class="title">c</span></span></span><br><span class="line"><span class="class">	&#123;</span></span><br><span class="line">        <span class="keyword">public</span>:</span><br><span class="line">            <span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">	&#125;;</span><br><span class="line">	<span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">()</span> </span>&#123;&#125;</span><br><span class="line">	<span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>)</span> </span>&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">f</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	t::c objc;</span><br><span class="line">	objc.f();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>nm列出符号表(忽略其他符号)，看一下这几个函数的符号名：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">000000000000000f T _Z1fv</span><br><span class="line">0000000000000000 T _ZN1t1c1fEv</span><br><span class="line">0000000000000006 T _ZN1t1fEi</span><br><span class="line">0000000000000000 T _ZN1t1fEv</span><br></pre></td></tr></table></figure>
 <p>ps：最后的最后，感觉自己还是有很多地方也不是很明白…还得接着学 啊  = =</p>
 
       
-    </div><!-- .entry-content -->
-
-    <footer class="entry-meta">
-    <a href="/2017/08/05/name_mangling_and_overload/">
-    <time datetime="2017-08-05T08:18:38.000Z" class="entry-date">
-        2017-08-05
-    </time>
-</a>
-    
-    
-  <span class="article-delim">&#8226;</span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://cyyzero.github.io/2017/08/05/name_mangling_and_overload/" data-id="cjs51m468000p2d77ec5hlhaf" class="article-share-link">Teilen</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Cpp/">Cpp</a></li></ul>
 
     </footer>
+  </div>
+  
 </article>
 
 
-
-
-
-
   
-    <article id="post-cpp_reference" class="post-cpp_reference post type-post status-publish format-standard hentry">
-    <!---->
-
-      <header class="entry-header">
-        
+    <article id="post-cpp_reference" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2017/07/13/cpp_reference/" class="article-date">
+  <time datetime="2017-07-13T15:59:56.000Z" itemprop="datePublished">2017-07-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
         
   
-    <h1 class="entry-title">
-      <a class="article-title" href="/2017/07/13/cpp_reference/">c++引用的实现</a>
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/07/13/cpp_reference/">C++引用的实现</a>
     </h1>
   
 
-        
-        <div class="comments-link">
-            
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2017/07/13/cpp_reference/" data-id="cjrnos54b0009ot77p7uqec19" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
-        </div><!-- .comments-link -->
-      </header><!-- .entry-header -->
-
-    <div class="entry-content">
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
       
-        <p>很多c++初学者对于引用（reference）的的印象不外乎就是“对象的别名”、“同义词”。而引用作为c++对于c语言的重要扩充，与指针有着千丝万缕、剪不断理还乱的联系。甚至，引用在底层<del>就是</del>(勘误，应该改成“<strong>可能</strong>”)通过“指针”实现。</p>
+        <p>很多C++初学者对于引用（reference）的的印象不外乎就是“对象的别名”、“同义词”。而引用作为C++对于C语言的重要扩充，与指针有着千丝万缕、剪不断理还乱的联系。甚至，引用在底层<del>就是</del>(勘误，应该改成“<strong>可能</strong>”)通过“指针”实现。</p>
 <p><strong>左值引用</strong></p>
 <p>接下来，看一个很简单的小例子：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> a = <span class="number">6</span>;</span><br><span class="line">	<span class="keyword">int</span> &amp;b = a;</span><br><span class="line">	b = <span class="number">7</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> a = <span class="number">6</span>;</span><br><span class="line">	<span class="keyword">int</span> &amp;b = a;</span><br><span class="line">	b = <span class="number">7</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>汇编后的代码节选：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">_Z4testv:</span><br><span class="line">.LFB0:</span><br><span class="line">	pushq	%rbp</span><br><span class="line">	.seh_pushreg	%rbp</span><br><span class="line">	movq	%rsp, %rbp</span><br><span class="line">	.seh_setframe	%rbp, 0</span><br><span class="line">	subq	$16, %rsp</span><br><span class="line">	.seh_stackalloc	16</span><br><span class="line">	.seh_endprologue           #以上几行是test函数栈帧的建立过程</span><br><span class="line">	movl	$6, -12(%rbp)      #保存a</span><br><span class="line">	leaq	-12(%rbp), %rax    #将a的地址存入rax寄存器</span><br><span class="line">	movq	%rax, -8(%rbp)     #保存b，存入的是a的地址</span><br><span class="line">	movq	-8(%rbp), %rax     #将b，即a的地址传入rax寄存器</span><br><span class="line">	movl	$7, (%rax)         #通过b中保存的地址对a赋值</span><br><span class="line">	addq	$16, %rsp          #从以下几行是test函数栈帧的销毁过程</span><br><span class="line">	popq	%rbp</span><br><span class="line">	ret</span><br><span class="line">	.seh_endproc</span><br></pre></td></tr></table></figure>
 <p>可以看到，内存上b存储的其实是a的地址。</p>
-<p><del>在底层，引用是通过指针来实现</del>。引用算的上是c++的一个语法糖。</p>
+<p><del>在底层，引用是通过指针来实现</del>。引用算的上是C++的一个语法糖。</p>
 <p><strong>右值引用</strong></p>
-<p><del>以上的讲解都是基于c++传统的、用&amp;表示的引用，也就是左值引用。而c++11标准还有个右值引用的概念。那右值引用也还是用指针的实现的吗？要知道，右值引用可是对于临时变量的引用，万一是存储在寄存器中的临时变量呢？要知道，寄存器内的数据可不能寻址…作为一个c++菜鸟，我对右值引用也没有很深的理解…想到这，我不禁冒冷汗，难道我的猜测错了？上面的都得重写？</del></p>
+<p><del>以上的讲解都是基于C++传统的、用&amp;表示的引用，也就是左值引用。而C++11标准还有个右值引用的概念。那右值引用也还是用指针的实现的吗？要知道，右值引用可是对于临时变量的引用，万一是存储在寄存器中的临时变量呢？要知道，寄存器内的数据可不能寻址…作为一个C++菜鸟，我对右值引用也没有很深的理解…想到这，我不禁冒冷汗，难道我的猜测错了？上面的都得重写？</del></p>
 <p>吓得我赶紧试验一下…</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> a = <span class="number">6</span>;</span><br><span class="line">	<span class="keyword">int</span> &amp;&amp;b = a+<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">int</span> a = <span class="number">6</span>;</span><br><span class="line">	<span class="keyword">int</span> &amp;&amp;b = a+<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>汇编之后的节选：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">_Z4testv:</span><br><span class="line">.LFB0:</span><br><span class="line">	pushq	%rbp</span><br><span class="line">	.seh_pushreg	%rbp</span><br><span class="line">	movq	%rsp, %rbp</span><br><span class="line">	.seh_setframe	%rbp, 0</span><br><span class="line">	subq	$32, %rsp</span><br><span class="line">	.seh_stackalloc	32</span><br><span class="line">	.seh_endprologue           #以上是栈帧的建立过程</span><br><span class="line">	movl	$6, -4(%rbp)       #保存a</span><br><span class="line">	movl	-4(%rbp), %eax     #将a存入寄存器eax</span><br><span class="line">	addl	$1, %eax           #eax中数据+1，得到a+1</span><br><span class="line">	movl	%eax, -20(%rbp)    #保存a+1</span><br><span class="line">	leaq	-20(%rbp), %rax    #将保存的a+1的地址传入寄存器eax</span><br><span class="line">	movq	%rax, -16(%rbp)    #保存a+1的地址</span><br><span class="line">	addq	$32, %rsp          #从这以下是这个栈帧的销毁过程</span><br><span class="line">	popq	%rbp</span><br><span class="line">	ret</span><br><span class="line">	.seh_endproc</span><br></pre></td></tr></table></figure>
 <p>可以看到，程序会先将a+1计算结果保存进栈帧，然后把a+1被保存的地址传给b。b保存的还是一个地址。</p>
-<p>当然…我由于c++水品有限，可能这只是我错误的猜想和认识。欢迎指正我的错误所在。 </p>
-<p>ps：“怎么指正错误啊喂，你的博客还不能评论啊啊啊啊啊”  （来自官方的吐槽- -。</p>
+<p>当然…我由于C++水品有限，可能这只是我错误的猜想和认识。欢迎指正我的错误所在。 </p>
 <hr>
 <p>2018.1.29</p>
 <p>update：</p>
-<p>c++标准本身没有规定引用的实现方法。因此引用可能利用指针实现，也可以被优化调(即直接操作被引用的对象)。</p>
+<p>C++标准本身没有规定引用的实现方法。因此引用可能利用指针实现，也可以被优化调(即直接操作被引用的对象)。</p>
 <p>实际上不应该对引用的实现做任何假设。搞清楚它语义上是作为对象的别名就够了。</p>
 
       
-    </div><!-- .entry-content -->
-
-    <footer class="entry-meta">
-    <a href="/2017/07/13/cpp_reference/">
-    <time datetime="2017-07-13T15:59:56.000Z" class="entry-date">
-        2017-07-13
-    </time>
-</a>
-    
-    
-  <span class="article-delim">&#8226;</span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://cyyzero.github.io/2017/07/13/cpp_reference/" data-id="cjs51m45v000d2d7781hj6i8o" class="article-share-link">Teilen</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Cpp/">Cpp</a></li></ul>
 
     </footer>
+  </div>
+  
 </article>
 
 
-
-
-
-
-  
-  
-    <nav id="pagination">
-      <nav id="page-nav">
-        <a class="extend prev" rel="prev" href="/">&laquo; Prev</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/">Next &raquo;</a>
-      </nav>
-    </nav>
   
 
-</div></div>
-        <div id="secondary" class="widget-area" role="complementary">
+
+  <nav id="page-nav">
+    
+    <a class="extend prev" rel="prev" href="/">&laquo; zurück</a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/">weiter &raquo;</a>
+  </nav>
+
+</section>
+        
+          <aside id="sidebar">
   
-    <aside id="search" class="widget widget_search"><form role="search" method="get" accept-charset="utf-8" id="searchform" class="searchform" action="//google.com/search">
-    <div>
-        <input type="text" value="" name="s" id="s" />
-        <input type="submit" id="searchsubmit" value="搜索" />
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cpp/">Cpp</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
     </div>
-</form></aside>
+  </div>
+
+
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C/" style="font-size: 10px;">C</a> <a href="/tags/Cpp/" style="font-size: 20px;">Cpp</a> <a href="/tags/Linux/" style="font-size: 16.67px;">Linux</a> <a href="/tags/X86/" style="font-size: 13.33px;">X86</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+    </div>
+  </div>
+
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archiv</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">February 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">April 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">October 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a><span class="archive-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
   
     
-  <aside class="widget">
-    <h3 class="widget-title">Recents</h3>
-    <div class="widget-content">
+  <div class="widget-wrap">
+    <h3 class="widget-title">letzter Beitrag</h3>
+    <div class="widget">
       <ul>
         
           <li>
@@ -1293,37 +1256,34 @@
         
       </ul>
     </div>
-  </aside>
+  </div>
 
   
-    
-  <aside class="widget">
-    <h3 class="widget-title">Tags</h3>
-    <div class="widget-content">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
-    </div>
-  </aside>
-
-  
-    
-  <aside class="widget">
-    <h3 class="widget-title">Tag Cloud</h3>
-    <div class="widget-content tagcloud">
-      <a href="/tags/C/" style="font-size: 10px;">C</a> <a href="/tags/Linux/" style="font-size: 15px;">Linux</a> <a href="/tags/X86/" style="font-size: 10px;">X86</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
-    </div>
-  </aside>
-
-  
-</div>
+</aside>
+        
       </div>
-      <footer id="colophon" role="contentinfo">
-    <p>&copy; 2019 cyyzero
-    All rights reserved.</p>
-    <p>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></p>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 cyyzero<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
 </footer>
-    <script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"1","bdMiniList":false,"bdPic":"","bdStyle":"2","bdSize":"16"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/about" class="mobile-nav-link">About</a>
+  
+</nav>
+    
 
-<script src="/js/jquery-2.0.3.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 
   <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
@@ -1332,9 +1292,7 @@
 
 <script src="/js/script.js"></script>
 
-<script src="/js/navigation.js"></script>
 
-<div id="bg"></div>
 
   </div>
 </body>

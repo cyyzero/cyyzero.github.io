@@ -3,98 +3,94 @@
 <head>
   <meta charset="utf-8">
   
-  
-  <meta name="description" content="智能指针首先，raw pointer有着诸多缺陷
-
-指向对象的不明确(单个对象or数组？)
-析构方式的不明确(delete，delete[]还是一个特殊的析构机制，比如调用某个函数)
-析构的时机、次数容易出错
-容易出现dangling pointer
-
-所以，c++11有了智能指针。
-
-Item 1" />
-  
 
   
-  
-  
-  
-  
-  
-  <title>effective modern c++读书笔记(二) | Pluto&#39;s Blog</title>
+  <title>effective modern C++读书笔记(二) | Pluto&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="智能指针首先，raw pointer有着诸多缺陷  指向对象的不明确(单个对象or数组？) 析构方式的不明确(delete，delete[]还是一个特殊的析构机制，比如调用某个函数) 析构的时机、次数容易出错 容易出现dangling pointer  所以，c++11有了智能指针。  Item 18 资源紧缺的机器上也可以用std::unique_ptr，因为当它使用默认或者stateless">
-<meta name="keywords" content="c++">
+  <meta name="description" content="智能指针首先，raw pointer有着诸多缺陷  指向对象的不明确(单个对象or数组？) 析构方式的不明确(delete，delete[]还是一个特殊的析构机制，比如调用某个函数) 析构的时机、次数容易出错 容易出现dangling pointer  所以，C++11有了智能指针。  Item 18 资源紧缺的机器上也可以用std::unique_ptr，因为当它使用默认或者stateless">
+<meta name="keywords" content="Cpp">
 <meta property="og:type" content="article">
-<meta property="og:title" content="effective modern c++读书笔记(二)">
-<meta property="og:url" content="http://yoursite.com/2018/02/12/effective_modern_cpp_1/index.html">
+<meta property="og:title" content="effective modern C++读书笔记(二)">
+<meta property="og:url" content="http://cyyzero.github.io/2018/02/12/effective_modern_cpp_1/index.html">
 <meta property="og:site_name" content="Pluto&#39;s Blog">
-<meta property="og:description" content="智能指针首先，raw pointer有着诸多缺陷  指向对象的不明确(单个对象or数组？) 析构方式的不明确(delete，delete[]还是一个特殊的析构机制，比如调用某个函数) 析构的时机、次数容易出错 容易出现dangling pointer  所以，c++11有了智能指针。  Item 18 资源紧缺的机器上也可以用std::unique_ptr，因为当它使用默认或者stateless">
-<meta property="og:updated_time" content="2019-02-02T15:15:21.421Z">
+<meta property="og:description" content="智能指针首先，raw pointer有着诸多缺陷  指向对象的不明确(单个对象or数组？) 析构方式的不明确(delete，delete[]还是一个特殊的析构机制，比如调用某个函数) 析构的时机、次数容易出错 容易出现dangling pointer  所以，C++11有了智能指针。  Item 18 资源紧缺的机器上也可以用std::unique_ptr，因为当它使用默认或者stateless">
+<meta property="og:updated_time" content="2019-02-14T19:41:02.208Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="effective modern c++读书笔记(二)">
-<meta name="twitter:description" content="智能指针首先，raw pointer有着诸多缺陷  指向对象的不明确(单个对象or数组？) 析构方式的不明确(delete，delete[]还是一个特殊的析构机制，比如调用某个函数) 析构的时机、次数容易出错 容易出现dangling pointer  所以，c++11有了智能指针。  Item 18 资源紧缺的机器上也可以用std::unique_ptr，因为当它使用默认或者stateless">
+<meta name="twitter:title" content="effective modern C++读书笔记(二)">
+<meta name="twitter:description" content="智能指针首先，raw pointer有着诸多缺陷  指向对象的不明确(单个对象or数组？) 析构方式的不明确(delete，delete[]还是一个特殊的析构机制，比如调用某个函数) 析构的时机、次数容易出错 容易出现dangling pointer  所以，C++11有了智能指针。  Item 18 资源紧缺的机器上也可以用std::unique_ptr，因为当它使用默认或者stateless">
+  
+    <link rel="alternate" href="/atom.xml" title="Pluto&#39;s Blog" type="application/atom+xml">
   
   
-    <link rel="icon" href="/css/images/favicon.ico">
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
   
   <link rel="stylesheet" href="/css/style.css">
-  
-
-  
-  <!-- baidu webmaster push -->
-  <script src='//push.zhanzhang.baidu.com/push.js'></script>
 </head>
-<body class="home blog custom-background custom-font-enabled single-author">
-  <div id="page" class="hfeed site">
-      <header id="masthead" class="site-header" role="banner">
-    <hgroup>
-      <h1 class="site-title">
-        <a href="/" title="Pluto&#39;s Blog" rel="home">Pluto&#39;s Blog</a>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Pluto&#39;s Blog</a>
       </h1>
       
-        <h2 class="site-description">
+        <h2 id="subtitle-wrap">
           <a href="/" id="subtitle">失败人士自留地</a>
         </h2>
       
-    </hgroup>
-
-    <nav id="site-navigation" class="main-navigation" role="navigation">
-            <button class="menu-toggle">菜单</button>
-            <a class="assistive-text" href="/#content" title="跳至内容">跳至内容</a><!--TODO-->
-            <div class="menu-main-container">
-                <ul id="menu-main" class="nav-menu">
-                
-                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/">Home</a></li>
-                
-                    <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/archives">Archives</a></li>
-                
-                </ul>
-            </div>
-    </nav>
-</header>
-      <div id="main" class="wrapper">
-        <div id="primary" class="site-content"><div id="content" role="main"><article id="post-effective_modern_cpp_1" class="post-effective_modern_cpp_1 post type-post status-publish format-standard hentry">
-    <!---->
-
-      <header class="entry-header">
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
         
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+          <a class="main-nav-link" href="/about">About</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Suche"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://cyyzero.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-effective_modern_cpp_1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/02/12/effective_modern_cpp_1/" class="article-date">
+  <time datetime="2018-02-12T08:26:41.000Z" itemprop="datePublished">2018-02-12</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
         
   
-    <h1 class="entry-title article-title">
-      effective modern c++读书笔记(二)
+    <h1 class="article-title" itemprop="name">
+      effective modern C++读书笔记(二)
     </h1>
   
 
-        
-        <div class="comments-link">
-            
-            <a href="javascript:void(0);" data-url="http://yoursite.com/2018/02/12/effective_modern_cpp_1/" data-id="cjrnos54i000hot774izi83er" class="leave-reply bdsharebuttonbox" data-cmd="more">Share</a>
-        </div><!-- .comments-link -->
-      </header><!-- .entry-header -->
-
-    <div class="entry-content">
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
       
         <h1 id="智能指针"><a href="#智能指针" class="headerlink" title="智能指针"></a>智能指针</h1><p>首先，raw pointer有着诸多缺陷</p>
 <ul>
@@ -103,7 +99,7 @@ Item 1" />
 <li>析构的时机、次数容易出错</li>
 <li>容易出现dangling pointer</li>
 </ul>
-<p>所以，c++11有了智能指针。</p>
+<p>所以，C++11有了智能指针。</p>
 <hr>
 <h2 id="Item-18"><a href="#Item-18" class="headerlink" title="Item 18"></a>Item 18</h2><ul>
 <li><p>资源紧缺的机器上也可以用<code>std::unique_ptr</code>，因为当它使用默认或者stateless lambda作为删除器的时候，和raw pointer大小一样。而且对于很多操作(比如解引用)，它们执行相同的指令。</p>
@@ -112,7 +108,7 @@ Item 1" />
 </li>
 <li><p>对于层级继承关系来说，可以用工厂函数返回<code>std::unique_ptr</code>。并且调用方可以用<code>std::shared_ptr</code>来接收工厂函数的返回值。</p>
 </li>
-<li><p><code>std::unique_ptr</code>有两种形式，一个是单独的对象(<code>std::unique_ptr&lt;T&gt;</code>)，另一个是数组(<code>std::unique_ptr&lt;T[]&gt;</code>)。不过对于后者来说，c++中已经有了足够多足够好的替代品(比如说<code>std::array</code>、<code>std::vector</code>、<code>std::string</code>)。最好在使用返回一个裸指针的C-like API的时候才使用std::unique_ptr<t[]>。</t[]></p>
+<li><p><code>std::unique_ptr</code>有两种形式，一个是单独的对象(<code>std::unique_ptr&lt;T&gt;</code>)，另一个是数组(<code>std::unique_ptr&lt;T[]&gt;</code>)。不过对于后者来说，C++中已经有了足够多足够好的替代品(比如说<code>std::array</code>、<code>std::vector</code>、<code>std::string</code>)。最好在使用返回一个裸指针的C-like API的时候才使用std::unique_ptr<t[]>。</t[]></p>
 </li>
 </ul>
 <hr>
@@ -190,7 +186,7 @@ Item 1" />
 <h2 id="Item-21"><a href="#Item-21" class="headerlink" title="Item 21"></a>Item 21</h2><ul>
 <li><p>有三个make函数，作用都是完美转发参数然后构造某个对象，并让智能指针指向它。分别是</p>
 <ul>
-<li><p><code>std::make_unique</code>.c++14才加入了标准库。不过自己也可以写个类似很简单的实现</p>
+<li><p><code>std::make_unique</code>.C++14才加入了标准库。不过自己也可以写个类似很简单的实现</p>
   <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span>... Ts&gt;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;T&gt; make_unique(Ts&amp;&amp;... params)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;T&gt;(<span class="keyword">new</span> T(<span class="built_in">std</span>::forward&lt;Ts&gt;(params)...));</span><br><span class="line">&#125;</span><br><span class="line">`</span><br></pre></td></tr></table></figure>
 </li>
 <li><p><code>std::make_shared</code>。和<code>std::make_unique</code>大同小异。</p>
@@ -252,7 +248,7 @@ Item 1" />
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// in "widget.h"</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Widget</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Widget();</span><br><span class="line">...</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Impl</span>;</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Impl&gt; pImpl;</span><br></pre></td></tr></table></figure>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// in "widget.cpp"</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"widget.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"gadget.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Widget</span>:</span>:Impl &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> name;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt; data;</span><br><span class="line">    Gadget g1, g2, g3;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Widget::Widget()</span><br><span class="line">: pImpl(<span class="built_in">std</span>::make_unique&lt;Impl&gt;()) &#123;&#125;</span><br></pre></td></tr></table></figure>
 <p>可能注意到了，由于用智能指针管理资源，似乎用编译器生成的析构函数就能正常工作了的样子。编译没问题。不过，当你写下<code>WIdget w;</code>，想要使用它的时候，却会编译出错。</p>
-<p>问题出在试图析构w，生成代码的时候。此时，析构函数将会被调用。根据编译器生成特殊成员函数的规则(详情见Item 17)，编译器试图生成一个析构函数。这个生成的析构函数会调用plmpl(一个使用默认删除器的std::unique_ptr)的析构函数。在这个指针的析构函数中，将会直接用<code>delete</code>作用于一个raw pointer。要注意到，在这时，Impl还是个不完全类型。但是，由于在实现在实现作用，默认deleter通常会用c++11的static_assert来确保指针指向完整类型。所以当编译器生成析构函数的时候，它就碰到了一个失败的static_assert。</p>
+<p>问题出在试图析构w，生成代码的时候。此时，析构函数将会被调用。根据编译器生成特殊成员函数的规则(详情见Item 17)，编译器试图生成一个析构函数。这个生成的析构函数会调用plmpl(一个使用默认删除器的std::unique_ptr)的析构函数。在这个指针的析构函数中，将会直接用<code>delete</code>作用于一个raw pointer。要注意到，在这时，Impl还是个不完全类型。但是，由于在实现在实现作用，默认deleter通常会用C++11的static_assert来确保指针指向完整类型。所以当编译器生成析构函数的时候，它就碰到了一个失败的static_assert。</p>
 <p>要解决这个问题也很简单，做到在析构的时候Impl是完整类型就可以了。</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// in file "widget.h"</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Widget</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Widget();</span><br><span class="line">    ~Widget();                          <span class="comment">// 只声明</span></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">Impl</span>;</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Impl&gt; pImpl;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// in file "widget.cpp"</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"widget.h"</span> </span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"gadget.h"</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;vector&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">Widget</span>:</span>:Impl &#123; </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">string</span> name; </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">double</span>&gt; data;</span><br><span class="line">    Gadget g1, g2, g3;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">Widget::Widget() </span><br><span class="line">: pImpl(<span class="built_in">std</span>::make_unique&lt;Impl&gt;())</span><br><span class="line">&#123;&#125;</span><br><span class="line"></span><br><span class="line">Widget::~Widget()                       <span class="comment">// ~Widget的定义</span></span><br><span class="line">&#123;&#125;</span><br></pre></td></tr></table></figure>
@@ -270,58 +266,79 @@ Item 1" />
 </ul>
 
       
-    </div><!-- .entry-content -->
-
-    <footer class="entry-meta">
-    <a href="/2018/02/12/effective_modern_cpp_1/">
-    <time datetime="2018-02-12T08:26:41.000Z" class="entry-date">
-        2018-02-12
-    </time>
-</a>
-    
-    
-  <span class="article-delim">&#8226;</span>
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/c/">c++</a></li></ul>
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://cyyzero.github.io/2018/02/12/effective_modern_cpp_1/" data-id="cjs51m461000j2d773ce63h0o" class="article-share-link">Teilen</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Cpp/">Cpp</a></li></ul>
 
     </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/03/01/effective_modern_cpp_2/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Neuer</strong>
+      <div class="article-nav-title">
+        
+          effective modern C++读书笔记(三)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/02/12/effective_modern_cpp_0/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Älter</strong>
+      <div class="article-nav-title">effective modern C++读书笔记(一)</div>
+    </a>
+  
+</nav>
+
+  
 </article>
 
-
-    
-<nav class="nav-single">
-    <h3 class="assistive-text">文章导航</h3>
-    
-        <span class="nav-previous"><a href="/2018/03/01/effective_modern_cpp_2/" rel="prev"><span class="meta-nav">←</span> effective modern c++读书笔记(三)</a></span>
-    
-    
-        <span class="nav-next"><a href="/2018/02/12/effective_modern_cpp_0/" rel="next">effective modern c++读书笔记(一) <span class="meta-nav">→</span></a></span>
-    
-</nav><!-- .nav-single -->
-
-
-
-
-
-
-
-</div></div>
-        <div id="secondary" class="widget-area" role="complementary">
+</section>
+        
+          <aside id="sidebar">
   
-    <aside id="search" class="widget widget_search"><form role="search" method="get" accept-charset="utf-8" id="searchform" class="searchform" action="//google.com/search">
-    <div>
-        <input type="text" value="" name="s" id="s" />
-        <input type="submit" id="searchsubmit" value="搜索" />
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Cpp/">Cpp</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
     </div>
-</form></aside>
+  </div>
+
+
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/C/" style="font-size: 10px;">C</a> <a href="/tags/Cpp/" style="font-size: 20px;">Cpp</a> <a href="/tags/Linux/" style="font-size: 16.67px;">Linux</a> <a href="/tags/X86/" style="font-size: 13.33px;">X86</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
+    </div>
+  </div>
+
   
     
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archiv</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/02/">February 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">September 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">August 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">July 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">May 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/04/">April 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">March 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/02/">February 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/01/">January 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">November 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">October 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">August 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">July 2017</a><span class="archive-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
   
     
-  <aside class="widget">
-    <h3 class="widget-title">Recents</h3>
-    <div class="widget-content">
+  <div class="widget-wrap">
+    <h3 class="widget-title">letzter Beitrag</h3>
+    <div class="widget">
       <ul>
         
           <li>
@@ -346,37 +363,34 @@ Item 1" />
         
       </ul>
     </div>
-  </aside>
+  </div>
 
   
-    
-  <aside class="widget">
-    <h3 class="widget-title">Tags</h3>
-    <div class="widget-content">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/C/">C</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/">Linux</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/X86/">X86</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/c/">c++</a><span class="tag-list-count">10</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/位运算/">位运算</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/深入理解计算机系统/">深入理解计算机系统</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/算法/">算法</a><span class="tag-list-count">1</span></li></ul>
-    </div>
-  </aside>
-
-  
-    
-  <aside class="widget">
-    <h3 class="widget-title">Tag Cloud</h3>
-    <div class="widget-content tagcloud">
-      <a href="/tags/C/" style="font-size: 10px;">C</a> <a href="/tags/Linux/" style="font-size: 15px;">Linux</a> <a href="/tags/X86/" style="font-size: 10px;">X86</a> <a href="/tags/c/" style="font-size: 20px;">c++</a> <a href="/tags/位运算/" style="font-size: 10px;">位运算</a> <a href="/tags/深入理解计算机系统/" style="font-size: 10px;">深入理解计算机系统</a> <a href="/tags/算法/" style="font-size: 10px;">算法</a>
-    </div>
-  </aside>
-
-  
-</div>
+</aside>
+        
       </div>
-      <footer id="colophon" role="contentinfo">
-    <p>&copy; 2019 cyyzero
-    All rights reserved.</p>
-    <p>Powered by <a href="http://hexo.io/" target="_blank">Hexo</a></p>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 cyyzero<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
 </footer>
-    <script>window._bd_share_config={"common":{"bdSnsKey":{},"bdText":"","bdMini":"1","bdMiniList":false,"bdPic":"","bdStyle":"2","bdSize":"16"},"share":{}};with(document)0[(getElementsByTagName('head')[0]||body).appendChild(createElement('script')).src='http://bdimg.share.baidu.com/static/api/js/share.js?v=89860593.js?cdnversion='+~(-new Date()/36e5)];</script>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+    <a href="/about" class="mobile-nav-link">About</a>
+  
+</nav>
+    
 
-<script src="/js/jquery-2.0.3.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 
   <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
@@ -385,9 +399,7 @@ Item 1" />
 
 <script src="/js/script.js"></script>
 
-<script src="/js/navigation.js"></script>
 
-<div id="bg"></div>
 
   </div>
 </body>
