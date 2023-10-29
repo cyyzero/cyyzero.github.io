@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/css/all.min.css" integrity="sha256-CTSx/A06dm1B063156EVh15m6Y67pAjZZaQc89LLSrU=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"cyyzero.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"buttons","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="进程调度程序是确保进程能有效工作的一个内核子系统。 多任务多任务可以分为两类：  非抢占式多任务(cooperative multitasking)。除非进程自己主动停止运行，否则它会一直执行。进程主动让出自己的操作称为让步(yielding)。 抢占式多任务(preemtive multitasking)。Linux提供了抢占式的多任务模式。由进程调度程序来决定什么时候停止一个进程的运行。这个强">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《Linux内核设计与实现》读书笔记——进程调度">
+<meta property="og:url" content="http://cyyzero.github.io/2018/08/02/Linux/LKD_scheduler/index.html">
+<meta property="og:site_name" content="Eden">
+<meta property="og:description" content="进程调度程序是确保进程能有效工作的一个内核子系统。 多任务多任务可以分为两类：  非抢占式多任务(cooperative multitasking)。除非进程自己主动停止运行，否则它会一直执行。进程主动让出自己的操作称为让步(yielding)。 抢占式多任务(preemtive multitasking)。Linux提供了抢占式的多任务模式。由进程调度程序来决定什么时候停止一个进程的运行。这个强">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2018-08-02T13:15:31.000Z">
+<meta property="article:modified_time" content="2023-10-29T07:13:44.879Z">
+<meta property="article:author" content="Yiyang Chen">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://cyyzero.github.io/2018/08/02/Linux/LKD_scheduler/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://cyyzero.github.io/2018/08/02/Linux/LKD_scheduler/","path":"2018/08/02/Linux/LKD_scheduler/","title":"《Linux内核设计与实现》读书笔记——进程调度"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>《Linux内核设计与实现》读书笔记——进程调度 | Eden</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Eden" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Eden</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%9A%E4%BB%BB%E5%8A%A1"><span class="nav-number">1.</span> <span class="nav-text">多任务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Linux%E7%9A%84%E8%BF%9B%E7%A8%8B%E8%B0%83%E5%BA%A6"><span class="nav-number">2.</span> <span class="nav-text">Linux的进程调度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AD%96%E7%95%A5"><span class="nav-number">3.</span> <span class="nav-text">策略</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#I-O%E6%B6%88%E8%80%97%E5%9E%8B%E5%92%8C%E5%A4%84%E7%90%86%E5%99%A8%E6%B6%88%E8%80%97%E5%9E%8B%E7%9A%84%E8%BF%9B%E7%A8%8B"><span class="nav-number">3.1.</span> <span class="nav-text">I&#x2F;O消耗型和处理器消耗型的进程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%9B%E7%A8%8B%E4%BC%98%E5%85%88%E7%BA%A7"><span class="nav-number">3.2.</span> <span class="nav-text">进程优先级</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%B6%E9%97%B4%E7%89%87"><span class="nav-number">3.3.</span> <span class="nav-text">时间片</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Linux%E8%B0%83%E5%BA%A6%E7%AE%97%E6%B3%95"><span class="nav-number">4.</span> <span class="nav-text">Linux调度算法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B0%83%E5%BA%A6%E5%99%A8%E7%B1%BB"><span class="nav-number">4.1.</span> <span class="nav-text">调度器类</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Unix%E7%B3%BB%E7%BB%9F%E4%B8%AD%E7%9A%84%E8%BF%9B%E7%A8%8B%E8%B0%83%E5%BA%A6"><span class="nav-number">4.2.</span> <span class="nav-text">Unix系统中的进程调度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%AC%E5%B9%B3%E8%B0%83%E5%BA%A6"><span class="nav-number">4.3.</span> <span class="nav-text">公平调度</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Linux%E8%B0%83%E5%BA%A6%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">5.</span> <span class="nav-text">Linux调度的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%97%B6%E9%97%B4%E8%AE%B0%E8%B4%A6"><span class="nav-number">5.1.</span> <span class="nav-text">时间记账</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B0%83%E5%BA%A6%E5%99%A8%E5%AE%9E%E4%BD%93%E7%BB%93%E6%9E%84"><span class="nav-number">5.1.1.</span> <span class="nav-text">调度器实体结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E5%AE%9E%E6%97%B6"><span class="nav-number">5.1.2.</span> <span class="nav-text">虚拟实时</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%BF%9B%E7%A8%8B%E9%80%89%E6%8B%A9"><span class="nav-number">5.2.</span> <span class="nav-text">进程选择</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8C%91%E9%80%89%E4%B8%8B%E4%B8%80%E4%B8%AA%E4%BB%BB%E5%8A%A1"><span class="nav-number">5.2.1.</span> <span class="nav-text">挑选下一个任务</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%90%91%E6%A0%91%E4%B8%AD%E5%8A%A0%E5%85%A5%E8%BF%9B%E7%A8%8B"><span class="nav-number">5.2.2.</span> <span class="nav-text">向树中加入进程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%8E%E6%A0%91%E4%B8%AD%E5%88%A0%E9%99%A4%E8%BF%9B%E7%A8%8B"><span class="nav-number">5.2.3.</span> <span class="nav-text">从树中删除进程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%B0%83%E5%BA%A6%E5%99%A8%E5%85%A5%E5%8F%A3"><span class="nav-number">5.3.</span> <span class="nav-text">调度器入口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9D%A1%E7%9C%A0%E5%92%8C%E5%94%A4%E9%86%92"><span class="nav-number">5.4.</span> <span class="nav-text">睡眠和唤醒</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AD%89%E5%BE%85%E9%98%9F%E5%88%97"><span class="nav-number">5.4.1.</span> <span class="nav-text">等待队列</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%94%A4%E9%86%92"><span class="nav-number">5.4.2.</span> <span class="nav-text">唤醒</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%A2%E5%8D%A0%E5%92%8C%E4%B8%8A%E4%B8%8B%E6%96%87%E5%88%87%E6%8D%A2"><span class="nav-number">6.</span> <span class="nav-text">抢占和上下文切换</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%A8%E6%88%B7%E6%8A%A2%E5%8D%A0"><span class="nav-number">6.1.</span> <span class="nav-text">用户抢占</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%85%E6%A0%B8%E6%8A%A2%E5%8D%A0"><span class="nav-number">6.2.</span> <span class="nav-text">内核抢占</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%9E%E6%97%B6%E8%B0%83%E5%BA%A6%E7%AD%96%E7%95%A5"><span class="nav-number">7.</span> <span class="nav-text">实时调度策略</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8E%E8%B0%83%E5%BA%A6%E7%9B%B8%E5%85%B3%E7%9A%84%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="nav-number">8.</span> <span class="nav-text">与调度相关的系统调用</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yiyang Chen"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yiyang Chen</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/cyyzero" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;cyyzero" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:cyyzero@qq.com" title="E-Mail → mailto:cyyzero@qq.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/9748477/cyyzero" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;9748477&#x2F;cyyzero" rel="noopener me" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i></a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://cyyzero.github.io/2018/08/02/Linux/LKD_scheduler/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yiyang Chen">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Eden">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="《Linux内核设计与实现》读书笔记——进程调度 | Eden">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《Linux内核设计与实现》读书笔记——进程调度
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-08-02 13:15:31" itemprop="dateCreated datePublished" datetime="2018-08-02T13:15:31+00:00">2018-08-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-10-29 07:13:44" itemprop="dateModified" datetime="2023-10-29T07:13:44+00:00">2023-10-29</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>进程调度程序是确保进程能有效工作的一个内核子系统。</p>
+<h2 id="多任务"><a href="#多任务" class="headerlink" title="多任务"></a>多任务</h2><p>多任务可以分为两类：</p>
+<ul>
+<li>非抢占式多任务(cooperative multitasking)。除非进程自己主动停止运行，否则它会一直执行。进程主动让出自己的操作称为让步(yielding)。</li>
+<li>抢占式多任务(preemtive multitasking)。Linux提供了抢占式的多任务模式。由进程调度程序来决定什么时候停止一个进程的运行。这个强制的挂起动作就叫做抢占(preemption)。进程在被抢占之前能够运行的时间叫做时间片(timeslice)。</li>
+</ul>
+<h2 id="Linux的进程调度"><a href="#Linux的进程调度" class="headerlink" title="Linux的进程调度"></a>Linux的进程调度</h2><p>从1991年的Linux第一版到后来的2.4内核系列，Linux的调度程序都相当简陋，设计近乎原始。在Linux2.5开发系列的内核中，采用了一种叫做<code>O(1)</code>调度程序的新调度程序。就如它的名字，时间复杂度是<code>O(1)</code>。</p>
+<p><code>O(1)</code>调度器在拥有数以十计的多处理器环境下尚能表现出近乎完美的性能和可拓展性，但是对于响应时间敏感的交互进程来说却有一些先天不足。从2.6内核系统开发初期，开发人员引入了新的调度算法。其中最有名的是<em>反转楼梯最后期限调度算法(<code>Rotating Staircase Deadline scheduler</code>)</em>(<code>RSDL</code>)。该算法吸取了队列理论，将公平调度的概念引入了Linux调度程序，并最终在2.6.23内核版本中替代了<code>O(1)</code>调度算法。它被称为完全公平调度算法(CFS)。</p>
+<h2 id="策略"><a href="#策略" class="headerlink" title="策略"></a>策略</h2><p>策略决定调度程序在何时让什么进程运行。</p>
+<h3 id="I-O消耗型和处理器消耗型的进程"><a href="#I-O消耗型和处理器消耗型的进程" class="headerlink" title="I&#x2F;O消耗型和处理器消耗型的进程"></a>I&#x2F;O消耗型和处理器消耗型的进程</h3><p>进程可被分为I&#x2F;O消耗型和处理器消耗型。前者指进程的大部分时间都用来提交或等待I&#x2F;O请求。相反，处理器消耗型则大部分时间都用在执行代码上。当然两者的划分并非泾渭分明。</p>
+<p>调度策略通常就要在两个矛盾的目标中寻找平衡：进程相应迅速和最大系统利用率。</p>
+<h3 id="进程优先级"><a href="#进程优先级" class="headerlink" title="进程优先级"></a>进程优先级</h3><p>Linux采用了两种不同的优先级范围。</p>
+<p>第一种是使用nice值，范围是-20～+19，默认为0。越大的nice值意味着优先级越低。nice值代表时间片的比例。可以通过<code>ps -el</code>查看，<code>NI</code>列表示的就是nice值。</p>
+<p>第二种范围是实时优先级，其范围是可配置的。默认情况下它的变化范围是[0, 99]。与nice值相反，越高的实时优先级代表进程优先级更高。任何实时进程的优先级都高于普通进程，也就是说nice优先级和实时优先级处于互不相交的两个范畴。</p>
+<h3 id="时间片"><a href="#时间片" class="headerlink" title="时间片"></a>时间片</h3><p>时间片是一个数值，表明进程在被抢占前能持续运行的时间。调度策略需要规定默认的一个时间片。但时间片过长会导致系统对交互的效应表现欠佳，过段会明显增加进程切换带来的处理器耗时。而且I&#x2F;O消耗型和处理器消耗型的矛盾也显示出来：I&#x2F;O消耗型不需要过长时间片，而处理器消耗型则希望越长越好。</p>
+<p>Linux的CFS调度并没有直接分配时间片到进程，而是讲处理器的使用比例划分给了进程。这样一来，进程所获得的处理器时间其实是和系统负载有关。抢占时机也取决于新的可运行程序消耗了多少处理器使用比。</p>
+<h2 id="Linux调度算法"><a href="#Linux调度算法" class="headerlink" title="Linux调度算法"></a>Linux调度算法</h2><h3 id="调度器类"><a href="#调度器类" class="headerlink" title="调度器类"></a>调度器类</h3><p>Linux调度器是以模块方式提供的，称为调度器类(<code>scheduler classes</code>)，不同类型的进程可以有针对性地选择调度算法。基础的调度器类代码定义在<code>kernel/sched.c</code>文件中，它会按照优先级顺序遍历调度类，拥有一个可执行进程的最高优先级的调度器类胜出。</p>
+<p>CFS是一个针对简单进程的调度类，在Linux中称为<code>SCHED_NORMAL</code>。</p>
+<h3 id="Unix系统中的进程调度"><a href="#Unix系统中的进程调度" class="headerlink" title="Unix系统中的进程调度"></a>Unix系统中的进程调度</h3><p>在Unix系统上，优先级以nice值形式输出给用户空间。在现实中会产生许多问题。</p>
+<ul>
+<li><p>若要讲nice值映射到时间片，就必然需要将nice单位值对应到处理器的绝对时间。但这样做会导致进程切换无法最优化执行。举例说明，默认nice值为0分配100ms的时间片，最高nice值为20分配5ms。如果同时运行时间片5ms的进程，则要在10ms间进行一次上下文切换；而运行时间片是100ms的进程，则要在100ms间进行一次上下文切换。</p>
+</li>
+<li><p>相对nice值。假设两个进程nice值分别是0和1，时间片分别是100ms和95ms，区别微乎其微。而两个进程nice值分别为18和19，时间片分别为10ms和5ms，前者是后者的两倍！</p>
+</li>
+<li><p>如果执行nice值到时间片的映射，需要能分配一个绝对时间片，而这个绝对时间片必须能在内核的测试范围内。</p>
+</li>
+<li><p>最后一个问题是关于基于优先级的调度器会为了优化交互任务而唤醒相关进程的问题。</p>
+</li>
+</ul>
+<h3 id="公平调度"><a href="#公平调度" class="headerlink" title="公平调度"></a>公平调度</h3><p>CFS的做法是允许每个进程运行一段时间、循环轮转、选择运行最少的进程作为下一个运行进程，而不再采用分配给每个进程时间片的做法了。CFS在所有可运行进程总数基础上计算出一个进程应该运行多久，而不是依靠nice值来计算时间片。nice值在CFS中被作为进程获得处理器运行比的权重。</p>
+<p>每个进程都按照其权重在其全部可运行进程中所占比例的时间片来运行。CFS为完美多任务中的无限小调度周期的近似值设立了一个目标。这个目标称为目标延迟。假定目标延迟值是20ms，两个同样优先级的可运行任务会分别运行10ms。</p>
+<p>CFS还为每个进程设置了时间片底线，这个底线称为最小粒度。默认情况下是1ms。</p>
+<p>任何进程所获得的处理器时间是由它自己和其他所有可运行进程nice值对应的绝对时差值决定的。nice值对时间片的作用是几何加权。</p>
+<h2 id="Linux调度的实现"><a href="#Linux调度的实现" class="headerlink" title="Linux调度的实现"></a>Linux调度的实现</h2><p>CFS位于<code>kernel/sched_fair.c</code>中。特别关注四个组成部分：</p>
+<ul>
+<li>时间记账</li>
+<li>进程选择</li>
+<li>调度器入口</li>
+<li>睡眠和唤醒</li>
+</ul>
+<h3 id="时间记账"><a href="#时间记账" class="headerlink" title="时间记账"></a>时间记账</h3><p>所有调度器都必须对进程运行时间做记账。</p>
+<h4 id="调度器实体结构"><a href="#调度器实体结构" class="headerlink" title="调度器实体结构"></a>调度器实体结构</h4><p>CFS不再有时间片的概念，但是它也必须维护每个进程运行的时间记账。CFS使用<code>sched_entity</code>来跟踪进程运行记账：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sched_entity</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">load_weight</span> <span class="title">load</span>;</span> <span class="comment">/* for load-balancing */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">rb_node</span> <span class="title">run_node</span>;</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">list_head</span> <span class="title">group_node</span>;</span></span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> on_rq;</span><br><span class="line"></span><br><span class="line">    u64 exec_start;</span><br><span class="line">    u64 sum_exec_runtime;</span><br><span class="line">    u64 vruntime;</span><br><span class="line">    u64 prev_sum_exec_runtime;</span><br><span class="line"></span><br><span class="line">    u64 nr_migrations;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> CONFIG_SCHEDSTATS</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sched_statistics</span> <span class="title">statistics</span>;</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> CONFIG_FAIR_GROUP_SCHED</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sched_entity</span> *<span class="title">parent</span>;</span></span><br><span class="line">    <span class="comment">/* rq on which this entity is (to be) queued: */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">cfs_rq</span> *<span class="title">cfs_rq</span>;</span></span><br><span class="line">    <span class="comment">/* rq &quot;owned&quot; by this entity/group: */</span></span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">cfs_rq</span> *<span class="title">my_q</span>;</span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><code>sched_entity</code>作为PCB中一个名为<code>se</code>的成员变量。</p>
+<h4 id="虚拟实时"><a href="#虚拟实时" class="headerlink" title="虚拟实时"></a>虚拟实时</h4><p><code>vruntime</code>变量存放进程的虚拟运行时间，该运行时间的计算是经过了所有可运行进程总数的标准化。虚拟时间是以ns为单位的。CFS用<code>vruntime</code>变量来记录一个程序到底运行了多长时间以及它还应该再运行多久。</p>
+<h3 id="进程选择"><a href="#进程选择" class="headerlink" title="进程选择"></a>进程选择</h3><p>CFS调度算法的核心：当CFS需要选择下一个运行进程时，它会挑一个具有最小<code>vruntime</code>的进程。接下来就讨论如何选择具有最小<code>vruntime</code>值的进程。</p>
+<p>CFS使用红黑树来组织可运行进程队列，并利用其迅速找到最小<code>vruntime</code>值的进程。</p>
+<h4 id="挑选下一个任务"><a href="#挑选下一个任务" class="headerlink" title="挑选下一个任务"></a>挑选下一个任务</h4><p>先假设，红黑树存储了系统中所有的可运行进程，其中节点的键值是可运行进程的虚拟运行时间。那么树中最左侧的叶子节点，就是所有<code>vruntime</code>最小的那个。</p>
+<h4 id="向树中加入进程"><a href="#向树中加入进程" class="headerlink" title="向树中加入进程"></a>向树中加入进程</h4><p>CFS在进程变为可运行状态(被唤醒)或者通过<code>fork()</code>调用第一次创建进程时，将进程加入<em>rbtree</em>中，并且缓存最右子节点。</p>
+<h4 id="从树中删除进程"><a href="#从树中删除进程" class="headerlink" title="从树中删除进程"></a>从树中删除进程</h4><p>CFS从红黑树中删除进程，删除动作发生在进程堵塞(变为不可运行态)或者终止时(结束运行)。</p>
+<h3 id="调度器入口"><a href="#调度器入口" class="headerlink" title="调度器入口"></a>调度器入口</h3><p>进程调度的主要入口点是函数<code>schedule()</code>。它选择哪个进程可以运行，何时将其投入运行。<code>schedule()</code>会找到一个最高优先级的调度类——后者需要有自己的可运行队列，然后问后者谁才是下一个该运行的进程。</p>
+<h3 id="睡眠和唤醒"><a href="#睡眠和唤醒" class="headerlink" title="睡眠和唤醒"></a>睡眠和唤醒</h3><p>休眠(被阻塞)的进程处于一个特殊的不可执行状态。当进程休眠时，内核的操作如下：进程把自己标记成休眠状态，从可执行红黑树中移出，放入等待队列，然后调用<code>schedule()</code>选择和执行一个其他进程。唤醒的过程正好相反：进程被设置成可执行状态，然后从可执行队列中移到可执行红黑树中。</p>
+<h4 id="等待队列"><a href="#等待队列" class="headerlink" title="等待队列"></a>等待队列</h4><p>休眠通过等待队列进行处理。等待队列是由等待某些事件发生的进程组成的简单链表。内核通过<code>wake_queue_head_t</code>来代表等待队列。</p>
+<p>在内核中进行休眠的推荐操作相对复杂：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// q是我们希望休眠的等待队列</span></span><br><span class="line">DEFINE_WAIT(wait);</span><br><span class="line"></span><br><span class="line">add_wait_queue(q, &amp;wait);</span><br><span class="line"><span class="keyword">while</span> (!condition)</span><br><span class="line">&#123;</span><br><span class="line">    prepare_to_wait(&amp;q, &amp;wait, TASK_INTERRUPTIBLE)；</span><br><span class="line">    <span class="keyword">if</span> (signal_pending(current))</span><br><span class="line">        <span class="comment">/* 处理信号 */</span></span><br><span class="line">    schedule();</span><br><span class="line">&#125;</span><br><span class="line">finish_wait(&amp;q, &amp;wait);</span><br></pre></td></tr></table></figure>
+
+<h4 id="唤醒"><a href="#唤醒" class="headerlink" title="唤醒"></a>唤醒</h4><p>唤醒操作通过函数<code>wake_up()</code>进行。它会唤醒执行的等待队列上的所有进程。</p>
+<h2 id="抢占和上下文切换"><a href="#抢占和上下文切换" class="headerlink" title="抢占和上下文切换"></a>抢占和上下文切换</h2><p>这里的上下文切换是指进程间的切换，由定义在<code>kernel/sched.c</code>中的<code>context_switch()</code>函数负责处理。每当一个新的进程被选出来投入运行的时候，<code>schedule()</code>会调用该函数。它完成两个基本的工作：</p>
+<p>-调用声明在<code>asm/mmu_context.h</code>中的<code>switch_mm()</code>，负责把虚拟内存从上一个进程映射切换到新进程中。</p>
+<ul>
+<li>调用声明<code>asm/system.h</code>中的<code>switch_to()</code>，负责从上一个进程的处理器状态切换到新进程的处理器状态。</li>
+</ul>
+<p>内核提供了一个<code>need_resched</code>标志来表明是否需要重新执行一次调度。当某个进程应该被抢占时，<code>scheduler_tick()</code>就会设置这个标志；当一个优先级高的进程进入可执行状态的时候，<code>try_to_wake_up()</code>也会设置这个标志，内核检查该标志，确认其被设置，调用<code>schedule()</code>来切换到一个新的进程。</p>
+<p>在2.2以前的内核版本中，该标志位曾是一个全局变量，2.2~2.4版的内核中它在<code>task_struct</code>中。而在2.6版中，它被移到<code>thread_info</code>结构体里，用一个特别的标志变量中的一位来表示。</p>
+<h3 id="用户抢占"><a href="#用户抢占" class="headerlink" title="用户抢占"></a>用户抢占</h3><p>用户抢占发生在一下情况：</p>
+<ul>
+<li>从系统调用返回用户空间时</li>
+<li>从中断处理程序返回用户空间时</li>
+</ul>
+<p>总而言之，内核即将返回用户空间的时候，如果<code>need_resched</code>标志被置位，会导致<code>schedule()</code>被调用。</p>
+<h3 id="内核抢占"><a href="#内核抢占" class="headerlink" title="内核抢占"></a>内核抢占</h3><p>大部分的Unix变体不支持内核抢占，调度程序没有办法在内核级的任务正在执行的时候重新调度——内核中的任务是以协作的方式调度的，不具备抢占性。</p>
+<p>Linux在2.6版本的内核中，引入了内核抢占。只要重新调度是安全的，内核就可以在任何时候抢占正在执行的任务。它发生在：</p>
+<ul>
+<li>中断处理程序正在运行，并且返回内核空间之前。</li>
+<li>内核代码再一次具有可抢占性的时候。</li>
+<li>如果内核中的任务显示地调用<code>schedule()</code>。</li>
+<li>如果内核中的任务阻塞(这也会导致调用<code>schedule()</code>)。</li>
+</ul>
+<h2 id="实时调度策略"><a href="#实时调度策略" class="headerlink" title="实时调度策略"></a>实时调度策略</h2><p>Linux提供了两种实时调度策略：<code>SCHED_FIFO</code>和<code>SCHED_RR</code>。而普通的非实时的调度策略是<code>SCHED_NORMAL</code>。这些实时调度器并不被CFS管理，而是被一个特殊的实时调度器管理。</p>
+<h2 id="与调度相关的系统调用"><a href="#与调度相关的系统调用" class="headerlink" title="与调度相关的系统调用"></a>与调度相关的系统调用</h2><p>主要通过C库提供的<code>nice()</code>和<code>sched_xxxx()</code>系列函数。基本都是和系统调用的简单对应。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/07/27/Linux/LKD_process/" rel="prev" title="《Linux内核设计与实现》读书笔记——进程">
+                  <i class="fa fa-angle-left"></i> 《Linux内核设计与实现》读书笔记——进程
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/08/23/Linux/LKD_syscall/" rel="next" title="《Linux内核设计与实现》读书笔记——系统调用">
+                  《Linux内核设计与实现》读书笔记——系统调用 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Yiyang Chen</span>
+  </div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/cyyzero" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"cyyzero","repo":"cyyzero.github.io","client_id":"1185801249b8bbce5127","client_secret":"fbbb24c3e0613419f2505f94baa921f61606bac1","admin_user":"cyyzero","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"fb68bcd3dc21ba8fb307ae1f08943686"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

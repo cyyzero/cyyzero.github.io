@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/css/all.min.css" integrity="sha256-CTSx/A06dm1B063156EVh15m6Y67pAjZZaQc89LLSrU=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"cyyzero.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"buttons","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="写在前面：之前我粗略的整理过linux在IA32处理器上的系统调用的过程…这篇就当做补充和复习了。  与内核通信系统调用在用户空间进程和硬件设备之间添加了一个中间层。在Linux中，系统调用是用户空间访问内核的唯一手段：除了异常和陷入外，它们是内核唯一的合法入口。 API、POSIX 和 C库一般情况下，应用程序都是直接调用在用户空间实现的API来编程，而不是直接通过系统调用。这些API与系统调用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《Linux内核设计与实现》读书笔记——系统调用">
+<meta property="og:url" content="http://cyyzero.github.io/2018/08/23/Linux/LKD_syscall/index.html">
+<meta property="og:site_name" content="Eden">
+<meta property="og:description" content="写在前面：之前我粗略的整理过linux在IA32处理器上的系统调用的过程…这篇就当做补充和复习了。  与内核通信系统调用在用户空间进程和硬件设备之间添加了一个中间层。在Linux中，系统调用是用户空间访问内核的唯一手段：除了异常和陷入外，它们是内核唯一的合法入口。 API、POSIX 和 C库一般情况下，应用程序都是直接调用在用户空间实现的API来编程，而不是直接通过系统调用。这些API与系统调用">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2018-08-23T13:15:31.000Z">
+<meta property="article:modified_time" content="2023-10-29T07:13:44.879Z">
+<meta property="article:author" content="Yiyang Chen">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://cyyzero.github.io/2018/08/23/Linux/LKD_syscall/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://cyyzero.github.io/2018/08/23/Linux/LKD_syscall/","path":"2018/08/23/Linux/LKD_syscall/","title":"《Linux内核设计与实现》读书笔记——系统调用"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>《Linux内核设计与实现》读书笔记——系统调用 | Eden</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Eden" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Eden</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8E%E5%86%85%E6%A0%B8%E9%80%9A%E4%BF%A1"><span class="nav-number">1.</span> <span class="nav-text">与内核通信</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#API%E3%80%81POSIX-%E5%92%8C-C%E5%BA%93"><span class="nav-number">2.</span> <span class="nav-text">API、POSIX 和 C库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="nav-number">3.</span> <span class="nav-text">系统调用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E5%8F%B7"><span class="nav-number">3.1.</span> <span class="nav-text">系统调用号</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E7%9A%84%E6%80%A7%E8%83%BD"><span class="nav-number">3.2.</span> <span class="nav-text">系统调用的性能</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E5%A4%84%E7%90%86%E7%A8%8B%E5%BA%8F"><span class="nav-number">4.</span> <span class="nav-text">系统调用处理程序</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%B6%E5%AE%9A%E6%81%B0%E5%BD%93%E7%9A%84%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="nav-number">4.1.</span> <span class="nav-text">制定恰当的系统调用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E6%95%B0%E4%BC%A0%E9%80%92"><span class="nav-number">4.2.</span> <span class="nav-text">参数传递</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">5.</span> <span class="nav-text">系统调用的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="nav-number">5.1.</span> <span class="nav-text">实现系统调用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E6%95%B0%E9%AA%8C%E8%AF%81"><span class="nav-number">5.2.</span> <span class="nav-text">参数验证</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E4%B8%8A%E4%B8%8B%E6%96%87"><span class="nav-number">6.</span> <span class="nav-text">系统调用上下文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%91%E5%AE%9A%E4%B8%80%E4%B8%AA%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E7%9A%84%E6%9C%80%E5%90%8E%E4%B8%80%E4%B8%AA%E6%AD%A5%E9%AA%A4"><span class="nav-number">6.1.</span> <span class="nav-text">绑定一个系统调用的最后一个步骤</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8E%E7%94%A8%E6%88%B7%E7%A9%BA%E9%97%B4%E8%AE%BF%E9%97%AE%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="nav-number">6.2.</span> <span class="nav-text">从用户空间访问系统调用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E9%80%9A%E8%BF%87%E5%BB%BA%E7%AB%8B%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E7%9A%84%E6%96%B9%E5%BC%8F%E5%AE%9E%E7%8E%B0"><span class="nav-number">7.</span> <span class="nav-text">为什么不通过建立系统调用的方式实现</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yiyang Chen"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yiyang Chen</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/cyyzero" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;cyyzero" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:cyyzero@qq.com" title="E-Mail → mailto:cyyzero@qq.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/9748477/cyyzero" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;9748477&#x2F;cyyzero" rel="noopener me" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i></a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://cyyzero.github.io/2018/08/23/Linux/LKD_syscall/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yiyang Chen">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Eden">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="《Linux内核设计与实现》读书笔记——系统调用 | Eden">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          《Linux内核设计与实现》读书笔记——系统调用
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-08-23 13:15:31" itemprop="dateCreated datePublished" datetime="2018-08-23T13:15:31+00:00">2018-08-23</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-10-29 07:13:44" itemprop="dateModified" datetime="2023-10-29T07:13:44+00:00">2023-10-29</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p><em>写在前面</em>：之前我粗略的整理过<code>linux</code>在IA32处理器上的系统调用的过程…这篇就当做补充和复习了。</p>
+<hr>
+<h2 id="与内核通信"><a href="#与内核通信" class="headerlink" title="与内核通信"></a>与内核通信</h2><p>系统调用在用户空间进程和硬件设备之间添加了一个中间层。在Linux中，系统调用是用户空间访问内核的唯一手段：除了异常和陷入外，它们是内核唯一的合法入口。</p>
+<h2 id="API、POSIX-和-C库"><a href="#API、POSIX-和-C库" class="headerlink" title="API、POSIX 和 C库"></a>API、POSIX 和 C库</h2><p>一般情况下，应用程序都是直接调用在用户空间实现的<code>API</code>来编程，而不是直接通过系统调用。这些API与系统调用也并非一一对应(甚至不使用系统调用)。举个简单的例子，应用程序调用C库中的<code>printf()</code>，C库中的<code>printf()</code>再调用C库中的<code>write()</code>，而C库中<code>write()</code>才调用内核提供的<code>write()</code>系统调用。</p>
+<p>不难想到，通过一套标准来规范 API ，就能带来源码级的移植性。而在Unix世界里，<code>POSIX</code>标准最为流行。</p>
+<p>在<code>Linux</code>中，C库实现了Unix系统的主要API，包括标准库规定的函数以及封装的系统调用接口。</p>
+<h2 id="系统调用"><a href="#系统调用" class="headerlink" title="系统调用"></a>系统调用</h2><p>进行系统调用(<code>syscall</code>)，通常可以通过C库中的函数来完成。内核必须提供系统调用需要完成的功能，但是在实现上没有规定。这也是Unix哲学中的“<em>separating mechanism and policy</em>”。</p>
+<p>举个例子，<code>getpid()</code>：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">SYSCALL_DEFINE0(getpid)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">return</span> task_tpid_vnr(current);  <span class="comment">// return current-&gt;tgid</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里<code>SYSCALL_DEFINE0</code>是个宏，展开后代码如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">asmlinkage <span class="type">long</span> <span class="title function_">sys_getpid</span><span class="params">(<span class="type">void</span>)</span></span><br></pre></td></tr></table></figure>
+
+<p>这里的<code>asmlinkage</code>是gcc的拓展，用于通知编译器仅从栈中提取该函数的参数。所有系统调用都有这个限定词。其次，函数返回<code>long</code>类型，为了保证32位和64位系统的兼容。系统调用在用户空间返回值类型为int，在内核空间返回值类型为long。最后，形如<code>sys_bar()</code>是在Linux中的命名规则。</p>
+<h3 id="系统调用号"><a href="#系统调用号" class="headerlink" title="系统调用号"></a>系统调用号</h3><p>Linux中的每个系统调用被赋予一个系统调用号。用户态的进程通过这个号来指明进行哪个系统调用；进程不会提及系统调用的名称。</p>
+<p>内核记录了系统调用表中所有已经注册的系统调用的列表，存储在<code>sys_call_table</code>中。</p>
+<h3 id="系统调用的性能"><a href="#系统调用的性能" class="headerlink" title="系统调用的性能"></a>系统调用的性能</h3><p>Linux系统调用很快，一个原因是上下文切换快，进出内核被优化地简洁高效，另一个原因是系统调用处理程序和系统调用本身也十分简洁。</p>
+<h2 id="系统调用处理程序"><a href="#系统调用处理程序" class="headerlink" title="系统调用处理程序"></a>系统调用处理程序</h2><p>应用程序通过软中断通知内核，告诉内核需要进行系统调用：引发一个异常来促使系统切换到内核态去执行异常处理程序。<code>x86</code>上系统预定义的软中断号是<code>128</code>，通过<code>int $0x80</code>指令触发该中断。这条指令会触发一个异常导致系统切换到内核态并执行第<code>128</code>号异常处理程序。而该程序正是系统调用处理程序，叫<code>system_call()</code>。它与硬件体系结构密切相关。最近，<code>x86</code>处理器增加了一条叫做<code>sysenter</code>的指令。与<code>int</code>指令相比，这条指令提供了更快，更专业的陷入内核进行系统调用的方式。</p>
+<h3 id="制定恰当的系统调用"><a href="#制定恰当的系统调用" class="headerlink" title="制定恰当的系统调用"></a>制定恰当的系统调用</h3><p>在<code>x86</code>上系统调用号通过<code>eax</code>寄存器传递给内核。在陷入内核前，用户空间把相应的系统调用号放入<code>eax</code>中。其他体系结构上类似。</p>
+<p><code>system_call()</code>通过将给定的系统调用号与<code>NR_syscalls</code>做比较来检查其有效性。如果它大于或等于<code>NR_syscalls</code>，该函数就返回<code>-ENOSYS</code>。否则，执行相应的系统调用：<code>call *sys_call_table(,%rax,8)</code>。</p>
+<p>由于系统调用表中的表项是以64位(8字节)类型存放的，所以内核需要将给定的系统调用号乘以8。<code>x86-32</code>系统上，就用4代替8。</p>
+<h3 id="参数传递"><a href="#参数传递" class="headerlink" title="参数传递"></a>参数传递</h3><p>除了系统调用号外，大部分系统调用还需要一些外部的参数传入。在<code>x86-32</code>系统上，<code>ebx</code>，<code>ecx</code>，<code>edx</code>，<code>esi</code>按照顺序存放前5个参数。需要6个或者6个以上的情况不多见，此时应该用一个单独的寄存器存放指向这些参数在用户空间地址的指针。</p>
+<p>给用户空间的返回值也通过寄存器传递。在x86系统上，它存放在<code>eax</code>寄存器中。</p>
+<h2 id="系统调用的实现"><a href="#系统调用的实现" class="headerlink" title="系统调用的实现"></a>系统调用的实现</h2><p>一个Linux系统调用在实现时不需要太关心它的系统调用处理程序的关系，给linux添加一个系统调用相对容易。</p>
+<h3 id="实现系统调用"><a href="#实现系统调用" class="headerlink" title="实现系统调用"></a>实现系统调用</h3><p>一个系统调用应该有明确的用途，不提倡通过传递不同的参数来选择完成不同的工作。<code>ioctl()</code>就是一个反面例子。还要求时刻注意可移植性和健壮性。</p>
+<h3 id="参数验证"><a href="#参数验证" class="headerlink" title="参数验证"></a>参数验证</h3><p>系统调用必须验证它们所有的参数是否合法有效。系统调用在内核空间执行，如果任由用户将不合法的输入传递个内核，那么安全性和稳定性将没有保障。</p>
+<p>最重要的一种检查就是指针是否有效。内核必须保证：</p>
+<ul>
+<li>指针指向的内存区域属于用户空间。</li>
+<li>指针指向的内存区域在进程的地址空间内。</li>
+<li>如果是读，该内存应被标记为可读；如果是写，该内存应被标记为可写；如果是可执行，该内存应被标记为可执行。</li>
+</ul>
+<p>内核提供了两个方法用于完成必须的检查和内核空间与用户空间数据的来回拷贝。</p>
+<ul>
+<li><p><code>copy_to_user()</code>，向用户空间写入数据，需要三个参数。第一个是进程空间中的目的内存地址，第二个是内核空间中的源地址，最后一个是字节数。</p>
+</li>
+<li><p><code>copy-from_user()</code>，从用户空间读数据。它的三个参数和<code>copy_to_user()</code>类似。</p>
+</li>
+</ul>
+<p>如果执行失败，这两个函数返回的都是没能完成拷贝的数据字节数；如果成功，返回0。当出现上述错误，系统调用返回标准<code>-EFAULT</code>。注意，这两个函数都有可能引起阻塞，当缺页的时候。</p>
+<p>最后一项检查针对是否有合法权限。调用者可以通过<code>capable()</code>函数来检查是否有权能对制定的资源进行操作。如果返回非0就有权，否则无权。</p>
+<h2 id="系统调用上下文"><a href="#系统调用上下文" class="headerlink" title="系统调用上下文"></a>系统调用上下文</h2><p>内核在执行系统调用的时候处于进程上下文，<code>current</code>指针指向当前任务。</p>
+<p>在进程上下文中，内核可以休眠并且可以被抢占。当系统调用返回的时候，控制权仍在<code>system_call()</code>中，它最终会负责切换到用户空间，并让用户进程继续执行下去。</p>
+<h3 id="绑定一个系统调用的最后一个步骤"><a href="#绑定一个系统调用的最后一个步骤" class="headerlink" title="绑定一个系统调用的最后一个步骤"></a>绑定一个系统调用的最后一个步骤</h3><p>当编写完一个系统调用后，把它注册成一个正式的系统调用：</p>
+<ul>
+<li>首先，在系统调用表的最后一项加入一个表项。</li>
+<li>对于所支持的各种体系结构，系统调用号必须定义于<code>&lt;asm/unistd.h&gt;</code>中。</li>
+<li>系统调用必须被编译进内核映像。这只要把它放进<code>kernel/</code>下的一个相关文件中就可以了，如<code>sys.c</code>，它包含了各种各样的系统调用。</li>
+</ul>
+<h3 id="从用户空间访问系统调用"><a href="#从用户空间访问系统调用" class="headerlink" title="从用户空间访问系统调用"></a>从用户空间访问系统调用</h3><p>通常，系统调用靠C库支持。用户程序通过包含头文件并和C库链接，就可以使用系统调用。但如果你如果仅仅写出了系统调用，glibc并不提供支持。可以通过Linux本身提供的一组宏，直接对系统调用进行访问。这些宏是<code>_syscalln()</code>，n的范围从0到6，代表需要传递给系统调用的参数个数。对于每个宏，都有<code>2+2×n</code>个参数。第一个参数表示返回值类型，第二个参数是系统调用的名称，接着是按照系统调用参数顺序排列的每个参数的类型和名称。</p>
+<p>举个例子：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 对于 long open(const char *filename, int flags, int mode)</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> _NR_open 5</span></span><br><span class="line">_syscall3(<span class="type">long</span>, open, <span class="type">const</span> <span class="type">char</span> *, filename, <span class="type">int</span>, flags, <span class="type">int</span>, mode)</span><br></pre></td></tr></table></figure>
+
+<p>这组宏会被拓展成内嵌汇编的C函数。</p>
+<h2 id="为什么不通过建立系统调用的方式实现"><a href="#为什么不通过建立系统调用的方式实现" class="headerlink" title="为什么不通过建立系统调用的方式实现"></a>为什么不通过建立系统调用的方式实现</h2><p>Linux系统尽量避免没出现一种新的抽象就加入一个新的系统调用，这使得它的系统调用接口十分简洁。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/08/02/Linux/LKD_scheduler/" rel="prev" title="《Linux内核设计与实现》读书笔记——进程调度">
+                  <i class="fa fa-angle-left"></i> 《Linux内核设计与实现》读书笔记——进程调度
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/08/31/Linux/tlpi_thread_bug/" rel="next" title="记 TLPI 上一个多线程代码例子的bug">
+                  记 TLPI 上一个多线程代码例子的bug <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Yiyang Chen</span>
+  </div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/cyyzero" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"cyyzero","repo":"cyyzero.github.io","client_id":"1185801249b8bbce5127","client_secret":"fbbb24c3e0613419f2505f94baa921f61606bac1","admin_user":"cyyzero","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"bd9e1aa4bf4152fb5bb70debee0d7a3a"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

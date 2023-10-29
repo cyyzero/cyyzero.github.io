@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/css/all.min.css" integrity="sha256-CTSx/A06dm1B063156EVh15m6Y67pAjZZaQc89LLSrU=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"cyyzero.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"buttons","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="lambda 表达式首先来明确一下三个概念：  lambda 表达式只是一个表达式。它是源码的一部分。  closure 是由lambda创造的运行期对象。根据捕获的模式，closure 持有被捕获对象的副本或者引用。  closure class 是给 closure 实例化的。每个 lambda 会让编译器生成一个独一无二的 closure class 。lambda 内的声明将变成它 clo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Effective Modern C++读书笔记(四)">
+<meta property="og:url" content="http://cyyzero.github.io/2018/04/20/C++/effective_modern_cpp_4/index.html">
+<meta property="og:site_name" content="Eden">
+<meta property="og:description" content="lambda 表达式首先来明确一下三个概念：  lambda 表达式只是一个表达式。它是源码的一部分。  closure 是由lambda创造的运行期对象。根据捕获的模式，closure 持有被捕获对象的副本或者引用。  closure class 是给 closure 实例化的。每个 lambda 会让编译器生成一个独一无二的 closure class 。lambda 内的声明将变成它 clo">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2018-04-20T13:15:31.000Z">
+<meta property="article:modified_time" content="2023-10-29T07:13:44.879Z">
+<meta property="article:author" content="Yiyang Chen">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://cyyzero.github.io/2018/04/20/C++/effective_modern_cpp_4/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://cyyzero.github.io/2018/04/20/C++/effective_modern_cpp_4/","path":"2018/04/20/C++/effective_modern_cpp_4/","title":"Effective Modern C++读书笔记(四)"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Effective Modern C++读书笔记(四) | Eden</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Eden" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Eden</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#lambda-%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="nav-number">1.</span> <span class="nav-text">lambda 表达式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Item-31"><span class="nav-number">1.1.</span> <span class="nav-text">Item 31</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Item-32"><span class="nav-number">1.2.</span> <span class="nav-text">Item 32</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Item-33"><span class="nav-number">1.3.</span> <span class="nav-text">Item 33</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Item-34"><span class="nav-number">1.4.</span> <span class="nav-text">Item 34</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yiyang Chen"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yiyang Chen</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/cyyzero" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;cyyzero" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:cyyzero@qq.com" title="E-Mail → mailto:cyyzero@qq.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/9748477/cyyzero" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;9748477&#x2F;cyyzero" rel="noopener me" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i></a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://cyyzero.github.io/2018/04/20/C++/effective_modern_cpp_4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yiyang Chen">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Eden">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Effective Modern C++读书笔记(四) | Eden">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Effective Modern C++读书笔记(四)
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-04-20 13:15:31" itemprop="dateCreated datePublished" datetime="2018-04-20T13:15:31+00:00">2018-04-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-10-29 07:13:44" itemprop="dateModified" datetime="2023-10-29T07:13:44+00:00">2023-10-29</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C++</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="lambda-表达式"><a href="#lambda-表达式" class="headerlink" title="lambda 表达式"></a>lambda 表达式</h1><p>首先来明确一下三个概念：</p>
+<ul>
+<li><p>lambda 表达式只是一个表达式。它是源码的一部分。</p>
+</li>
+<li><p><em>closure</em> 是由lambda创造的运行期对象。根据捕获的模式，<em>closure</em> 持有被捕获对象的副本或者引用。</p>
+</li>
+<li><p><em>closure class</em> 是给 <em>closure</em> 实例化的。每个 <em>lambda</em> 会让编译器生成一个独一无二的 <em>closure class</em> 。<em>lambda</em> 内的声明将变成它 <em>closure class</em> 内的成员函数的可执行指令。</p>
+</li>
+</ul>
+<hr>
+<h2 id="Item-31"><a href="#Item-31" class="headerlink" title="Item 31"></a>Item 31</h2><ul>
+<li><p>在C++11里有两种默认的捕获模式： <em>by-reference</em> 和 <em>by-value</em> 。默认的 <em>by-reference</em> 捕获可以导致空悬引用。比如说这个 <em>closure</em> (或者它的副本)比捕获的引用的对象的声明周期长。 (这也应该是处理引用本就应该小心的地方)。应该不使用默认捕获，捕获的时候添上引用的对象。这样可以让程序员注意到引用的对象，从而对它的生命周期有了考量。或者直接就通过传值来捕获。但如果传值的对象是 <em>raw pointer</em> ，那又得考虑是否会出现空悬指针的问题。</p>
+</li>
+<li><p>有种情况 <em>by-value</em> 捕获会造成意想不到的悬垂指针。看个例子：</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">std::vector&lt;std::function&lt;<span class="type">bool</span>(<span class="type">int</span>)&gt;&gt; filters;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Widget</span></span><br><span class="line">&#123;</span><br><span class="line">    ...</span><br><span class="line">    <span class="type">int</span> divisor;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">Widget::addFilter</span><span class="params">()</span> <span class="type">const</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="comment">// </span></span><br><span class="line">    filters.<span class="built_in">emplace_back</span>(</span><br><span class="line">        [=](<span class="type">int</span> value)&#123; <span class="keyword">return</span> value % divisor&#125; == <span class="number">0</span>; &#125;</span><br><span class="line">    );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>  这里看似 <em>by-value</em> 捕获了divisor，但是却并非如此。首先，divisor是类内 <em>non-static 数据成员</em> ，是不能被捕获的。但是这段代码却可以编译过。原因就在与 <em>this</em> 指针。类的 <em>non-static</em> 函数体中隐含了一个 <em>this</em> 指针，它是个纯右值(prvalue)表达式，表示调用这个函数的对象的地址。所以其实捕获的是 <em>this</em> 指针，而lambda表达式中的 <code>divisor</code> 其实也是 <code>this-&gt;divisor</code> 。</p>
+<p>  所以既然是 <em>by-value</em> 捕获的 <em>this</em> 指针，那么就有可能出现空悬指针。为了避免这种情况，还是老实地在 <code>addFilters</code> 函数体内用一个 local 变量作为 <em>divisor</em> 的副本，然后 <em>by-value</em> 捕获这个副本。</p>
+</li>
+<li><p>还有就是要注意，静态存储周期的对象都是可以直接在lambda 表达式中使用的，而且<em>不能捕获</em> 。所以在lambda表达式中用默认 <em>by-value</em> 捕获，就会让人产生错觉。但实际上什么都没捕获。</p>
+</li>
+</ul>
+<hr>
+<h2 id="Item-32"><a href="#Item-32" class="headerlink" title="Item 32"></a>Item 32</h2><ul>
+<li><p>C++14 提供了 <em>init capture</em> 这种新的捕获方式。具体来说就是在捕获列表中可以通过 <code>=</code> 的方式，等号左边是从 <em>lambda</em> 表达式生成的闭包类的数据成员，右边是表达式，用于初始化左边。可以明显看出，<code>=</code>左边和右边的作用域也不同。所以，通过这种语法，让“移动”捕获成为了可能，而非 C++11 那样只能传值和传引用捕获。</p>
+</li>
+<li><p>不过在C++11中也是可以模拟出“移动”捕获的。</p>
+<ul>
+<li><p>lambda 表达式可以看成定义一个函数类并构造它的对象。所以没有什么是直接定义一个类不能解决的。类中自然可以通过移动的方式初始化数据成员。</p>
+</li>
+<li><p>通过 <code>std::bind</code> 来模拟。可以看个例子：</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">std::vector&lt;<span class="type">double</span>&gt; data;</span><br><span class="line"><span class="comment">// In C++14</span></span><br><span class="line"><span class="keyword">auto</span> func = [data = std::<span class="built_in">move</span>(data)]()&#123; <span class="comment">/*uses of data*/</span> &#125;;</span><br><span class="line"><span class="comment">// 以下是等价的版本</span></span><br><span class="line"><span class="comment">// In C++11</span></span><br><span class="line"><span class="keyword">auto</span> func = std::<span class="built_in">bind</span>(</span><br><span class="line">    [](<span class="type">const</span> std::vector&lt;<span class="type">double</span>&gt;&amp; data)</span><br><span class="line">    &#123; <span class="comment">/*uses of data*/</span> &#125;,</span><br><span class="line">    std::<span class="built_in">move</span>(data)</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>  <code>std::bind</code>构造的对象持有所有参数的副本。当参数是左值，就拷贝构造；当参数是右值，就移动构造。所以参数<code>data</code>通过移动构造传进了 bind 对象内(姑且称之为d)，然后每次调用 <code>func</code> 的 <code>operator()</code> 的时候，都会调用那个 <em>lambda</em> 表达式的 <code>operator()</code> 。而参数就是 bind 对象内的data对象的副本。由于 <em>lambda</em> 没有加 <code>multable</code>，闭包类内的 <code>operator()</code>是 <code>const</code> 限定的的。而 bind 对象的data的副本却不是const的。为了防止它被修改，所以参数加了<code>const</code>。但其实这样也可以：</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> func =</span><br><span class="line">    std::<span class="built_in">bind</span>(</span><br><span class="line">        [](std::vector&lt;<span class="type">double</span>&gt;&amp; data) <span class="keyword">mutable</span></span><br><span class="line">        &#123; <span class="comment">/* uses of data */</span> &#125;,</span><br><span class="line">        std::<span class="built_in">move</span>(data)</span><br><span class="line">    );</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="Item-33"><a href="#Item-33" class="headerlink" title="Item 33"></a>Item 33</h2><p>C++14 引入了 <em>generic lambdas</em> 的特性。具体来说就是 <em>lambda</em> 表达式的参数列表的类型是 <code>auto</code> 。这个特性的实现也很直观：生成的闭包类的 <code>operator()</code> 函数是个模板。所以，随着来的 <em>universal reference</em> 和完美转发都可以实现了。完美转发的关键还是在对引用折叠和 <code>std::forward</code> 函数实现的理解。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> f = [](<span class="keyword">auto</span>&amp;&amp; param)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">func</span>(std::forward&lt;<span class="keyword">decltype</span>(param)&gt;(param));</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> f = [](<span class="keyword">auto</span>&amp;&amp;... params)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">func</span>(std::forward&lt;<span class="keyword">decltype</span>(param)&gt;(params)...);</span><br><span class="line">    &#125;;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="Item-34"><a href="#Item-34" class="headerlink" title="Item 34"></a>Item 34</h2><p>用 <em>lambda</em> 表达式与 <code>std::bind</code> 相比有些优势，如下：</p>
+<ul>
+<li><p><em>lambda</em> 表达式比较清晰。(这里书中给的代码有误，最后再详细讲)</p>
+</li>
+<li><p><em>lambda</em> 表达式内可以调用重载的函数，但是<code>std::bind</code>第一个参数是重载函数的话得明确调用的版本(通过<code>static_cast</code>)。而且由于使用的指针，还会减少它被内联优化的可能性。</p>
+</li>
+<li><p><code>std::bind</code> 默认是将参数拷贝的。想要保存参数的引用，必须要用<code>std::ref</code>。比如：</p>
+  <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> compressRateB = std::<span class="built_in">bind</span>(compress, std::<span class="built_in">ref</span>(w), _1);       <span class="comment">// compressRateB acts as if it holds a reference to w, rather than a copy</span></span><br></pre></td></tr></table></figure>
+
+<p>  这点就很不如 <em>lambda</em> 表达式直观。</p>
+</li>
+</ul>
+<p>在 C++14 中，<em>lambda</em> 表达式已经十分优秀，再也没有使用 <code>std::bind</code> 的理由了。但是在 C++11 中，<code>std::bind</code> 在以下情况下还是很有用的：</p>
+<ul>
+<li><em>Move capture</em> 。C++11 <em>lambda</em> 表达式没有提供通过移动捕获的方式，但是能通过 <code>std::bind</code> 模拟出来。但 C++14 开始， <em>lambda</em> 表达式通过 <em>init capture</em> 已经能够实现这个。</li>
+<li><em>Polymorphic function objects</em> 。<code>std::bind</code>绑定一个模板函数的时候，它能完美转发任何参数。但是 C++14 开始，<em>lambda</em> 表达式可以通过 <code>auto</code> 实现泛型。</li>
+</ul>
+<p>ps：这章里的代码竟然还有错误的地方，琢磨半天&#x3D; &#x3D;。 最后在 <a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/42207520/why-nested-bind-can-defer-evaluation-of-the-expression"><em>StackOverflow</em> 上查到了正确的写法</a>。</p>
+<p>先还原一下问题的引入：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std::chrono;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std::literals;</span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std::placeholders;          <span class="comment">// needed for use of &quot;_1&quot;</span></span><br><span class="line"><span class="keyword">auto</span> setSoundL = [](Sound s) &#123;</span><br><span class="line">    <span class="built_in">setAlarm</span>(steady_clock::<span class="built_in">now</span>()) + <span class="number">1</span>h,</span><br><span class="line">             s,</span><br><span class="line">             <span class="number">30</span>s);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> setSoundB = std::<span class="built_in">bind</span>(setAlarm,</span><br><span class="line">                           steady_clock::<span class="built_in">now</span>() + <span class="number">1</span>h,</span><br><span class="line">                           _1,</span><br><span class="line">                           <span class="number">30</span>s);</span><br></pre></td></tr></table></figure>
+
+<p>可以看到 <code>setSoundL</code> 和 <code>setSoundB</code> 看似完成相同的功能，但是实际上却并非如此。因为 在调用 <code>setSoundL</code> 时会调用<code>setAlarm</code>函数。显然，此时才会<code>now</code> 函数。而对于 <code>setSoundB</code> 来说，它在生成的时候就已经被调用了 <code>now()</code> 函数。然后每次调用它的时候，并不会再对 <code>now()</code> 调用。所以可以看到，在语义上双方已经不同了。解决方法也很简单，将后者对 <code>now</code> 函数的调用推迟到它自身被调用的时候。</p>
+<p>书上给出的修改是这样的：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 省略了一系列的 using</span></span><br><span class="line"><span class="keyword">auto</span> setSoundB = std::<span class="built_in">bind</span>(setAlarm,</span><br><span class="line">                           std::<span class="built_in">bind</span>(std::plus&lt;&gt;(), steady_clock::<span class="built_in">now</span>(), <span class="number">1</span>h),       <span class="comment">// 在 C++14 中，标准操作模板的模板参数声明通常可以被省略。注意， C++ 11 并不支持这么写。</span></span><br><span class="line">                           <span class="number">30</span>s);</span><br></pre></td></tr></table></figure>
+
+<p>但这显然也不能达成目标，<code>now</code> 函数还是会在 <code>setSoundB</code> 生成的时候就调用。不难想到，<code>std::bind</code>第一个参数，即可调用对象，是不会提前被调用的。所以应该这么改：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 省略了一系列的 using</span></span><br><span class="line"><span class="keyword">auto</span> setSoundB = std::<span class="built_in">bind</span>(setAlarm,</span><br><span class="line">                           std::<span class="built_in">bind</span>(std::plus&lt;&gt;(), std::<span class="built_in">bind</span>(steady_clock::<span class="built_in">now</span>()), <span class="number">1</span>h),</span><br><span class="line">                           <span class="number">30</span>s);</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2018/03/01/C++/effective_modern_cpp_3/" rel="prev" title="Effective Modern C++读书笔记(三)">
+                  <i class="fa fa-angle-left"></i> Effective Modern C++读书笔记(三)
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/04/22/C/do_while(0)/" rel="next" title="do{...}while(0)在宏定义中的应用">
+                  do{...}while(0)在宏定义中的应用 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Yiyang Chen</span>
+  </div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/cyyzero" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"cyyzero","repo":"cyyzero.github.io","client_id":"1185801249b8bbce5127","client_secret":"fbbb24c3e0613419f2505f94baa921f61606bac1","admin_user":"cyyzero","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"66155d05a15fa3be87e61a298f99f6c7"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

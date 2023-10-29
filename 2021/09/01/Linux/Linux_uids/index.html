@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/css/all.min.css" integrity="sha256-CTSx/A06dm1B063156EVh15m6Y67pAjZZaQc89LLSrU=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"cyyzero.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"buttons","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Linux的访问控制模型Linux传统的访问控制模型是DAC（Discretionary Access Control，自主访问控制）。DAC Model是根据自主访问控制策略建立的一种模型，允许合法用户以用户或用户组的身份访问策略规定的客体，同时阻止非授权用户访问客体，某些用户还可以自主地把自己所拥有的客体的访问权限授予其他用户。在Linux中，这里用户和用户组就对应了user和group，客体">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux访问控制模型和进程凭证">
+<meta property="og:url" content="http://cyyzero.github.io/2021/09/01/Linux/Linux_uids/index.html">
+<meta property="og:site_name" content="Eden">
+<meta property="og:description" content="Linux的访问控制模型Linux传统的访问控制模型是DAC（Discretionary Access Control，自主访问控制）。DAC Model是根据自主访问控制策略建立的一种模型，允许合法用户以用户或用户组的身份访问策略规定的客体，同时阻止非授权用户访问客体，某些用户还可以自主地把自己所拥有的客体的访问权限授予其他用户。在Linux中，这里用户和用户组就对应了user和group，客体">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://cyyzero.github.io/img/setuid.png">
+<meta property="article:published_time" content="2021-09-01T14:43:31.000Z">
+<meta property="article:modified_time" content="2023-10-29T07:13:44.879Z">
+<meta property="article:author" content="Yiyang Chen">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://cyyzero.github.io/img/setuid.png">
+
+
+<link rel="canonical" href="http://cyyzero.github.io/2021/09/01/Linux/Linux_uids/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://cyyzero.github.io/2021/09/01/Linux/Linux_uids/","path":"2021/09/01/Linux/Linux_uids/","title":"Linux访问控制模型和进程凭证"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Linux访问控制模型和进程凭证 | Eden</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Eden" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Eden</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Linux%E7%9A%84%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.</span> <span class="nav-text">Linux的访问控制模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%9B%E7%A8%8B%E7%9A%84%E7%94%A8%E6%88%B7ID%E5%87%AD%E8%AF%81"><span class="nav-number">2.</span> <span class="nav-text">进程的用户ID凭证</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9C%80%E8%A6%81%E4%BF%9D%E5%AD%98%E4%B8%89%E4%B8%AAuid%E5%90%97%EF%BC%9F"><span class="nav-number">2.1.</span> <span class="nav-text">需要保存三个uid吗？</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%80%E4%B8%AAID%E5%A4%9F%E5%90%97%EF%BC%9F"><span class="nav-number">2.1.1.</span> <span class="nav-text">一个ID够吗？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#set-uid-%E4%B8%A4%E4%B8%AAID%E5%A4%9F%E5%90%97%EF%BC%9F"><span class="nav-number">2.1.2.</span> <span class="nav-text">set-uid,两个ID够吗？</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%80%E5%B0%8F%E6%9D%83%E9%99%90%E5%8E%9F%E5%88%99%EF%BC%8C%E4%B8%89%E4%B8%AAID"><span class="nav-number">2.1.3.</span> <span class="nav-text">最小权限原则，三个ID</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E8%A7%84%E5%88%99"><span class="nav-number">2.1.4.</span> <span class="nav-text">具体规则</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B3%BB%E7%BB%9F%E6%8E%A5%E5%8F%A3"><span class="nav-number">2.1.5.</span> <span class="nav-text">系统接口</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yiyang Chen"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yiyang Chen</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/cyyzero" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;cyyzero" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:cyyzero@qq.com" title="E-Mail → mailto:cyyzero@qq.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/9748477/cyyzero" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;9748477&#x2F;cyyzero" rel="noopener me" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i></a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://cyyzero.github.io/2021/09/01/Linux/Linux_uids/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yiyang Chen">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Eden">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Linux访问控制模型和进程凭证 | Eden">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux访问控制模型和进程凭证
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2021-09-01 14:43:31" itemprop="dateCreated datePublished" datetime="2021-09-01T14:43:31+00:00">2021-09-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-10-29 07:13:44" itemprop="dateModified" datetime="2023-10-29T07:13:44+00:00">2023-10-29</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h2 id="Linux的访问控制模型"><a href="#Linux的访问控制模型" class="headerlink" title="Linux的访问控制模型"></a>Linux的访问控制模型</h2><p>Linux传统的访问控制模型是DAC（Discretionary Access Control，自主访问控制）。DAC Model是根据自主访问控制策略建立的一种模型，允许合法用户以用户或用户组的身份访问策略规定的客体，同时阻止非授权用户访问客体，某些用户还可以自主地把自己所拥有的客体的访问权限授予其他用户。在Linux中，这里用户和用户组就对应了user和group，客体就代表了文件、文件夹、IPC等共享资源。对于客体，比如文件来说，可以对于不同的主体分别设置rwx权限。当然，对于主体的划分粒度较粗，只能对文件所有者、同组用户、其他用户分别设置，没法针对每个用户单独设立权限。</p>
+<p>ps：SELinux上引入了MAC模型，这里不做深入。</p>
+<h2 id="进程的用户ID凭证"><a href="#进程的用户ID凭证" class="headerlink" title="进程的用户ID凭证"></a>进程的用户ID凭证</h2><p>众所周知，Linux上一切操作都是基于进程来进行，比如常见的在shell里执行命令等。在执行需要权限判断的操作时，进程都会通过某个系统调用陷入内核，由内核来进行权限的判断。那么很自然就能想到，既然Linux的DAC模型基于用户和组做权限控制，那么进程里必然得保存关于用户和组的信息。具体实现上来说，进程都有一套数字来表示它所属于的用户ID和组ID。以下主要讲解用户ID凭证，组ID的原理和实现和用户类似，就不再赘述。这些ID称为进程凭证。对于用户ID来说，具体有三个：</p>
+<ul>
+<li>实际用户ID(real user ID)</li>
+<li>有效用户ID(effective user ID)</li>
+<li>保存的set-user-ID(saved-user-ID)</li>
+</ul>
+<h3 id="需要保存三个uid吗？"><a href="#需要保存三个uid吗？" class="headerlink" title="需要保存三个uid吗？"></a>需要保存三个uid吗？</h3><h4 id="一个ID够吗？"><a href="#一个ID够吗？" class="headerlink" title="一个ID够吗？"></a>一个ID够吗？</h4><p>可能有人会困惑，为什么需要保存三个id。只保存一个启动进程的用户ID可不可行呢？当前用户通过login进程登录之后，保存它的<code>uid</code>。后续再由该用户启动的程序都是login进程的子孙进程，只要让子进程的<code>uid</code>凭证都继承自父进程，<code>uid</code>就此就能保存下来。</p>
+<p>以上的设计在大部分场景下够用。但是有些程序的权限需求比较特殊，得让普通用户执行也有文件所有者的权限。比如说用户的密码储存在<code>/etc/shadow</code>中，普通用户不可读写。但是，<code>passwd</code>程序允许用户修改它们自己的密码。也就是，当用户执行<code>passwd</code>，它们可以突然修改<code>/etc/shadow</code>，而且得识别出启动进程的用户，如何实现？如果按照上述的设计，普通用户执行<code>passwd</code>，进程<code>uid</code>为非0，那必然没有<code>/etc/shadow</code>的读写权限。</p>
+<h4 id="set-uid-两个ID够吗？"><a href="#set-uid-两个ID够吗？" class="headerlink" title="set-uid,两个ID够吗？"></a>set-uid,两个ID够吗？</h4><p>于是，早年的开发者们就想到了，在文件的属性上加了一位做标记，<code>set-user-id</code>位。那么，继续沿用上述的设计，在<code>exec</code>标志<code>set-user-id</code>位的可执行程序时，将进程的<code>uid</code>改成文件所有者，普通用户无法读写<code>/etc/shadow</code>问题就迎刃而解了。但这样引入了了另一个问题，诸如<code>passwd</code>这样的程序无法知道启动进程的用户，都不知道该改哪个用户的密码了。很显然，进程保存一个<code>uid</code>肯定是不够用了，至少得再加一个。一个记录运行程序的用户id，一个记录实际用于权限判断的用户id。实际上，<code>real-uid</code>和<code>effective-uid</code>就是干的这个事情。<code>real-uid</code>为启动进程的用户id，<code>effective-uid</code>为实际用户权限判断的用户id。大部分情况下，<code>real-uid</code>和<code>effective-uid</code>相同。运行设置<code>set-uid</code>的程序，<code>effective-uid</code>会改成程序文件的owner。</p>
+<p>这样的设计也不够好，因为<code>effective-uid</code>的更改变成了一锤子买卖。如果有进程需要在启动的用户和文件owner之间反复横跳怎么办？<code>effective-uid</code>改回<code>real-uid</code>之后文件所属用户id就丢失了（进程得根据执行的文件<code>exe</code>大费周折去文件系统的inode里查所属用户）。</p>
+<h4 id="最小权限原则，三个ID"><a href="#最小权限原则，三个ID" class="headerlink" title="最小权限原则，三个ID"></a>最小权限原则，三个ID</h4><p>这个”反复横跳”的需求也是很有必要的。有个最小权限原则（最早由 Saltzer 和 Schroeder 提出）：</p>
+<blockquote>
+<p>每个程序和系统用户都应该具有完成任务所必需的最小权限集合。<br>限制代码运行所需的安全权限，有一个非常重要的原因，就是降低你的代码在被恶意用户利用时，造成的损失。如果你的代码仅仅使用最小权限来执行，恶意用户就难以使用它造成损失。如果你需要用户使用管理员权限来执行代码，任何代码中的安全缺陷，都会通过利用该缺陷的恶意用户，潜在造成更大的损失。</p>
+</blockquote>
+<p>根据最小权限原则，只有实际进行关键操作的时候获取权限，其余时候应该禁用。比如说对于<code>passwd</code>程序来说，最好就是只有在读写<code>/etc/shadow</code>的时候获取root权限，其余时候（比如说等待用户输入时）放弃特权。</p>
+<h4 id="具体规则"><a href="#具体规则" class="headerlink" title="具体规则"></a>具体规则</h4><p>所以，最后就形成了现今的实现，进程里保存了三个uid。这三个uid初始化的规则如下：</p>
+<ol>
+<li><code>real-uid</code>为启动进程的用户。</li>
+<li>如果是<code>set-uid</code>程序运行的进程，<code>effective-uid</code>为文件的所有者；否则和<code>real-uid</code>相同，为启动进程的用户。</li>
+<li><code>saved-uid</code>由<code>effective-uid</code>复制而来。</li>
+</ol>
+<p>对于普通的非特权用户来说，允许通过一些系统调用让<code>effective-uid</code>在<code>real-uid</code>和<code>saved-uid</code>之间来回变动。进程运行时，权限的检查则都是基于<code>effective uid</code>。对于一个拥有良好安全设计的<code>set-uid</code>程序来说，只有需要使用特殊权限的时候才把<code>effective-uid</code>切换成文件所有者，其余时候都应该为进程启动者。</p>
+<h4 id="系统接口"><a href="#系统接口" class="headerlink" title="系统接口"></a>系统接口</h4><p>Linux上支持改动修改进程凭证的一些系统接口：</p>
+<p><img src="/img/setuid.png" alt="修改进程凭证的一些系统调用"></p>
+<p><strong>参考</strong>：</p>
+<ol>
+<li>《Linux系统编程手册》第9章</li>
+<li><a target="_blank" rel="noopener" href="https://wizardforcel.gitbooks.io/syracuse-sec-lecture-notes/content/3.html">https://wizardforcel.gitbooks.io/syracuse-sec-lecture-notes/content/3.html</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2021/08/19/container/A%20Tale%20of%20Two%20Systems%20Using%20Containers%20to%20Deploy%20HPC%20Applications%20on%20Supercomputers%20and%20Clouds/" rel="prev" title="A Tale of Two Systems: Using Containers to Deploy HPC Applications on Supercomputers and Clouds">
+                  <i class="fa fa-angle-left"></i> A Tale of Two Systems: Using Containers to Deploy HPC Applications on Supercomputers and Clouds
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2023/07/29/Linux/Ext4_mount_default_opts/" rel="next" title="ext4文件系统默认挂载选项">
+                  ext4文件系统默认挂载选项 <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Yiyang Chen</span>
+  </div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/cyyzero" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"cyyzero","repo":"cyyzero.github.io","client_id":"1185801249b8bbce5127","client_secret":"fbbb24c3e0613419f2505f94baa921f61606bac1","admin_user":"cyyzero","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"53af80a804d32b6957387a0e45a7e0da"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/css/all.min.css" integrity="sha256-CTSx/A06dm1B063156EVh15m6Y67pAjZZaQc89LLSrU=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"cyyzero.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"buttons","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="引入最近在公司遇到了容器相关的线上问题, 简单来说就是K8s会出现PLEG not healthy的报错. 经过初步的排查, 发现是docker有个goroutine卡在了umount, 同时这个这个groutine会占用某个锁, 导致查询状态的handler里拿不到锁, 最终导致k8s层面的报错. 通过对umount事件的监控, 以及相关源码代码的阅读, 发现是overlayfs在umount的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="overlayfs挂载选项volatile">
+<meta property="og:url" content="http://cyyzero.github.io/2023/10/29/Linux/overlayfs_volatile_option/index.html">
+<meta property="og:site_name" content="Eden">
+<meta property="og:description" content="引入最近在公司遇到了容器相关的线上问题, 简单来说就是K8s会出现PLEG not healthy的报错. 经过初步的排查, 发现是docker有个goroutine卡在了umount, 同时这个这个groutine会占用某个锁, 导致查询状态的handler里拿不到锁, 最终导致k8s层面的报错. 通过对umount事件的监控, 以及相关源码代码的阅读, 发现是overlayfs在umount的">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2023-10-29T15:19:23.000Z">
+<meta property="article:modified_time" content="2023-10-29T08:06:58.911Z">
+<meta property="article:author" content="Yiyang Chen">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://cyyzero.github.io/2023/10/29/Linux/overlayfs_volatile_option/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://cyyzero.github.io/2023/10/29/Linux/overlayfs_volatile_option/","path":"2023/10/29/Linux/overlayfs_volatile_option/","title":"overlayfs挂载选项volatile"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>overlayfs挂载选项volatile | Eden</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Eden" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Eden</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BC%95%E5%85%A5"><span class="nav-number">1.</span> <span class="nav-text">引入</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">2.</span> <span class="nav-text">解决方案</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#kernel"><span class="nav-number">2.1.</span> <span class="nav-text">kernel</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#contianerd"><span class="nav-number">2.2.</span> <span class="nav-text">contianerd</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#requirements"><span class="nav-number">2.3.</span> <span class="nav-text">requirements</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#reference"><span class="nav-number">3.</span> <span class="nav-text">reference</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yiyang Chen"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yiyang Chen</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/cyyzero" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;cyyzero" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:cyyzero@qq.com" title="E-Mail → mailto:cyyzero@qq.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/9748477/cyyzero" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;9748477&#x2F;cyyzero" rel="noopener me" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i></a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://cyyzero.github.io/2023/10/29/Linux/overlayfs_volatile_option/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yiyang Chen">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Eden">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="overlayfs挂载选项volatile | Eden">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          overlayfs挂载选项volatile
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+      
+
+      <time title="Created: 2023-10-29 15:19:23 / Modified: 08:06:58" itemprop="dateCreated datePublished" datetime="2023-10-29T15:19:23+00:00">2023-10-29</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><h1 id="引入"><a href="#引入" class="headerlink" title="引入"></a>引入</h1><p>最近在公司遇到了容器相关的线上问题, 简单来说就是K8s会出现PLEG not healthy的报错. 经过初步的排查, 发现是docker有个goroutine卡在了<code>umount</code>, 同时这个这个groutine会占用某个锁, 导致查询状态的handler里拿不到锁, 最终导致k8s层面的报错.</p>
+<p>通过对umount事件的监控, 以及相关源码代码的阅读, 发现是overlayfs在umount的时候, 会对upper层所在的fs进行一次sync, 导致大量脏页回写. 如果这个机器内存较大, 并且有过频繁的IO, 那么就会脏页较多, overlayfs umount时等待磁盘IO完成而阻塞过久.</p>
+<p>umount的stack trace如下:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">[&lt;0&gt;] wb_wait_for_completion+0x5a/0x90</span><br><span class="line">[&lt;0&gt;] __writeback_inodes_sb_nr+0xa0/0xd0</span><br><span class="line">[&lt;0&gt;] writeback_inodes_sb+0x3d/0x50</span><br><span class="line">[&lt;0&gt;] _sync_filesystem+0x55/0x60</span><br><span class="line">[&lt;0&gt;] sync_filesystem+0x33/0x50</span><br><span class="line">[&lt;0&gt;] ovl_sync_fs+0x61/0xa0 [overlay]</span><br><span class="line">[&lt;0&gt;] _sync_filesystem+0x33/0x60</span><br><span class="line">[&lt;0&gt;] sync_filesystem+0x44/0x50</span><br><span class="line">[&lt;0&gt;] generic_shutdown_super+0x27/0x120</span><br><span class="line">[&lt;0&gt;] kill_anon_super+0x18/0x30</span><br><span class="line">[&lt;0&gt;] deactivate_locked_super+0x3b/0x90</span><br><span class="line">[&lt;0&gt;] deactivate_super+0x42/0x50</span><br><span class="line">[&lt;0&gt;] cleanup_mnt+0x109/0x170</span><br><span class="line">[&lt;0&gt;] _cleanup_mnt+0x12/0x20</span><br><span class="line">[&lt;0&gt;] task_work_run+0x70/0xb0</span><br><span class="line">[&lt;0&gt;] exit_to_user_mode_prepare+0x1b6/0x1c0</span><br><span class="line">[&lt;0&gt;] syscall_exit_to_user_mode+0x27/0x50</span><br><span class="line">[&lt;0&gt;] do_syscall_64+0x69/0xc0</span><br><span class="line">[&lt;0&gt;] entry_SYSCALL_64_after_hwframe+0x61/0xcb</span><br></pre></td></tr></table></figure>
+
+<p>重点在这个<code>ovl_sync_fs</code>函数, 它会对整个overlayfs的uppser层所在文件系统进行sync操作: </p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// from kernel 5.10</span></span><br><span class="line"><span class="comment">/* Sync real dirty inodes in upper filesystem (if it exists) */</span></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> <span class="title function_">ovl_sync_fs</span><span class="params">(<span class="keyword">struct</span> super_block *sb, <span class="type">int</span> wait)</span></span><br><span class="line">&#123;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">ovl_fs</span> *<span class="title">ofs</span> =</span> sb-&gt;s_fs_info;</span><br><span class="line">        <span class="class"><span class="keyword">struct</span> <span class="title">super_block</span> *<span class="title">upper_sb</span>;</span></span><br><span class="line">        <span class="type">int</span> ret;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (!ovl_upper_mnt(ofs))</span><br><span class="line">                <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (!ovl_should_sync(ofs))</span><br><span class="line">                <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        <span class="comment">/*</span></span><br><span class="line"><span class="comment">         * Not called for sync(2) call or an emergency sync (SB_I_SKIP_SYNC).</span></span><br><span class="line"><span class="comment">         * All the super blocks will be iterated, including upper_sb.</span></span><br><span class="line"><span class="comment">         *</span></span><br><span class="line"><span class="comment">         * If this is a syncfs(2) call, then we do need to call</span></span><br><span class="line"><span class="comment">         * sync_filesystem() on upper_sb, but enough if we do it when being</span></span><br><span class="line"><span class="comment">         * called with wait == 1.</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        <span class="keyword">if</span> (!wait)</span><br><span class="line">                <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">        </span><br><span class="line">        <span class="comment">// 找到upper层所在的fs</span></span><br><span class="line">        upper_sb = ovl_upper_mnt(ofs)-&gt;mnt_sb;</span><br><span class="line"></span><br><span class="line">        down_read(&amp;upper_sb-&gt;s_umount);</span><br><span class="line">        <span class="comment">// 执行sync, 会造成整个fs脏页回写磁盘, 耗时很长</span></span><br><span class="line">        ret = sync_filesystem(upper_sb);</span><br><span class="line">        up_read(&amp;upper_sb-&gt;s_umount);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>很显然, 对于k8s的很多场景来说, sync文件系统是多余的操作. k8s每次实例启动都重新挂载rootfs, 实例退出后将rootfs umount并删除(可能描述的不对). 所以最好有办法能够避免overlayfs umount时候的强制刷盘.</p>
+<h1 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h1><p>如果仔细查看<code>ovl_sync_fs</code>函数, 可以发现它会在函数开头执行两个判断, 一次是判断upper层是否存在, 一次是<code>ovl_should_sync</code>判断overlayfs是否应该进行sync. 解决问题的关键可能就在于ovl_should_sync能否绕过sync.</p>
+<h2 id="kernel"><a href="#kernel" class="headerlink" title="kernel"></a>kernel</h2><p>ovl_should_sync函数被包含在2020.8.31提的patch里</p>
+<p><a target="_blank" rel="noopener" href="https://lore.kernel.org/all/20200722175024.GA608248@redhat.com/">[PATCH v5] overlayfs: Provide a mount option “ volatile” to skip sync - Vivek Goyal</a></p>
+<p>这个patch给overlayfs提供了一个新的挂载选项volatile, 当挂载这个选项后, overlayfs会去掉一些sync操作, 包括针对单独文件的sync以及整个文件系统的sync.</p>
+<p>影响的地方如下: </p>
+<ol>
+<li><p>umount不会再强制对upper层文件系统执行sync, 也就是针对本次问题出现的场景.</p>
+</li>
+<li><p>remount的时候, 也可能对upper层所在文件系统进行sync, 这是2020年加内核主线的patch.<br><a target="_blank" rel="noopener" href="https://www.spinics.net/lists/linux-unionfs/msg07682.html">[PATCH] ovl: sync dirty data when remounting to ro mode ‒ Union Filesystem</a><br>这是因为把overlayfs remount成只读之后, 在umount overlayfs时,<code>kill_anon_super</code> -&gt; <code>generic_shutdown_super</code> -&gt; <code>sync_filesystem</code>检查overlayfs为只读时会跳过sync_filesystem. 所以把overlayfs从可写remount成只读的时候, 直接进行一次sync_filesystem, 避免最终umount的时候遗漏sync_filesystem操作. volatile选项会取消这一次sync_filesystem操作.</p>
+</li>
+<li><p>针对单个文件fsync调用, 如果带有volatile挂载选项, 会跳过.</p>
+</li>
+<li><p>当文件copy up到upper层的时候, 也会进行vfs_fsync()操作. 如果带有volatile选项, 会跳过.</p>
+</li>
+<li><p>O_SYNC的场景, 如果有volatile选项, 也会绕过sync退化成overlayfs默认的写行为.</p>
+</li>
+</ol>
+<p><strong>本质上这些sync操作都是为了避免系统crash造成overlayfs磁盘数据丢失. volatile挂载选项和Kubernetes的使用场景十分契合. 如果内核在向overlayfs写入数据时崩溃, kubelet总是会重新创建新的容器, 而不会复用之前的rootfs. 因此，在 kubernetes中, 容器的rootfs是临时的. 在pod中使用 volatile 选项是安全的, 因为我们没有机会重复使用旧的rootfs. 在有状态容器中使用这种配置也是安全的, 因为需要持久化的数据理应写入外部卷, 在运行时不会受到volatile标志的影响.</strong></p>
+<h2 id="contianerd"><a href="#contianerd" class="headerlink" title="contianerd"></a>contianerd</h2><p>当然, 新的挂载选项需要runtime的支持, 才能够在挂载rootfs带上这个选项.</p>
+<p>在contaienrd社区已经有了许多相关讨论:</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/containerd/containerd/issues/8698">https://github.com/containerd/containerd/issues/8698</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/containerd/containerd/issues/6406">https://github.com/containerd/containerd/issues/6406</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/containerd/containerd/pull/4785">https://github.com/containerd/containerd/pull/4785</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/containerd/containerd/pull/8402">https://github.com/containerd/containerd/pull/8402</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/containerd/containerd/pull/8676">https://github.com/containerd/containerd/pull/8676</a></li>
+</ul>
+<p>这个pr <a target="_blank" rel="noopener" href="https://github.com/containerd/containerd/pull/8676">[overlay] add configurable mount options to overlay snapshotter by dmcgowan · Pull Request #8676</a> 允许对overlayfs的挂载选项进行设置, 并且被backport到了1.6.24.</p>
+<h2 id="requirements"><a href="#requirements" class="headerlink" title="requirements"></a>requirements</h2><p>总结一下, overlayfs volatile特性, 需要的版本如下:</p>
+<ul>
+<li>Linux kernel &gt;&#x3D; 5.10<br>对应patch: <a target="_blank" rel="noopener" href="https://lore.kernel.org/all/20200722175024.GA608248@redhat.com/">[PATCH] ovl: sync dirty data when remounting to ro mode ‒ Union Filesystem</a></li>
+<li>containerd &gt;&#x3D; 1.6.24 or containerd &gt;&#x3D; 1.7.4<br>对应PR: <a target="_blank" rel="noopener" href="https://github.com/containerd/containerd/pull/8676">[overlay] add configurable mount options to overlay snapshotter by dmcgowan · Pull Request #8676</a></li>
+</ul>
+<p>containerd配置:</p>
+<figure class="highlight toml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># /etc/containerd/config.toml</span></span><br><span class="line"><span class="attr">version</span> = <span class="number">2</span></span><br><span class="line"><span class="section">[plugins]</span></span><br><span class="line">  <span class="section">[plugins.&quot;io.containerd.snapshotter.v1.overlayfs&quot;]</span></span><br><span class="line">    <span class="attr">mount_options</span> = [<span class="string">&quot;volatile&quot;</span>]</span><br></pre></td></tr></table></figure>
+
+<h1 id="reference"><a href="#reference" class="headerlink" title="reference"></a>reference</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://lore.kernel.org/all/20200722175024.GA608248@redhat.com/">https:&#x2F;&#x2F;lore.kernel.org&#x2F;all&#x2F;20200722175024.GA608248@redhat.com/</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/containerd/containerd/pull/8676">https://github.com/containerd/containerd/pull/8676</a></li>
+<li><a target="_blank" rel="noopener" href="https://fuweid.com/post/2023-08-sync-containerd-issue/">https://fuweid.com/post/2023-08-sync-containerd-issue/</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.redhat.com/sysadmin/container-volatile-overlay-mounts">https://www.redhat.com/sysadmin/container-volatile-overlay-mounts</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.kernel.org/filesystems/overlayfs.html#volatile-mount">https://docs.kernel.org/filesystems/overlayfs.html#volatile-mount</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2023/07/29/Linux/Ext4_mount_default_opts/" rel="prev" title="ext4文件系统默认挂载选项">
+                  <i class="fa fa-angle-left"></i> ext4文件系统默认挂载选项
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Yiyang Chen</span>
+  </div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/cyyzero" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"cyyzero","repo":"cyyzero.github.io","client_id":"1185801249b8bbce5127","client_secret":"fbbb24c3e0613419f2505f94baa921f61606bac1","admin_user":"cyyzero","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"12a8ce6d6740bd214525f32f3c7b3b7a"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

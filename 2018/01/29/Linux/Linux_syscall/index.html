@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.3.0">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.2/css/all.min.css" integrity="sha256-CTSx/A06dm1B063156EVh15m6Y67pAjZZaQc89LLSrU=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"cyyzero.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.18.2","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"buttons","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="ps:句式“当我们谈论XX时我们在谈论什么”引用自美国作家卡佛(Ramond Carver)的作品《当我们谈论爱情时我们谈论什么》(What We Talk About When We Talk About Love)。当然，我又标题党了，应该换成浅析IA32 Linux 系统调用过程比较合适。 当说到Linux下的系统调用(System Call)的时候，程序员都不会陌生。但一般都会联想到for">
+<meta property="og:type" content="article">
+<meta property="og:title" content="当我们谈论系统调用时，我们在谈论什么">
+<meta property="og:url" content="http://cyyzero.github.io/2018/01/29/Linux/Linux_syscall/index.html">
+<meta property="og:site_name" content="Eden">
+<meta property="og:description" content="ps:句式“当我们谈论XX时我们在谈论什么”引用自美国作家卡佛(Ramond Carver)的作品《当我们谈论爱情时我们谈论什么》(What We Talk About When We Talk About Love)。当然，我又标题党了，应该换成浅析IA32 Linux 系统调用过程比较合适。 当说到Linux下的系统调用(System Call)的时候，程序员都不会陌生。但一般都会联想到for">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2018-01-29T12:15:31.000Z">
+<meta property="article:modified_time" content="2023-10-29T07:13:44.879Z">
+<meta property="article:author" content="Yiyang Chen">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://cyyzero.github.io/2018/01/29/Linux/Linux_syscall/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://cyyzero.github.io/2018/01/29/Linux/Linux_syscall/","path":"2018/01/29/Linux/Linux_syscall/","title":"当我们谈论系统调用时，我们在谈论什么"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>当我们谈论系统调用时，我们在谈论什么 | Eden</title>
+  
+
+
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Eden" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Eden</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-overview-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yiyang Chen"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yiyang Chen</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/cyyzero" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;cyyzero" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:cyyzero@qq.com" title="E-Mail → mailto:cyyzero@qq.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/9748477/cyyzero" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;9748477&#x2F;cyyzero" rel="noopener me" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i></a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://cyyzero.github.io/2018/01/29/Linux/Linux_syscall/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yiyang Chen">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Eden">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="当我们谈论系统调用时，我们在谈论什么 | Eden">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          当我们谈论系统调用时，我们在谈论什么
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2018-01-29 12:15:31" itemprop="dateCreated datePublished" datetime="2018-01-29T12:15:31+00:00">2018-01-29</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2023-10-29 07:13:44" itemprop="dateModified" datetime="2023-10-29T07:13:44+00:00">2023-10-29</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>ps:句式“当我们谈论XX时我们在谈论什么”引用自美国作家卡佛(Ramond Carver)的作品《当我们谈论爱情时我们谈论什么》(What We Talk About When We Talk About Love)。当然，我又标题党了，应该换成<strong>浅析IA32 Linux 系统调用过程</strong>比较合适。</p>
+<p>当说到Linux下的系统调用(<strong>System Call</strong>)的时候，程序员都不会陌生。但一般都会联想到fork()，execve()等这些函数。这就是很多人(包括以前我自己)的误区所在了。</p>
+<p>诸如fork() 这些，是c语言函数库(linux下常见如glibc)实现的<strong>外壳(wrapper)函数</strong>，由它们来引发真正的系统调用。从C语言编程的角度来看，调用C语言函数库的外壳函数等同于发起系统调用。也就是说，当我们在代码中使用诸如fork()这类函数时，意味着调用外壳函数，然后由外壳函数去调用系统调用(可能有点绕)。</p>
+<p>区分了狭义上的外壳(wrapper)函数和系统调用后，就能进入本文的主题了:<strong>IA32上Linux系统调用的过程</strong>。(因为其他的不懂…</p>
+<hr>
+<p>首先描述两个概念，**中断(interruption)<strong>和</strong>异常(execption)**。从<a target="_blank" rel="noopener" href="https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf">Intel的手册</a>上找的简单介绍。</p>
+<blockquote>
+<p>The processor provides two mechanisms for interrupting program execution, interrupts and exceptions: </p>
+</blockquote>
+<blockquote>
+<p>• An interrupt  is an asynchronous event that is typically triggered by an I&#x2F;O device.</p>
+</blockquote>
+<blockquote>
+<p>• An exception is a synchronous event that is generated when the processor detects one or more predefined conditions while executing an instruction. The IA-32 architecture specifies three classes of exceptions: faults, traps, and aborts. </p>
+</blockquote>
+<p>简单地说，中断和异常是处理器提供的中断程序执行的机制，能引起X86挂起当前指令流的执行并相应事件。在这两种情况下处理器都会保存当前进程的上下文，并将转至一个预先定义的子程序来执行特殊的服务。</p>
+<p>虽说中断和异常概念上有所区别，但在IA32上处理它们却是用了相同的方式。系统为每种类型的中断和异常分配了唯一的一个无符号整型作为一个向量(vector)，即可以理解为索引。然后内核维护的一张叫做<strong>中断描述符表</strong>(interrupt descriptor table， 一般简称为<strong>IDT</strong>)的结构，表中每一项都是某个中断或者异常对应的处理程序的入口地址。然后每次发生了某个中断和异常，就能通过它的向量，就在IDT中找到相应的处理程序并调用。</p>
+<p>具体到汇编语言，就是通过INT指令来实现。INT(interrupt的缩写)指令的作用是引发中断和异常的处理程序，格式形如INT n。</p>
+<p>从<a target="_blank" rel="noopener" href="https://www.intel.com/content/dam/www/public/us/en/documents/manuals/64-ia-32-architectures-software-developer-instruction-set-reference-manual-325383.pdf">Intel的手册</a>上找的INT指令的简单介绍。</p>
+<blockquote>
+<p>The INT n instruction generates a call to the interrupt or exception handler specified with the destination operand The destination operand specifies a vector from 0 to 255, encoded as an 8-bit unsigned intermediate value. Each vector provides an index to a gate descriptor in the IDT. The first 32 vectors are reserved by Intel for system use. Some of these vectors are used for internally generated exceptions.</p>
+</blockquote>
+<p>大意就是INT n用来调用特定的中断或者异常的处理程序。n取值从0x00-0xFF(8位无符号整型)。N就作为上述提到的向量。举一些简单的例子，比如说0x1表示除法上溢或者被零除，0x12表示栈故障(越界或者栈段不存在)，0x14表示缺页…</p>
+<p>当调用处理程序时，系统栈保存处理器的状态。下列事件将发生:</p>
+<ul>
+<li>若转移涉及特权指令改变，则当前栈段寄存器和当前拓展的栈指针(esp)寄存器的内容被压入栈。</li>
+<li>EFLAGS寄存器的当前值压入栈。</li>
+<li>中断(IF)和自陷(TF)两个标志被清除。这就禁止了INTR中断，自陷或单步中断。</li>
+<li>当前代码段(CS)寄存器和当前指令指针寄存器(IP或者EIP)寄存器被压入栈。</li>
+<li>若中断向量伴随错误代码，则错误代码也入栈。</li>
+<li>读取中断向量表对应项的内容，将其装入CS和IP(或EIP)寄存器。控制转移到终端服务子程序继续执行。</li>
+</ul>
+<p>为从中断返回，中断服务程序执行一条IRET指令。这使得所有保存在栈上的值被取回，并由中断点恢复执行。</p>
+<hr>
+<p>铺垫了这么久，又回到了系统调用。没猜错，IA32的Linux上系统调用就是通过INT 0x80调用的。</p>
+<p>下面讲一下具体过程：</p>
+<p>响应中断0x80，内核调用system_call()。可以再展开说一下，这里通过各个寄存器用于传递参数，EAX寄存器用于表示系统调用的接口号，比如EAX&#x3D;1用于退出进程(exit)；EAX&#x3D;2表示创建进程(fork)；EAX&#x3D;3表示读取文件或者IO(read)等，每个系统调用都对应内核源代码中的一个函数，他们都是以“sys_”开头的，比如说exit调用对应于内核中的sys_exit函数。你没猜错，和IDT一样，系统也维护着一张系统调用表，通过类似*sys_call_table(0,%eax,4)，的跳转，可以通过eax所记录的系统调用号调用对应的系统调用函数。如果系统调用带有函数参数(一般也是通过寄存器传递)，那么还会检查参数的有效性。随后，该函数会执行必要的任务。接着，将状态返回sys_call()函数。从内核栈中恢复各寄存器值，并将系统调用返回结果置于栈中。最后返回外壳函数，中断结束。</p>
+<p>至此，系统调用算是结束了，但是我们调用的外壳(wrapper)函数还没算完。它还有个扫尾工作。如果返回值表明调用有错误，外壳(wrapper)函数就会设置全局变量errno。最后，外壳(wrapper)函数会返回到调用它的地方，并返回一个整型，以表明系统调用是否成功。</p>
+<p>终于调用结束，大功告成了…</p>
+<p>(取好几本书内容的子集东拼西凑写出来的…真是艰难</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2017/11/13/C++/C++_ub_everywhere/" rel="prev" title="C++的ub还真是无处不在啊">
+                  <i class="fa fa-angle-left"></i> C++的ub还真是无处不在啊
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/02/12/C++/effective_modern_cpp_1/" rel="next" title="Effective Modern C++读书笔记(一)">
+                  Effective Modern C++读书笔记(一) <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2023</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Yiyang Chen</span>
+  </div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/cyyzero" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"cyyzero","repo":"cyyzero.github.io","client_id":"1185801249b8bbce5127","client_secret":"fbbb24c3e0613419f2505f94baa921f61606bac1","admin_user":"cyyzero","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"084da8eca113677601aecafdc5985fc4"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>
