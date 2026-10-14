@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 8.1.2">
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"cyyzero.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"always","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"tomorrow-night"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"buttons","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
+
+    <meta name="description" content="Linux 早已能提供很多时钟，但过去很难同时满足这样一个需求：多个应用共享几套各自独立校准的时间，其中一套服务于 UTC 日志，另一套跟踪设备或业务参考时钟，而且都能以统一接口低成本读取。 问题不在于缺少 clock_gettime() 的 clock ID，而在于系统时钟背后只有一套核心校时状态。CLOCK_REALTIME 和 CLOCK_TAI 不能分别跟踪两台独立参考时钟；把设备时间同步">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux AUX Clock：多时间域的历史痛点、内核原理与同步实践">
+<meta property="og:url" content="http://cyyzero.github.io/2026/10/14/Linux/linux_aux_clock_multi_domain_ptp/index.html">
+<meta property="og:site_name" content="Eden">
+<meta property="og:description" content="Linux 早已能提供很多时钟，但过去很难同时满足这样一个需求：多个应用共享几套各自独立校准的时间，其中一套服务于 UTC 日志，另一套跟踪设备或业务参考时钟，而且都能以统一接口低成本读取。 问题不在于缺少 clock_gettime() 的 clock ID，而在于系统时钟背后只有一套核心校时状态。CLOCK_REALTIME 和 CLOCK_TAI 不能分别跟踪两台独立参考时钟；把设备时间同步">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://cyyzero.github.io/images/aux-clock/independent-timekeepers.svg">
+<meta property="og:image" content="http://cyyzero.github.io/images/aux-clock/read-and-discipline.svg">
+<meta property="og:image" content="http://cyyzero.github.io/images/aux-clock/linux-ptp-layers.svg">
+<meta property="og:image" content="http://cyyzero.github.io/images/aux-clock/ntp-realtime-ptp-aux.svg">
+<meta property="article:published_time" content="2026-10-14T15:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-14T16:00:00.000Z">
+<meta property="article:author" content="Yiyang Chen">
+<meta property="article:tag" content="PTP">
+<meta property="article:tag" content="chrony">
+<meta property="article:tag" content="kernel">
+<meta property="article:tag" content="linuxptp">
+<meta property="article:tag" content="timekeeping">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://cyyzero.github.io/images/aux-clock/independent-timekeepers.svg">
+
+
+<link rel="canonical" href="http://cyyzero.github.io/2026/10/14/Linux/linux_aux_clock_multi_domain_ptp/">
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"http://cyyzero.github.io/2026/10/14/Linux/linux_aux_clock_multi_domain_ptp/","path":"2026/10/14/Linux/linux_aux_clock_multi_domain_ptp/","title":"Linux AUX Clock：多时间域的历史痛点、内核原理与同步实践"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Linux AUX Clock：多时间域的历史痛点、内核原理与同步实践 | Eden</title>
+  
+
+
+
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Eden" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <div class="column">
+      <header class="header" itemscope itemtype="http://schema.org/WPHeader"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Eden</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger" aria-label="Search" role="button">
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a></li>
+  </ul>
+</nav>
+
+
+
+
+</header>
+        
+  
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BF%87%E5%8E%BB%E7%9A%84%E7%97%9B%E7%82%B9%EF%BC%9A%E5%A4%9A%E4%B8%AA%E6%97%B6%E9%92%9F%E5%90%8D%E5%AD%97%EF%BC%8C%E4%BB%8D%E7%84%B6%E5%8F%AA%E6%9C%89%E4%B8%80%E5%A5%97%E6%A0%B8%E5%BF%83%E6%A0%A1%E6%97%B6%E7%8A%B6%E6%80%81"><span class="nav-number">1.</span> <span class="nav-text">过去的痛点：多个时钟名字，仍然只有一套核心校时状态</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%9A%E5%8A%A1%E9%9C%80%E8%A6%81%E7%9A%84%E6%98%AF%E7%8B%AC%E7%AB%8B%E6%97%B6%E9%97%B4%E5%9F%9F%EF%BC%8C%E4%B8%8D%E5%8F%AA%E6%98%AF%E4%B8%8D%E5%90%8C%E6%98%BE%E7%A4%BA%E6%A0%BC%E5%BC%8F"><span class="nav-number">1.1.</span> <span class="nav-text">业务需要的是独立时间域，不只是不同显示格式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#REALTIME%E3%80%81TAI-%E5%92%8C-MONOTONIC-%E6%B2%A1%E6%9C%89%E6%8F%90%E4%BE%9B%E7%8B%AC%E7%AB%8B%E7%9A%84%E7%AC%AC%E4%BA%8C%E5%A5%97-servo"><span class="nav-number">1.2.</span> <span class="nav-text">REALTIME、TAI 和 MONOTONIC 没有提供独立的第二套 servo</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%A0%E7%BB%9F%E7%BB%95%E8%A1%8C%E6%96%B9%E6%A1%88%E8%A7%A3%E5%86%B3%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%8C%E5%8F%88%E7%95%99%E4%B8%8B%E4%BA%86%E4%BB%80%E4%B9%88"><span class="nav-number">1.3.</span> <span class="nav-text">传统绕行方案解决了什么，又留下了什么</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#AUX-clock-%E5%8A%9F%E8%83%BD%E8%A7%A3%E5%86%B3%E4%BA%86%E4%BB%80%E4%B9%88"><span class="nav-number">2.</span> <span class="nav-text">AUX clock 功能解决了什么</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%8E%E4%B8%80%E5%A5%97%E6%A0%B8%E5%BF%83%E6%A0%A1%E6%97%B6%E7%8A%B6%E6%80%81%EF%BC%8C%E6%89%A9%E5%B1%95%E5%88%B0%E5%A4%9A%E5%A5%97%E7%8B%AC%E7%AB%8B%E8%BD%AF%E4%BB%B6-timekeeper"><span class="nav-number">2.1.</span> <span class="nav-text">从一套核心校时状态，扩展到多套独立软件 timekeeper</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%9F%E8%83%BD%E7%94%B1%E5%93%AA%E4%BA%9B%E6%A0%B8%E5%BF%83%E7%B3%BB%E5%88%97%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.2.</span> <span class="nav-text">功能由哪些核心系列实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8A%9F%E8%83%BD%E5%B8%A6%E6%9D%A5%E7%9A%84%E8%83%BD%E5%8A%9B%E4%B8%8E%E8%BE%B9%E7%95%8C"><span class="nav-number">2.3.</span> <span class="nav-text">功能带来的能力与边界</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%85%E6%A0%B8%E5%8E%9F%E7%90%86%EF%BC%9AAUX-%E5%A6%82%E4%BD%95%E7%BB%B4%E6%8A%A4%E7%8B%AC%E7%AB%8B%E6%97%B6%E9%97%B4"><span class="nav-number">3.</span> <span class="nav-text">内核原理：AUX 如何维护独立时间</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#AUX-%E6%98%AF%E8%BD%AF%E4%BB%B6-timekeeper%EF%BC%8C%E4%B8%8D%E6%98%AF%E6%96%B0%E5%A2%9E%E7%A1%AC%E4%BB%B6%E8%AE%A1%E6%95%B0%E5%99%A8"><span class="nav-number">3.1.</span> <span class="nav-text">AUX 是软件 timekeeper，不是新增硬件计数器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%90%AF%E7%94%A8%E3%80%81%E8%AF%BB%E5%8F%96%E3%80%81%E6%A0%A1%E5%87%86%E7%9A%84%E7%8A%B6%E6%80%81%E9%93%BE"><span class="nav-number">3.2.</span> <span class="nav-text">启用、读取、校准的状态链</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%8B%AC%E7%AB%8B%E6%80%A7%E4%B8%8D%E7%AD%89%E4%BA%8E%E5%A4%A9%E7%84%B6%E5%8D%95%E8%B0%83"><span class="nav-number">3.3.</span> <span class="nav-text">独立性不等于天然单调</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88-AUX-%E8%83%BD%E6%8F%90%E4%BE%9B%E8%BE%83%E5%BF%AB%E7%9A%84%E8%AF%BB%E5%8F%96%E8%B7%AF%E5%BE%84"><span class="nav-number">3.4.</span> <span class="nav-text">为什么 AUX 能提供较快的读取路径</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BD%93%E5%89%8D%E8%83%BD%E5%8A%9B%E7%9F%A9%E9%98%B5%EF%BC%9A%E8%AF%BB%E9%92%9F%E4%B8%8D%E7%AD%89%E4%BA%8E%E5%AE%9A%E6%97%B6%E5%99%A8"><span class="nav-number">3.5.</span> <span class="nav-text">当前能力矩阵：读钟不等于定时器</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%9A%E6%97%B6%E9%97%B4%E5%9F%9F%E7%9A%84%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5"><span class="nav-number">4.</span> <span class="nav-text">多时间域的最佳实践</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8B%93%E6%89%91%E4%B8%80%EF%BC%9A%E4%B8%80%E4%B8%AA%E7%89%A9%E7%90%86-PHC%EF%BC%8C%E5%A4%9A%E4%B8%AA-virtual-PTP-clock"><span class="nav-number">4.1.</span> <span class="nav-text">拓扑一：一个物理 PHC，多个 virtual PTP clock</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8B%93%E6%89%91%E4%BA%8C%EF%BC%9ANTP-%E5%90%8C%E6%AD%A5-REALTIME%EF%BC%8CPTP-%E5%90%8C%E6%AD%A5%E7%8B%AC%E7%AB%8B%E4%B8%9A%E5%8A%A1%E5%9F%9F"><span class="nav-number">4.2.</span> <span class="nav-text">拓扑二：NTP 同步 REALTIME，PTP 同步独立业务域</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#linuxptp-%E4%B8%8E-chrony-%E7%9A%84%E6%94%AF%E6%8C%81%E7%8E%B0%E7%8A%B6"><span class="nav-number">5.</span> <span class="nav-text">linuxptp 与 chrony 的支持现状</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#References"><span class="nav-number">6.</span> <span class="nav-text">References</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Yiyang Chen"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Yiyang Chen</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/cyyzero" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;cyyzero" rel="noopener me" target="_blank"><i class="fab fa-github fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:cyyzero@qq.com" title="E-Mail → mailto:cyyzero@qq.com" rel="noopener me" target="_blank"><i class="fa fa-envelope fa-fw"></i></a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://stackoverflow.com/users/9748477/cyyzero" title="StackOverflow → https:&#x2F;&#x2F;stackoverflow.com&#x2F;users&#x2F;9748477&#x2F;cyyzero" rel="noopener me" target="_blank"><i class="fab fa-stack-overflow fa-fw"></i></a>
+      </span>
+  </div>
+
+        </div>
+      </div>
+    </div>
+
+    
+  </aside>
+
+
+    </div>
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://cyyzero.github.io/2026/10/14/Linux/linux_aux_clock_multi_domain_ptp/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yiyang Chen">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Eden">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Linux AUX Clock：多时间域的历史痛点、内核原理与同步实践 | Eden">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Linux AUX Clock：多时间域的历史痛点、内核原理与同步实践
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2026-10-14 23:00:00" itemprop="dateCreated datePublished" datetime="2026-10-14T23:00:00+08:00">2026-10-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-10-15 00:00:00" itemprop="dateModified" datetime="2026-10-15T00:00:00+08:00">2026-10-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody"><p>Linux 早已能提供很多时钟，但过去很难同时满足这样一个需求：<strong>多个应用共享几套各自独立校准的时间，其中一套服务于 UTC 日志，另一套跟踪设备或业务参考时钟，而且都能以统一接口低成本读取。</strong></p>
+<p>问题不在于缺少 <code>clock_gettime()</code> 的 clock ID，而在于系统时钟背后只有一套核心校时状态。<code>CLOCK_REALTIME</code> 和 <code>CLOCK_TAI</code> 不能分别跟踪两台独立参考时钟；把设备时间同步进系统时间，常常意味着替换原本服务于整台主机的时间基准。直接使用 PHC 或应用自行维护软件时钟虽然能绕开部分限制，却又引入访问成本、接口分裂和跨域转换的复杂性。</p>
+<p>AUX clock 功能为此提供了<strong>独立于核心 timekeeper、可单独设置与调频的内核软件时钟</strong>，并提供 POSIX 读写接口和 vDSO 读取路径。它让额外时间域不必再争用主机墙钟。这是本文的主线：过去的痛点是什么、这一功能具体改变了什么，以及怎样用 linuxptp、chrony 和 PTP 设备构建多时间域系统。</p>
+<p>Linutronix 的文章《PTP Multi-Domain Time Sync with Linux》提供了一个直观案例：Global Time 用于绝对时间关联，Working Clock 用于独立的工作周期。TSN 是这种多时间域需求的场景之一；同样的设计问题也会出现在设备采集、分布式测量和需要隔离时间基准的应用中。</p>
+<span id="more"></span>
+
+<p>本文的内核分析基于 <strong>Linux 7.3-rc6</strong> 之后的主线快照 <code>v7.3-rc6-78-g47324d3a5b3ab</code>，对应提交为 <a target="_blank" rel="noopener" href="https://github.com/torvalds/linux/commit/47324d3a5b3abd781295044d01d92d09f184e872">47324d3a5b3ab</a>。用户态支持状态以 <strong>2026-10-15</strong> 的 master 分支为准：<a target="_blank" rel="noopener" href="https://github.com/richardcochran/linuxptp/commit/227bbd4715bf4cb735be4947e987032f41457585">linuxptp · 227bbd4715bf</a>、<a target="_blank" rel="noopener" href="https://gitlab.com/chrony/chrony/-/commit/7fab5413c58eccc91d81d940ec75654fd23e1d36">chrony · 7fab5413c58e</a>。</p>
+<h2 id="过去的痛点：多个时钟名字，仍然只有一套核心校时状态"><a href="#过去的痛点：多个时钟名字，仍然只有一套核心校时状态" class="headerlink" title="过去的痛点：多个时钟名字，仍然只有一套核心校时状态"></a>过去的痛点：多个时钟名字，仍然只有一套核心校时状态</h2><h3 id="业务需要的是独立时间域，不只是不同显示格式"><a href="#业务需要的是独立时间域，不只是不同显示格式" class="headerlink" title="业务需要的是独立时间域，不只是不同显示格式"></a>业务需要的是独立时间域，不只是不同显示格式</h3><p>假设一台主机同时承担两类任务：日志需要与其他机器的 UTC 时间对齐，采集应用需要跟踪一套独立设备参考时间。两套参考可能有不同的 epoch、频率误差和失锁处理策略。某一套参考重启或发生相位调整时，另一套业务不应被迫改变自己的时间基准。</p>
+<p>这里的时间域至少包含四项属性：<strong>时间起点、走时速率、校准参考、连续性契约</strong>。时间域可以共享硬件振荡器，也可以具有相同的当前读数；只要它们需要独立控制，就不能被当作同一套 clock 的不同格式。</p>
+<h3 id="REALTIME、TAI-和-MONOTONIC-没有提供独立的第二套-servo"><a href="#REALTIME、TAI-和-MONOTONIC-没有提供独立的第二套-servo" class="headerlink" title="REALTIME、TAI 和 MONOTONIC 没有提供独立的第二套 servo"></a>REALTIME、TAI 和 MONOTONIC 没有提供独立的第二套 servo</h3><p>Linux 的 <code>CLOCK_REALTIME</code>、<code>CLOCK_TAI</code>、<code>CLOCK_MONOTONIC</code> 和 <code>CLOCK_BOOTTIME</code> 来自核心 timekeeper。概念上：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CLOCK_TAI = CLOCK_REALTIME + 内核维护的 TAI offset</span><br></pre></td></tr></table></figure>
+
+<p>所以 REALTIME 与 TAI 不能分别接受两个独立参考源的调频。TAI 避免 UTC 闰秒对应的时间尺度不连续，但不意味着管理员修改墙钟时它仍保持独立。</p>
+<p>MONOTONIC 不随墙钟 step 跳变，却仍会受到核心频率校准影响。MONOTONIC_RAW 不接受这种 NTP 频率校准，但也没有提供一个可被第二套 servo 独立校准的目标。BOOTTIME 与 MONOTONIC 的主要区别是前者计入 suspend 时间，同样没有增加独立校时自由度。</p>
+<p>这形成了一个实际矛盾：把设备参考同步进系统 clock，方便应用读钟，却会让整台主机的核心时基跟着该参考运行；保留主机原有 UTC 同步，又缺少标准的第二套可校准系统软件时钟。如果启动两个 daemon 去调整同一个目标，它们会互相抵消校准动作，而不是产生两个时间域。</p>
+<h3 id="传统绕行方案解决了什么，又留下了什么"><a href="#传统绕行方案解决了什么，又留下了什么" class="headerlink" title="传统绕行方案解决了什么，又留下了什么"></a>传统绕行方案解决了什么，又留下了什么</h3><table>
+<thead>
+<tr>
+<th>过去的做法</th>
+<th>能解决的需求</th>
+<th>仍然存在的问题</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>把另一个 PHC 同步到 REALTIME</td>
+<td>应用通过标准系统 clock 读设备时间</td>
+<td>替换主机原有校时参考，两个域不能独立控制</td>
+</tr>
+<tr>
+<td>把 REALTIME 和 TAI 当作两个域</td>
+<td>UTC&#x2F;TAI 之间的尺度换算</td>
+<td>二者共享核心校时状态，不能分别跟踪不同参考</td>
+</tr>
+<tr>
+<td>直接读取 <code>/dev/ptpN</code> 的动态 clock ID</td>
+<td>保留设备自身独立时基</td>
+<td>通常需要进入驱动读钟，读取成本与 vDSO 不同；不自动获得系统定时器能力</td>
+</tr>
+<tr>
+<td>应用维护 <code>a × counter + b</code> 软件时钟</td>
+<td>可表达独立 epoch 与频率</td>
+<td>每套应用&#x2F;库要处理并发发布、映射更新和接口接入</td>
+</tr>
+<tr>
+<td>增加独立硬件时钟</td>
+<td>获得更多物理可调目标</td>
+<td>硬件成本和部署约束增加，CPU 侧统一访问仍需设计</td>
+</tr>
+</tbody></table>
+<p>用户态软件时钟可以通过共享内存等方式做得很高效；它的局限是这套时钟的生命周期、同步访问和适配责任仍落在应用生态，而不是统一的内核 clock 接口。PHC 本身也一直能独立校准，AUX 并不是让 Linux 第一次拥有多台物理时钟。</p>
+<h2 id="AUX-clock-功能解决了什么"><a href="#AUX-clock-功能解决了什么" class="headerlink" title="AUX clock 功能解决了什么"></a>AUX clock 功能解决了什么</h2><h3 id="从一套核心校时状态，扩展到多套独立软件-timekeeper"><a href="#从一套核心校时状态，扩展到多套独立软件-timekeeper" class="headerlink" title="从一套核心校时状态，扩展到多套独立软件 timekeeper"></a>从一套核心校时状态，扩展到多套独立软件 timekeeper</h3><p>AUX 的关键变化是把“共享硬件计数器”和“共享校时状态”分开。多个软件时钟可以读取同一个 CPU clocksource，但各自维护时间基准、转换速率、偏移和校准状态。</p>
+<p><img src="/images/aux-clock/independent-timekeepers.svg" alt="AUX 引入前后：从一套核心校时状态扩展到独立辅助 timekeeper"></p>
+<p>图中橙色路径表示同步程序的校准动作。AUX 引入前，两个参考争用同一个目标；引入后，核心 timekeeper 与 AUX 分别接受各自的校准。</p>
+<p>例如，主机可以继续让 chronyd 维护 UTC 墙钟，同时让 phc2sys 把设备 PHC 同步到 AUX0。应用读取 AUX0，得到的是设备域在 CPU 软件时钟上的表示；这条校准链不必修改 REALTIME 的校准状态。</p>
+<h3 id="功能由哪些核心系列实现"><a href="#功能由哪些核心系列实现" class="headerlink" title="功能由哪些核心系列实现"></a>功能由哪些核心系列实现</h3><p>AUX clock 功能由独立 timekeeper、POSIX 读写与校准接口、vDSO 快速读取，以及与 PHC 同步所需的跨时钟采样接口共同组成。下面按实现部分列出核心 patch series 的 lore 线程；每个链接都指向系列的 cover letter。</p>
+<table>
+<thead>
+<tr>
+<th>实现部分</th>
+<th>核心 patch series</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>timekeeper 基础设施</td>
+<td><a target="_blank" rel="noopener" href="https://lore.kernel.org/all/20250519082042.742926976@linutronix.de/">timekeeping: Provide support for auxiliary timekeepers（V2 00&#x2F;26，2025-05-19）</a></td>
+<td>提出独立 AUX timekeeper、clock ID、校准状态与访问接口；其中前 15 项先行合入</td>
+</tr>
+<tr>
+<td>POSIX 接口与生命周期</td>
+<td><a target="_blank" rel="noopener" href="https://lore.kernel.org/all/20250625182951.587377878@linutronix.de/">timekeeping: Provide support for auxiliary clocks - Remaining series（V3 00&#x2F;11，2025-06-25）</a></td>
+<td>修订并完成上述 V2 剩余的 11 项，提供读钟、设置时间、调频&#x2F;调相、周期更新与 sysfs 启停接口</td>
+</tr>
+<tr>
+<td>vDSO 快速读取</td>
+<td><a target="_blank" rel="noopener" href="https://lore.kernel.org/all/20250701-vdso-auxclock-v1-0-df7d9f87b9b8@linutronix.de/">vdso: Add support for auxiliary clocks（00&#x2F;14，2025-07-01）</a></td>
+<td>将 AUX 转换参数发布到 vDSO 数据页，在支持通用 vDSO 的架构上提供用户态读钟路径</td>
+</tr>
+<tr>
+<td>PHC 与 AUX 的配对采样</td>
+<td><a target="_blank" rel="noopener" href="https://lore.kernel.org/all/20250701130923.579834908@linutronix.de/">ptp: Provide support for auxiliary clocks for PTP_SYS_OFFSET_EXTENDED（V2 0&#x2F;3，2025-07-01）</a></td>
+<td>让 PTP 扩展采样接口选择 AUX 作为 PHC 读取前后的系统时间基准，供用户态同步程序估计两者关系</td>
+</tr>
+<tr>
+<td>后续 snapshot 与硬件 cross timestamp 扩展</td>
+<td><a target="_blank" rel="noopener" href="https://lore.kernel.org/all/20260529193435.921555544@kernel.org/">timekeeping&#x2F;ptp: Expand snapshot functionality（V2 00&#x2F;25，2026-05-29）</a></td>
+<td>将 AUX 纳入 snapshot 与硬件 cross timestamp 核心机制，并扩展底层计数值的捕获能力</td>
+</tr>
+</tbody></table>
+<p>五月的 V2 与六月的 V3 属于同一项 timekeeping 工作的前后修订，V3 只覆盖当时尚未合入的部分。vDSO 和 PTP 接入则分别推进。初始 AUX clock 功能进入 Linux 6.17；2026 年的 snapshot 系列继续扩展跨时钟关联能力。它们共同构成本文讨论的功能实现，而不是某一个提交独自提供全部能力。</p>
+<h3 id="功能带来的能力与边界"><a href="#功能带来的能力与边界" class="headerlink" title="功能带来的能力与边界"></a>功能带来的能力与边界</h3><table>
+<thead>
+<tr>
+<th>历史痛点</th>
+<th>AUX 提供的改变</th>
+<th>没有自动解决的部分</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>两个参考争用核心校时状态</td>
+<td>每个 AUX 拥有独立 timekeeper 和校准入口</td>
+<td>同一个 AUX 仍不能被多个无协调 servo 争用</td>
+</tr>
+<tr>
+<td>额外时间域依赖应用专有读钟接口</td>
+<td>可用 <code>clock_gettime()</code>、<code>clock_settime()</code>、<code>clock_adjtime()</code></td>
+<td>应用仍需选择正确 clock，并识别同步状态</td>
+</tr>
+<tr>
+<td>高频读 PHC 的设备访问成本</td>
+<td>在满足条件时通过 vDSO 读取 AUX 软件时钟</td>
+<td>PHC→AUX 同步残差和 CPU&#x2F;NIC 时基漂移仍存在</td>
+</tr>
+<tr>
+<td>额外域难以共享与统一管理</td>
+<td>内核维护域内时间转换和并发读取一致性</td>
+<td>域命名、服务依赖和重建策略仍由系统设计负责</td>
+</tr>
+<tr>
+<td>希望按独立域设置 deadline</td>
+<td>为独立时间域提供基础表示</td>
+<td>本文分析的内核尚未给 AUX 注册 sleep&#x2F;timer 回调</td>
+</tr>
+</tbody></table>
+<p>因此，AUX clock 功能最核心的价值是：<strong>额外参考时间终于可以拥有不争用核心时钟的内核软件表示，并由标准接口读写、校准和共享。</strong> 它没有自动完成 PTP 协议、时钟之间的同步，也没有把所有原来只接受特定 clock ID 的子系统都扩展到 AUX。</p>
+<h2 id="内核原理：AUX-如何维护独立时间"><a href="#内核原理：AUX-如何维护独立时间" class="headerlink" title="内核原理：AUX 如何维护独立时间"></a>内核原理：AUX 如何维护独立时间</h2><h3 id="AUX-是软件-timekeeper，不是新增硬件计数器"><a href="#AUX-是软件-timekeeper，不是新增硬件计数器" class="headerlink" title="AUX 是软件 timekeeper，不是新增硬件计数器"></a>AUX 是软件 timekeeper，不是新增硬件计数器</h3><p><code>CONFIG_POSIX_AUX_CLOCKS</code> 依赖 <code>CONFIG_POSIX_TIMERS</code>。UAPI 定义：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">define</span> CLOCK_AUX       MAX_CLOCKS  <span class="comment">/* 本文源码中 MAX_CLOCKS 为 16 */</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> MAX_AUX_CLOCKS  8</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> CLOCK_AUX_LAST  (CLOCK_AUX + MAX_AUX_CLOCKS - 1)</span></span><br></pre></td></tr></table></figure>
+
+<p>所以第 0 个 AUX 的数值 ID 为 16。<code>CLOCK_AUX0</code> 是 linuxptp 接受的用户态名称；内核头文件里的基准符号是 <code>CLOCK_AUX</code>。不要假设 libc 已定义同名的 <code>CLOCK_AUX0</code> 宏。</p>
+<p>每个 AUX 使用独立的 <code>tk_data</code> &#x2F; <code>timekeeper</code> 状态，包括锁、sequence counter、转换参数、偏移及相应的 NTP 校准状态。它们共享系统 clocksource，但不共享核心 timekeeper 的校时执行状态。因此，<strong>共享同一个振荡器，并不妨碍软件维护独立的时间尺度；也意味着它们仍共享硬件故障来源。</strong></p>
+<h3 id="启用、读取、校准的状态链"><a href="#启用、读取、校准的状态链" class="headerlink" title="启用、读取、校准的状态链"></a>启用、读取、校准的状态链</h3><p>源码中的主要路径如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">写 /sys/kernel/time/aux_clocks/0/aux_clock_enable</span><br><span class="line">  → aux_clock_enable_store()：检查 CAP_SYS_TIME，串行化启停</span><br><span class="line">  → aux_clock_enable()：清理旧状态，基于当前系统 clocksource 初始化</span><br><span class="line">  → clock_valid = true，发布 timekeeper 与 vDSO 数据</span><br><span class="line"></span><br><span class="line">clock_gettime(CLOCK_AUX + 0)</span><br><span class="line">  → 可用时走 libc/vDSO</span><br><span class="line">  → 否则走系统调用 → clock_aux.clock_get_timespec</span><br><span class="line">  → aux_get_timespec() → ktime_get_aux_ts64() → ktime_get_aux()</span><br><span class="line"></span><br><span class="line">clock_settime(CLOCK_AUX + 0, ...)</span><br><span class="line">  → aux_clock_set()：计算 offs_aux，更新并发布状态</span><br><span class="line"></span><br><span class="line">clock_adjtime(CLOCK_AUX + 0, ...)</span><br><span class="line">  → aux_clock_adj() → __do_adjtimex(该 AUX 的 tk_data, ...)</span><br></pre></td></tr></table></figure>
+
+<p><code>aux_clock_enable()</code> 借用 raw timekeeper 对硬件速率的估计来建立初始转换，源码明确要求用户态继续通过 <code>clock_adjtime()</code> 校准偏差。启用并不等于对齐 PHC，也没有自动发现 PTP domain 的过程。</p>
+<p><code>ktime_get_aux()</code> 在 sequence counter 保护下读取基准和偏移，再把当前 cycle 增量换算成纳秒。简化表达为：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">AUX_i(now) = tkr_mono.base_i + offs_aux_i + converted_cycle_delta_i</span><br></pre></td></tr></table></figure>
+
+<p>这里的 <code>tkr_mono</code> 是该 AUX timekeeper 的字段，不能把它理解成直接读取系统 <code>CLOCK_MONOTONIC</code> 再加固定 offset。AUX 可以有不同频率。核心 tick 的 <code>tk_aux_advance()</code> 会推进已启用的 AUX；clocksource 切换时，<code>tk_aux_update_clocksource()</code> 会先推进旧基准，再切换转换参数。</p>
+<p>停用使 <code>clock_valid</code> 失效。重新启用会清理之前状态，不能当作保留校准状态的暂停&#x2F;恢复，也不应在应用仍使用该域时由另一个服务擅自启停。</p>
+<h3 id="独立性不等于天然单调"><a href="#独立性不等于天然单调" class="headerlink" title="独立性不等于天然单调"></a>独立性不等于天然单调</h3><p>AUX 的 setter 和 <code>ADJ_SETOFFSET</code> 可以改变相位。如果同步程序选择 step，应用看到的时间可以突变甚至后退。业务时间域要求的单调性必须由同步策略保证：启动时允许初始化，进入运行态后限制为有界 slew；无法恢复时切换到明确的故障或重新建域流程。</p>
+<p>本文内核的 <code>timekeeping_validate_timex()</code> 对 AUX 还有专门限制：不允许 <code>ADJ_TAI</code>，不允许设置 UTC 插秒&#x2F;删秒状态，也不提供 PPS discipline 状态支持。这与“任意时间起点、独立于 UTC 闰秒”的定位一致，但不能据此推断 AUX 自动同步到 TAI。</p>
+<h3 id="为什么-AUX-能提供较快的读取路径"><a href="#为什么-AUX-能提供较快的读取路径" class="headerlink" title="为什么 AUX 能提供较快的读取路径"></a>为什么 AUX 能提供较快的读取路径</h3><p><img src="/images/aux-clock/read-and-discipline.svg" alt="AUX 读钟与校准路径：vDSO 快速读取、内核回退与独立校准"></p>
+<p>PHC 访问通常需要经系统调用进入设备驱动；AUX 可将软件时间转换状态发布到 vDSO 数据页。<code>vdso_time_update_aux()</code> 更新该 AUX 的基准、mult&#x2F;shift 和 clock mode；<code>lib/vdso/gettimeofday.c</code> 的 <code>do_aux()</code> 在用户态读取计数器，并通过 sequence counter 检查状态一致性。</p>
+<p>因此，应用可以使用正常的 <code>clock_gettime()</code> 接口读取同步后的域，而不需要每次直接访问 NIC。是否实际走 vDSO，仍取决于架构、clocksource、内核与 libc；clock mode 不可用时会退回系统调用。<code>clock_getres()</code> 的纳秒分辨率也不代表纳秒级同步精度。</p>
+<p>vDSO 改善的是<strong>读取成本</strong>，不是 PHC→AUX 同步误差。独立 AUX 越多，也越需要评估 tick 更新、缓存和同步 daemon 的额外成本。</p>
+<h3 id="当前能力矩阵：读钟不等于定时器"><a href="#当前能力矩阵：读钟不等于定时器" class="headerlink" title="当前能力矩阵：读钟不等于定时器"></a>当前能力矩阵：读钟不等于定时器</h3><p>本文源码的 <code>clock_aux</code> 注册了四项回调：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> <span class="class"><span class="keyword">struct</span> <span class="title">k_clock</span> <span class="title">clock_aux</span> =</span> &#123;</span><br><span class="line">    .clock_getres       = aux_get_res,</span><br><span class="line">    .clock_get_timespec = aux_get_timespec,</span><br><span class="line">    .clock_set          = aux_clock_set,</span><br><span class="line">    .clock_adj          = aux_clock_adj,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>本文内核状态</th>
+<th>应用应如何理解</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>clock_gettime()</code></td>
+<td>支持已启用的 AUX</td>
+<td>仍需检查返回值和同步状态</td>
+</tr>
+<tr>
+<td><code>clock_getres()</code></td>
+<td>有接口</td>
+<td>不代表 clock 已锁定或精度达到该值</td>
+</tr>
+<tr>
+<td><code>clock_settime()</code></td>
+<td>支持，受权限检查</td>
+<td>可以破坏运行期连续性</td>
+</tr>
+<tr>
+<td><code>clock_adjtime()</code></td>
+<td>支持，受 AUX 专用约束</td>
+<td>同步 servo 的控制入口</td>
+</tr>
+<tr>
+<td>vDSO 读取</td>
+<td>有实现</td>
+<td>必须满足架构&#x2F;clocksource&#x2F;libc 条件</td>
+</tr>
+<tr>
+<td><code>clock_nanosleep()</code></td>
+<td>无 <code>.nsleep</code></td>
+<td>当前调用路径返回 <code>EOPNOTSUPP</code></td>
+</tr>
+<tr>
+<td>POSIX <code>timer_create()</code></td>
+<td>无 <code>.timer_create</code></td>
+<td>当前创建路径拒绝，不能依赖 AUX 定时</td>
+</tr>
+<tr>
+<td><code>timerfd_create()</code></td>
+<td>未纳入其支持的 clock ID 集合</td>
+<td>不能因 POSIX 读钟可用就使用 AUX timerfd</td>
+</tr>
+</tbody></table>
+<p><code>CONFIG_POSIX_TIMERS=y</code> 只是基础设施依赖，不会替每种 clock 自动提供 timer。具体支持范围取决于内核配置、UAPI 和对应 callback。</p>
+<h2 id="多时间域的最佳实践"><a href="#多时间域的最佳实践" class="headerlink" title="多时间域的最佳实践"></a>多时间域的最佳实践</h2><p>多时间域没有唯一的部署拓扑。下面给出两种例子：一种复用同一个硬件计数输入，另一种让 NTP 与 PTP 分别维护独立时钟。<strong>virtual PTP clock 是可选方案，不是 AUX 的前置依赖。</strong></p>
+<h3 id="拓扑一：一个物理-PHC，多个-virtual-PTP-clock"><a href="#拓扑一：一个物理-PHC，多个-virtual-PTP-clock" class="headerlink" title="拓扑一：一个物理 PHC，多个 virtual PTP clock"></a>拓扑一：一个物理 PHC，多个 virtual PTP clock</h3><p><img src="/images/aux-clock/linux-ptp-layers.svg" alt="Linux PTP 分层架构：两个虚拟 PHC 经统一接口服务于独立时间域"></p>
+<p>PHC 是设备提供的硬件时钟，通常通过 <code>/dev/ptpN</code> 暴露。<a target="_blank" rel="noopener" href="https://lore.kernel.org/netdev/20210630081202.4423-1-yangbo.lu@nxp.com/">virtual PTP clock（vclock）</a> 在稳定硬件计数输入上维护独立的时间基准和频率转换参数，从而让同一个物理计数输入承载多个可独立校准的 PTP 域。</p>
+<p>图中两个 ptp4l 实例分别校准 vPHC A 与 vPHC B，两个 phc2sys 实例再分别校准 CLOCK_REALTIME 与 AUX0：</p>
+<table>
+<thead>
+<tr>
+<th>时间域</th>
+<th>设备侧目标</th>
+<th>CPU 侧目标</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>全局时间域</td>
+<td>vPHC A，由 ptp4l A 校准</td>
+<td>CLOCK_REALTIME，由 phc2sys A 校准</td>
+</tr>
+<tr>
+<td>独立业务域</td>
+<td>vPHC B，由 ptp4l B 校准</td>
+<td>AUX0，由 phc2sys B 校准</td>
+</tr>
+</tbody></table>
+<p>这适合只有一个物理 PHC、却需要跟踪多个独立 PTP 参考的部署。图中采用父 PHC free-running 的模型，设备编号仅为示例。</p>
+<h3 id="拓扑二：NTP-同步-REALTIME，PTP-同步独立业务域"><a href="#拓扑二：NTP-同步-REALTIME，PTP-同步独立业务域" class="headerlink" title="拓扑二：NTP 同步 REALTIME，PTP 同步独立业务域"></a>拓扑二：NTP 同步 REALTIME，PTP 同步独立业务域</h3><p><img src="/images/aux-clock/ntp-realtime-ptp-aux.svg" alt="NTP 与 PTP 分层架构：chrony 维护 REALTIME，物理 PHC 经 phc2sys 同步到 AUX"></p>
+<p>chronyd 从 NTP 服务器取得 UTC 参考，继续维护主机的 CLOCK_REALTIME。另一条链路中，ptp4l 根据业务 PTP 参考校准一个物理 PHC，再由 phc2sys 将它同步到 AUX0。两条链路控制不同的目标，不需要创建 vclock。</p>
+<p>这适合保留主机原有 NTP 校时、同时增加独立业务时间域的部署，无需 vclock。业务应用也可以直接读取 PHC，按需再同步到 AUX。</p>
+<h2 id="linuxptp-与-chrony-的支持现状"><a href="#linuxptp-与-chrony-的支持现状" class="headerlink" title="linuxptp 与 chrony 的支持现状"></a>linuxptp 与 chrony 的支持现状</h2><p>截至本文核对的 master，两个项目的支持边界如下：</p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>已有能力</th>
+<th>AUX 支持状态</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a target="_blank" rel="noopener" href="https://github.com/richardcochran/linuxptp/tree/master">linuxptp master</a></td>
+<td><code>ptp4l</code> 维护 PTP&#x2F;PHC，<code>phc2sys</code> 同步主机内不同 clock</td>
+<td><a target="_blank" rel="noopener" href="https://github.com/richardcochran/linuxptp/blob/master/phc2sys.8">phc2sys</a> 已支持 <code>CLOCK_AUX0</code>—<code>CLOCK_AUX7</code>，可把 PHC 时间同步到 AUX</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://gitlab.com/chrony/chrony/-/tree/master">chrony master</a></td>
+<td><a target="_blank" rel="noopener" href="https://gitlab.com/chrony/chrony/-/blob/master/refclock_phc.c">PHC 参考源</a>可供 chronyd 校准系统时间</td>
+<td>master 尚未包含 AUX 目标选择；统一 PHC&#x2F;AUX 管理仍在独立 MR 中开发</td>
+</tr>
+</tbody></table>
+<p>linuxptp 已提供 PHC→AUX 的直接路径；chrony 的 PHC 参考源能力主要解决设备参考→主机时间的同步。一个清楚的组合是让 chronyd 维护系统 UTC，让 phc2sys 维护独立 AUX，各自拥有明确的受控目标。</p>
+<p>chrony 的<a target="_blank" rel="noopener" href="https://gitlab.com/chrony/chrony/-/merge_requests/33">多时钟同步草案（MR !33）</a>正在探索统一多时钟控制，但尚不能算作 master 已有功能。相关设计还需处理网络时间戳所属的时钟域、不同 clock 的速率关系和任意 epoch 的语义。</p>
+<h2 id="References"><a href="#References" class="headerlink" title="References"></a>References</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.linutronix.de/blog/PTP-Multi-Domain-Time-Sync-with-Linux">Linutronix：PTP Multi-Domain Time Sync with Linux</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/torvalds/linux">Linux 内核源码</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/richardcochran/linuxptp/tree/master">linuxptp master 源码</a></li>
+<li><a target="_blank" rel="noopener" href="https://gitlab.com/chrony/chrony/-/tree/master">chrony master 源码</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.kernel.org/core-api/timekeeping.html">Linux 文档：ktime accessors</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.kernel.org/driver-api/ptp.html">Linux 文档：PTP hardware clock infrastructure</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.kernel.org/networking/timestamping.html">Linux 文档：Timestamping</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.linuxptp.org/documentation/ptp4l/">linuxptp 文档：ptp4l</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/richardcochran/linuxptp/blob/master/phc2sys.8">linuxptp master 文档：phc2sys</a></li>
+<li><a target="_blank" rel="noopener" href="https://gitlab.com/chrony/chrony/-/blob/master/doc/chrony.conf.adoc">chrony master 文档：chrony.conf</a></li>
+<li><a target="_blank" rel="noopener" href="https://lore.kernel.org/all/20250519082042.742926976@linutronix.de/">timekeeping: Provide support for auxiliary timekeepers（V2 00&#x2F;26）</a></li>
+<li><a target="_blank" rel="noopener" href="https://lore.kernel.org/all/20250625182951.587377878@linutronix.de/">timekeeping: Provide support for auxiliary clocks - Remaining series（V3 00&#x2F;11）</a></li>
+<li><a target="_blank" rel="noopener" href="https://lore.kernel.org/all/20250701-vdso-auxclock-v1-0-df7d9f87b9b8@linutronix.de/">vdso: Add support for auxiliary clocks（00&#x2F;14）</a></li>
+<li><a target="_blank" rel="noopener" href="https://lore.kernel.org/all/20250701130923.579834908@linutronix.de/">ptp: Provide support for auxiliary clocks for PTP_SYS_OFFSET_EXTENDED（V2 0&#x2F;3）</a></li>
+<li><a target="_blank" rel="noopener" href="https://lore.kernel.org/all/20260529193435.921555544@kernel.org/">timekeeping&#x2F;ptp: Expand snapshot functionality（V2 00&#x2F;25）</a></li>
+<li><a target="_blank" rel="noopener" href="https://lore.kernel.org/netdev/20210630081202.4423-1-yangbo.lu@nxp.com/">ptp: support virtual clocks and timestamping（v5）</a></li>
+<li><a target="_blank" rel="noopener" href="https://gitlab.com/chrony/chrony/-/merge_requests/33">chrony MR !33：AUX 与 PHC 多时钟同步</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.mail-archive.com/chrony-dev@chrony.tuxfamily.org/msg02941.html">Miroslav Lichvar：chrony AUX 时钟支持的设计讨论</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/kernel/" rel="tag"><i class="fa fa-tag"></i> kernel</a>
+              <a href="/tags/timekeeping/" rel="tag"><i class="fa fa-tag"></i> timekeeping</a>
+              <a href="/tags/PTP/" rel="tag"><i class="fa fa-tag"></i> PTP</a>
+              <a href="/tags/linuxptp/" rel="tag"><i class="fa fa-tag"></i> linuxptp</a>
+              <a href="/tags/chrony/" rel="tag"><i class="fa fa-tag"></i> chrony</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2025/01/11/Linux/rt_irq_affinity/" rel="prev" title="RT Linux中的IRQ亲和性变更与中断线程同步机制">
+                  <i class="fa fa-angle-left"></i> RT Linux中的IRQ亲和性变更与中断线程同步机制
+                </a>
+            </div>
+            <div class="post-nav-item">
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+  <div class="copyright">
+    &copy; 
+    <span itemprop="copyrightYear">2026</span>
+    <span class="with-love">
+      <i class="fa fa-heart"></i>
+    </span>
+    <span class="author" itemprop="copyrightHolder">Yiyang Chen</span>
+  </div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+  <div class="sidebar-dimmer"></div>
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up fa-lg"></i>
+    <span>0%</span>
+  </div>
+
+  <a href="https://github.com/cyyzero" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"cyyzero","repo":"cyyzero.github.io","client_id":"1185801249b8bbce5127","client_secret":"fbbb24c3e0613419f2505f94baa921f61606bac1","admin_user":"cyyzero","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"body":null,"js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"cf0ca4905b3d357ac6dbe41c454daae5"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
+
+</body>
+</html>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 8.1.2">
 
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
@@ -14,10 +14,10 @@
 
 
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"cyyzero.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"always","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"buttons","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"cyyzero.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"always","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"tomorrow-night"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"buttons","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
 
     <meta property="og:type" content="website">
 <meta property="og:title" content="Eden">
@@ -39,6 +39,22 @@
 
 
 
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
 
 
 
@@ -121,7 +137,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">28</span>
+          <span class="site-state-item-count">29</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -131,7 +147,7 @@
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">8</span>
         <span class="site-state-item-name">tags</span>
       </div>
   </nav>
@@ -168,6 +184,101 @@
   
 
   <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
+    <link itemprop="mainEntityOfPage" href="http://cyyzero.github.io/2026/10/14/Linux/linux_aux_clock_multi_domain_ptp/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Yiyang Chen">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Eden">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content=" | Eden">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          <a href="/2026/10/14/Linux/linux_aux_clock_multi_domain_ptp/" class="post-title-link" itemprop="url">Linux AUX Clock：多时间域的历史痛点、内核原理与同步实践</a>
+        </h2>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2026-10-14 23:00:00" itemprop="dateCreated datePublished" datetime="2026-10-14T23:00:00+08:00">2026-10-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">Edited on</span>
+      <time title="Modified: 2026-10-15 00:00:00" itemprop="dateModified" datetime="2026-10-15T00:00:00+08:00">2026-10-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
+        </span>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+          <p>Linux 早已能提供很多时钟，但过去很难同时满足这样一个需求：<strong>多个应用共享几套各自独立校准的时间，其中一套服务于 UTC 日志，另一套跟踪设备或业务参考时钟，而且都能以统一接口低成本读取。</strong></p>
+<p>问题不在于缺少 <code>clock_gettime()</code> 的 clock ID，而在于系统时钟背后只有一套核心校时状态。<code>CLOCK_REALTIME</code> 和 <code>CLOCK_TAI</code> 不能分别跟踪两台独立参考时钟；把设备时间同步进系统时间，常常意味着替换原本服务于整台主机的时间基准。直接使用 PHC 或应用自行维护软件时钟虽然能绕开部分限制，却又引入访问成本、接口分裂和跨域转换的复杂性。</p>
+<p>AUX clock 功能为此提供了<strong>独立于核心 timekeeper、可单独设置与调频的内核软件时钟</strong>，并提供 POSIX 读写接口和 vDSO 读取路径。它让额外时间域不必再争用主机墙钟。这是本文的主线：过去的痛点是什么、这一功能具体改变了什么，以及怎样用 linuxptp、chrony 和 PTP 设备构建多时间域系统。</p>
+<p>Linutronix 的文章《PTP Multi-Domain Time Sync with Linux》提供了一个直观案例：Global Time 用于绝对时间关联，Working Clock 用于独立的工作周期。TSN 是这种多时间域需求的场景之一；同样的设计问题也会出现在设备采集、分布式测量和需要隔离时间基准的应用中。</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2026/10/14/Linux/linux_aux_clock_multi_domain_ptp/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+</div>
+
+
+
+
+    
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
     <link itemprop="mainEntityOfPage" href="http://cyyzero.github.io/2025/01/11/Linux/rt_irq_affinity/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -181,7 +292,7 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Eden">
+      <meta itemprop="name" content=" | Eden">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
@@ -204,7 +315,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-01-12 00:03:22" itemprop="dateModified" datetime="2026-01-12T00:03:22+08:00">2026-01-12</time>
+      <time title="Modified: 2026-10-14 23:45:27" itemprop="dateModified" datetime="2026-10-14T23:45:27+08:00">2026-10-14</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -323,7 +434,7 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Eden">
+      <meta itemprop="name" content=" | Eden">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
@@ -346,7 +457,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-01-11 21:38:28" itemprop="dateModified" datetime="2026-01-11T21:38:28+08:00">2026-01-11</time>
+      <time title="Modified: 2026-10-14 23:45:27" itemprop="dateModified" datetime="2026-10-14T23:45:27+08:00">2026-10-14</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -459,7 +570,7 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Eden">
+      <meta itemprop="name" content=" | Eden">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
@@ -482,7 +593,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-01-11 21:38:28" itemprop="dateModified" datetime="2026-01-11T21:38:28+08:00">2026-01-11</time>
+      <time title="Modified: 2026-10-14 23:45:27" itemprop="dateModified" datetime="2026-10-14T23:45:27+08:00">2026-10-14</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -526,7 +637,7 @@
 <h3 id="proc-fs-ext4-device-options"><a href="#proc-fs-ext4-device-options" class="headerlink" title="&#x2F;proc&#x2F;fs&#x2F;ext4&#x2F;{device}&#x2F;options"></a>&#x2F;proc&#x2F;fs&#x2F;ext4&#x2F;{device}&#x2F;options</h3><p>在ext4文件系统被挂载的时候，会在<code>__ext4_fill_super()</code>里调用<code>ext4_register_sysfs()</code>来注册procfs的条目：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// fs/ext4/sysfs.c</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">ext4_register_sysfs</span><span class="params">(<span class="keyword">struct</span> super_block *sb)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="comment">// ...</span></span><br><span class="line">	<span class="keyword">if</span> (sbi-&gt;s_proc) &#123;</span><br><span class="line">		proc_create_single_data(<span class="string">&quot;options&quot;</span>, S_IRUGO, sbi-&gt;s_proc,</span><br><span class="line">				ext4_seq_options_show, sb);</span><br><span class="line">		<span class="comment">// ...</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>展示数据的函数为<code>ext4_seq_options_show()</code>，最终也是调用了<code>_ext4_show_options()</code>，不过最后一个参数<code>nodefs</code>为1，导致和<code>/proc/&#123;pid&#125;/mounts</code>的输出不一致。</p>
+<p>展示数据的函数为<code>ext4_seq_options_show()</code>，最终也是调用了<code>_ext4_show_options()</code>，不过最后一个参数<code>nodefs</code>为1，导致和<code>/proc/{pid}/mounts</code>的输出不一致。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// fs/ext4/super.c</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">ext4_seq_options_show</span><span class="params">(<span class="keyword">struct</span> seq_file *seq, <span class="type">void</span> *offset)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">super_block</span> *<span class="title">sb</span> =</span> seq-&gt;private;</span><br><span class="line">	<span class="type">int</span> rc;</span><br><span class="line"></span><br><span class="line">	seq_puts(seq, sb_rdonly(sb) ? <span class="string">&quot;ro&quot;</span> : <span class="string">&quot;rw&quot;</span>);</span><br><span class="line">	rc = _ext4_show_options(seq, sb, <span class="number">1</span>);</span><br><span class="line">	seq_puts(seq, <span class="string">&quot;\n&quot;</span>);</span><br><span class="line">	<span class="keyword">return</span> rc;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>其中，导致差异的点有两个，一个是导致sep为’,’还是’\n’；另一个是nodefs为0的情况下，会省略一些选项的输出。</p>
@@ -536,7 +647,7 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!nodefs &amp;&amp; !(m-&gt;mount_opt &amp; (sbi-&gt;s_mount_opt ^ def_mount_opt)))</span><br><span class="line">	<span class="keyword">continue</span>; <span class="comment">/* skip if same as the default */</span></span><br></pre></td></tr></table></figure>
 
 <p>这里default_options应该就是文档里描述的那些。我先入为主的以为这个就是磁盘上super_block的s_default_opts字段，于是通过tune_2fs查看了下，发现并不是。</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ sudo tune2fs -l /dev/sdb</span><br><span class="line">tune2fs 1.46.5 (30-Dec-2021)</span><br><span class="line">// ...</span><br><span class="line">Default mount options:    user_xattr acl</span><br><span class="line">// ...</span><br></pre></td></tr></table></figure>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">sudo</span> tune2fs -l /dev/sdb</span><br><span class="line">tune2fs 1.46.5 (30-Dec-2021)</span><br><span class="line">// ...</span><br><span class="line">Default mount options:    user_xattr acl</span><br><span class="line">// ...</span><br></pre></td></tr></table></figure>
 
 <p>这里只有user_xattr和acl，理论上其他的那些options当nodefs为0时也会输出，比如delalloc。但是却并没有。所以，还得探究下这个<code>sbi-&gt;s_def_mount_opt</code>字段究竟是如何被设置的。</p>
 <h2 id="默认挂载选项"><a href="#默认挂载选项" class="headerlink" title="默认挂载选项"></a>默认挂载选项</h2><p>熟悉linux文件系统的都知道，vfs会有个通用的super block，每个文件系统也会有自己的super block，它们在磁盘和在内存上都会有些许差距。对于ext4来说，它在磁盘上的super block布局为</p>
@@ -555,7 +666,7 @@
 
 <p>可以看到，在挂载的过程中，<code>sbi-&gt;s_def_mount_opt</code>和<code>es-&gt;s_mount_opts</code>并非简单的对应关系，ext4会对<code>sbi-&gt;s_def_mount_opt</code>进行额外的设置。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>Ext4文件系统的mount option设置来源有几个地方，一是通过mkfs时在磁盘上的superblock写入，二是挂载时的参数。但是这些和内存中文件系统相关的mount options和default mount options都不是简单的对应关系，ext4会根据其他的信息设置options。</p>
-<p>查看ext4挂载选项认准<code>/proc/fs/ext4/&#123;device&#125;/options</code>。</p>
+<p>查看ext4挂载选项认准<code>/proc/fs/ext4/{device}/options</code>。</p>
 
       
     </div>
@@ -595,7 +706,7 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Eden">
+      <meta itemprop="name" content=" | Eden">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
@@ -618,7 +729,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-01-11 21:38:28" itemprop="dateModified" datetime="2026-01-11T21:38:28+08:00">2026-01-11</time>
+      <time title="Modified: 2026-10-14 23:45:27" itemprop="dateModified" datetime="2026-10-14T23:45:27+08:00">2026-10-14</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -710,7 +821,7 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Eden">
+      <meta itemprop="name" content=" | Eden">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
@@ -733,7 +844,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-01-11 21:38:28" itemprop="dateModified" datetime="2026-01-11T21:38:28+08:00">2026-01-11</time>
+      <time title="Modified: 2026-10-14 23:45:27" itemprop="dateModified" datetime="2026-10-14T23:45:27+08:00">2026-10-14</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -905,7 +1016,7 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Eden">
+      <meta itemprop="name" content=" | Eden">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
@@ -928,7 +1039,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-01-11 21:38:28" itemprop="dateModified" datetime="2026-01-11T21:38:28+08:00">2026-01-11</time>
+      <time title="Modified: 2026-10-14 23:45:27" itemprop="dateModified" datetime="2026-10-14T23:45:27+08:00">2026-10-14</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -966,7 +1077,7 @@
 </blockquote>
 <h2 id="benchmarks"><a href="#benchmarks" class="headerlink" title="benchmarks"></a>benchmarks</h2><ul>
 <li><p>执行基本命令 echo hello world</p>
-<p>  <img src="/img/echo-helloworld.png" alt="/bin/echo &quot;hello world&quot; result"></p>
+<p>  <img src="/img/echo-helloworld.png" alt="&#x2F;bin&#x2F;echo &quot;hello world&quot; result"></p>
 </li>
 <li><p>HPL</p>
 <p>  用于测试CPU性能。编译环境：GNU C&#x2F;C++ 5.4，OpenMPI 2.0.2。</p>
@@ -1073,7 +1184,7 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Eden">
+      <meta itemprop="name" content=" | Eden">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
@@ -1096,7 +1207,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-01-11 21:38:28" itemprop="dateModified" datetime="2026-01-11T21:38:28+08:00">2026-01-11</time>
+      <time title="Modified: 2026-10-14 23:45:27" itemprop="dateModified" datetime="2026-10-14T23:45:27+08:00">2026-10-14</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -1200,7 +1311,7 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Eden">
+      <meta itemprop="name" content=" | Eden">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
@@ -1223,7 +1334,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-01-11 21:38:28" itemprop="dateModified" datetime="2026-01-11T21:38:28+08:00">2026-01-11</time>
+      <time title="Modified: 2026-10-14 23:45:27" itemprop="dateModified" datetime="2026-10-14T23:45:27+08:00">2026-10-14</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -1318,7 +1429,7 @@
     </span>
 
     <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Eden">
+      <meta itemprop="name" content=" | Eden">
       <meta itemprop="description" content="">
     </span>
       <header class="post-header">
@@ -1341,7 +1452,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-01-11 21:38:28" itemprop="dateModified" datetime="2026-01-11T21:38:28+08:00">2026-01-11</time>
+      <time title="Modified: 2026-10-14 23:45:27" itemprop="dateModified" datetime="2026-10-14T23:45:27+08:00">2026-10-14</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -1373,128 +1484,6 @@
 
 <p>不过，x86_64的Linux最好还是通过<code>syscall</code>进行系统调用：</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">section .data</span><br><span class="line">str: db &quot;Hello world&quot;</span><br><span class="line">str_len equ $-str</span><br><span class="line"></span><br><span class="line">section .text</span><br><span class="line">global _start</span><br><span class="line">[bits 64]</span><br><span class="line">_start:</span><br><span class="line">    mov eax, 1           ; 代表sys_write</span><br><span class="line">    mov rdi, 1           ; 第一个参数为int fd</span><br><span class="line">    mov rsi, str         ; 第二个参数为char *buf</span><br><span class="line">    mov rdx, str_len     ; 第三个参数为size_t count</span><br><span class="line">    syscall</span><br><span class="line"></span><br><span class="line">    mov eax, 60          ; sys_exit的系统调用号</span><br><span class="line">    mov rdi, 0           ; 第一个参数为int status</span><br><span class="line">    syscall</span><br></pre></td></tr></table></figure>
-      
-    </div>
-
-    
-    
-    
-
-    <footer class="post-footer">
-        <div class="post-eof"></div>
-      
-    </footer>
-  </article>
-</div>
-
-
-
-
-    
-
-
-<div class="post-block">
-  
-  
-
-  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="">
-    <link itemprop="mainEntityOfPage" href="http://cyyzero.github.io/2018/08/31/Linux/tlpi_thread_bug/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.png">
-      <meta itemprop="name" content="Yiyang Chen">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Eden">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
-      <meta itemprop="name" content="undefined | Eden">
-      <meta itemprop="description" content="">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          <a href="/2018/08/31/Linux/tlpi_thread_bug/" class="post-title-link" itemprop="url">记 TLPI 上一个多线程代码例子的bug</a>
-        </h2>
-
-        <div class="post-meta-container">
-          <div class="post-meta">
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar"></i>
-      </span>
-      <span class="post-meta-item-text">Posted on</span>
-
-      <time title="Created: 2018-08-31 13:15:31" itemprop="dateCreated datePublished" datetime="2018-08-31T13:15:31+08:00">2018-08-31</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-calendar-check"></i>
-      </span>
-      <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-01-11 21:38:28" itemprop="dateModified" datetime="2026-01-11T21:38:28+08:00">2026-01-11</time>
-    </span>
-    <span class="post-meta-item">
-      <span class="post-meta-item-icon">
-        <i class="far fa-folder"></i>
-      </span>
-      <span class="post-meta-item-text">In</span>
-        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-          <a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a>
-        </span>
-    </span>
-
-  
-</div>
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-          <p>ps:<code>TLPI</code> 是 <code>The Linux Programming Interface</code> 一书的缩写。</p>
-<hr>
-<p>今天试着跑 <code>TLPI</code> 第30章上一个程序的时候，老是运行时出bug。程序不是很难，主要是讲解 <code>pthread</code> 条件变量的使用：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;pthread.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;tlpi_hdr.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">pthread_cond_t</span> thread_died = PTHREAD_COND_INITIALIZER;</span><br><span class="line"><span class="type">static</span> <span class="type">pthread_mutex_t</span> thread_mutex = PTHREAD_MUTEX_INITIALIZER;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> tot_threads = <span class="number">0</span>;</span><br><span class="line"><span class="type">static</span> <span class="type">int</span> num_live = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">int</span> num_unjoined = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">enum</span> <span class="title">tstate</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    TS_ALIVE,</span><br><span class="line">    TS_TERMINATED,</span><br><span class="line">    TS_JOINED</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="class"><span class="keyword">struct</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="type">pthread_t</span> tid;</span><br><span class="line">    <span class="class"><span class="keyword">enum</span> <span class="title">tstate</span> <span class="title">state</span>;</span></span><br><span class="line">    <span class="type">int</span> sleep_time;</span><br><span class="line">&#125; *thread;</span><br><span class="line"></span><br><span class="line"><span class="type">static</span> <span class="type">void</span> *<span class="title function_">thread_func</span><span class="params">(<span class="type">void</span> *arg)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> idx = *((*<span class="type">int</span>)arg);</span><br><span class="line">    <span class="type">int</span> s;</span><br><span class="line"></span><br><span class="line">    sleep(thread[idx].sleep_time);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;Thread %d terminating\n&quot;</span>, idx);</span><br><span class="line"></span><br><span class="line">    s = pthread_mutex_lock(&amp;thread_mutex);</span><br><span class="line">    <span class="keyword">if</span> (s != <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        errExitEN(s, <span class="string">&quot;pthread_mutex_lock&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    num_unjoined++;</span><br><span class="line">    thread[idx].state = TS_TERMINATED;</span><br><span class="line"></span><br><span class="line">    s = pthread_mutex_unlock(&amp;thread_mutex);</span><br><span class="line">    <span class="keyword">if</span> (s != <span class="number">0</span>)</span><br><span class="line">        errExitEN(s, <span class="string">&quot;pthread_mutex_unlock&quot;</span>);</span><br><span class="line"></span><br><span class="line">    s = pthread_cond_signal(&amp;thread_died);</span><br><span class="line">    <span class="keyword">if</span> (s != <span class="number">0</span>)</span><br><span class="line">        errExitEN(s, <span class="string">&quot;pthread_cond_signal&quot;</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span> *argv[])</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">int</span> s, idx;</span><br><span class="line"></span><br><span class="line">    thread = <span class="built_in">calloc</span>(argc - <span class="number">1</span>, <span class="keyword">sizeof</span>(*thread));</span><br><span class="line">    <span class="keyword">if</span> (thread == <span class="literal">NULL</span>)</span><br><span class="line">        errExit(<span class="string">&quot;calloc&quot;</span>);</span><br><span class="line">    <span class="keyword">for</span> (idx = <span class="number">0</span>; idx &lt; argc<span class="number">-1</span>; ++idx)</span><br><span class="line">    &#123;</span><br><span class="line">        thread[idx].sleep_time = getInt(argv[idx+<span class="number">1</span>], GN_NONNEG, <span class="literal">NULL</span>);</span><br><span class="line">        thread[idx].state = TS_ALIVE;</span><br><span class="line">        s = pthread_create(&amp;thread[idx].tid, <span class="literal">NULL</span>, thread_func, &amp;idx);</span><br><span class="line">        <span class="keyword">if</span> (s != <span class="number">0</span>)</span><br><span class="line">            errExitEN(s, <span class="string">&quot;pthread_create&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    tot_threads = argc - <span class="number">1</span>;</span><br><span class="line">    num_live = tot_threads;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (num_live &gt; <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        s = pthread_mutex_lock(&amp;thread_mutex);</span><br><span class="line">        <span class="keyword">if</span> (s != <span class="number">0</span>)</span><br><span class="line">            errExitEN(s, <span class="string">&quot;pthread_mutex_lock&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (num_unjoined == <span class="number">0</span>)</span><br><span class="line">        &#123;</span><br><span class="line">            s = pthread_cond_wait(&amp;thread_died, &amp;thread_mutex);</span><br><span class="line">            <span class="keyword">if</span> (s != <span class="number">0</span>)</span><br><span class="line">                errExitEN(s, <span class="string">&quot;pthread_cond_wait&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (idx = <span class="number">0</span>; idx &lt; tot_threads; ++idx)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (thread[idx].state == TS_TERMINATED)</span><br><span class="line">            &#123;</span><br><span class="line">                s = pthread_join(thread[idx].tid, <span class="literal">NULL</span>);</span><br><span class="line">                <span class="keyword">if</span> (s != <span class="number">0</span>)</span><br><span class="line">                    errExitEN(s, <span class="string">&quot;pthread_join&quot;</span>);</span><br><span class="line"></span><br><span class="line">                thread[idx].state = TS_JOINED;</span><br><span class="line">                num_live--;</span><br><span class="line">                num_unjoined--;</span><br><span class="line"></span><br><span class="line">                <span class="built_in">printf</span>(<span class="string">&quot;Reaped thread %d (num_live=%d)\n&quot;</span>, idx, num_live);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        s = pthread_mutex_unlock(&amp;thread_mutex);</span><br><span class="line">        <span class="keyword">if</span> (s != <span class="number">0</span>)</span><br><span class="line">            errExitEN(s, <span class="string">&quot;pthread_mutex_unlock&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">exit</span>(EXIT_SUCCESS);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>后来我调试的时候，却往往能够正常运行，但运行时候的错误却很一致：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ ./a.out 1 2 1</span><br><span class="line">Thread 3 terminating</span><br><span class="line">Thread 1 terminating</span><br><span class="line">Thread 2 terminating</span><br></pre></td></tr></table></figure>
-
-<p>然后就卡死…</p>
-<p>仔细观察过输出结果，这是每次创建的线程中输出的结果。程序首先通过一个循环创建线程，然后把下标传址给线程作为参数：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// main函数中</span></span><br><span class="line"><span class="keyword">for</span> (idx = <span class="number">0</span>; idx &lt; argc<span class="number">-1</span>; ++idx)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    s = pthread_create(&amp;thread[idx].tid, <span class="literal">NULL</span>, thread_func, &amp;idx);</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>然后，在线程中，每次都将对idx解引用，得到下标，并输出：</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 每个新线程的函数中, arg是传进的参数</span></span><br><span class="line"><span class="type">int</span> idx = *((*<span class="type">int</span>)arg);</span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line"><span class="built_in">printf</span>(<span class="string">&quot;Thread %d terminating\n&quot;</span>, idx);</span><br><span class="line"><span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
-
-<p>可能大家也可以看出来了，妥妥的 <em>race condition</em>，多个线程通过指针访问同一个变量，没有进行同步和互斥的工作。有可能新的线程直到循环中的下标自增之后才执行解引用（实际上在我电脑上就是按照这个顺序执行了）。</p>
-<p>比较简单的修改方法就是将<code>int</code>类型的下标直接强制转化成<code>void *</code>的类型的参数传值。</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 在main函数里：</span></span><br><span class="line"><span class="keyword">for</span> (idx = <span class="number">0</span>; idx &lt; argc<span class="number">-1</span>; ++idx)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">    s = pthread_create(&amp;thread[idx].tid, <span class="literal">NULL</span>, thread_func, (<span class="type">void</span>*)idx);</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 新线程的函数里</span></span><br><span class="line"><span class="type">int</span> idx = (<span class="type">int</span>)arg;</span><br></pre></td></tr></table></figure>
-
-<p>这个改法看似简单，但其实有点问题。因为在C标准里整形和指针类型的强制转化是 <code>implementation-defined</code>。一下摘抄自<a target="_blank" rel="noopener" href="https://en.cppreference.com/w/c/language/cast">cppreference</a>：</p>
-<blockquote>
-<p>Any integer can be cast to any pointer type. Except for the null pointer constants such as NULL (which doesn’t need a cast), the result is implementation-defined, may not be correctly aligned, may not point to an object of the referenced type, and may be a trap representation. </p>
-</blockquote>
-<blockquote>
-<p>Any pointer type can be cast to any integer type. The result is implementation-defined, even for null pointer values (they do not necessarily result in the value zero). If the result cannot be represented in the target type, the behavior is undefined (unsigned integers do not implement modulo arithmetic on a cast from pointer) </p>
-</blockquote>
-<p>事实上，在64位x86上，指针类型占8字节，<code>int</code>类型占4字节，用脚趾头都知道它们之间的转化很不安全。</p>
-<p>在 <a target="_blank" rel="noopener" href="http://www.man7.org/tlpi/errata/index.html">TLPI 官网上的勘误</a>中也提到了这个错误，上面还给了两种避免指针和整型转化的方法。</p>
-<ul>
-<li><p>一种解决方法是把当前 <code>thread[idx]</code> 地址传过去，这样只需进行不同指针的转化，这是C语言允许的。</p>
-  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">s = pthread_create(&amp;thread[idx].tid, <span class="literal">NULL</span>, threadFunc, &amp;thread[idx]);</span><br></pre></td></tr></table></figure>
-
-<p>  然后线程的函数中只需要对传入的地址和首元素地址进行相减就能得到相应的下标：</p>
-  <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">tinfo</span> *<span class="title">tptr</span> =</span> arg;</span><br><span class="line"><span class="type">int</span> idx = tptr - thread;    <span class="comment">/* Obtain index in &#x27;thread&#x27; array */</span></span><br></pre></td></tr></table></figure>
-</li>
-<li><p>另一个解决方法就是用 <code>uintptr_t</code> 代替 <code>int</code> 类型。<code>unitptr_t</code> 类型是从C99标准开始有的类型，定义在头文件 <code>&lt;stdint.h&gt;</code> 中。它用来表示一个能够容纳指针值的无符号整型。</p>
-</li>
-</ul>
-
       
     </div>
 
@@ -1553,28 +1542,10 @@
 <noscript>
   <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
 </noscript>
-
-
-  
-  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
-
-  
-
-
-
-
-
-
-  
-
-
-
-
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
 
-<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"cyyzero","repo":"cyyzero.github.io","client_id":"1185801249b8bbce5127","client_secret":"fbbb24c3e0613419f2505f94baa921f61606bac1","admin_user":"cyyzero","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"d1546d731a9f30cc80127d57142a482b"}</script>
-<script src="/js/third-party/comments/gitalk.js"></script>
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"cyyzero","repo":"cyyzero.github.io","client_id":"1185801249b8bbce5127","client_secret":"fbbb24c3e0613419f2505f94baa921f61606bac1","admin_user":"cyyzero","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"body":null,"js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"d1546d731a9f30cc80127d57142a482b"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
 
 </body>
 </html>

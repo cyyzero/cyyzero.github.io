@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width">
-<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 7.3.0">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 8.1.2">
 
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
@@ -14,10 +14,10 @@
 
 
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.6.0/css/all.min.css" integrity="sha256-5eIC48iZUHmSlSUz9XtjRyK2mzQkHScZY1WdMaoz74E=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.0.0/css/all.min.css" integrity="sha256-VHqXKFhhMxcpubYf9xiWdCiojEbY9NexQ4jh8AxbvcM=" crossorigin="anonymous">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
 
-<script class="next-config" data-name="main" type="application/json">{"hostname":"cyyzero.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.21.1","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"always","padding":18,"offset":12},"hljswrap":true,"copycode":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"buttons","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js"></script>
+<script class="next-config" data-name="main" type="application/json">{"hostname":"cyyzero.github.io","root":"/","images":"/images","scheme":"Muse","darkmode":false,"version":"8.29.0","exturl":false,"sidebar":{"position":"left","width_expanded":320,"width_dual_column":240,"display":"always","padding":18,"offset":12},"hljswrap":true,"codeblock":{"theme":{"light":"default","dark":"tomorrow-night"},"prism":{"light":"prism","dark":"prism-dark"},"copy_button":{"enable":false,"style":null},"fold":{"enable":false,"height":500},"language":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"buttons","active":"gitalk","storage":true,"lazyload":false,"nav":null,"activeClass":"gitalk"},"stickytabs":false,"motion":{"enable":true,"async":false,"duration":200,"transition":{"menu_item":"fadeInDown","post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"}}</script><script src="/js/config.js" defer></script>
 
     <meta name="description" content="引入在Ext4的官方文档里，可以看到有很多挂载的选项，并且有一些被标记为了默认，比如delalloc。但是通过procfs的&#x2F;proc&#x2F;mounts并没有看到这些默认的选项，比如delalloc（有个nodelalloc的disable delalloc选项，这两个是非此即彼的关系，却都没有出现）。 12$ cat &#x2F;proc&#x2F;mounts| grep ext4&#x2F;dev&#x2F;sdb &#x2F; ext4 rw">
 <meta property="og:type" content="article">
@@ -27,7 +27,7 @@
 <meta property="og:description" content="引入在Ext4的官方文档里，可以看到有很多挂载的选项，并且有一些被标记为了默认，比如delalloc。但是通过procfs的&#x2F;proc&#x2F;mounts并没有看到这些默认的选项，比如delalloc（有个nodelalloc的disable delalloc选项，这两个是非此即彼的关系，却都没有出现）。 12$ cat &#x2F;proc&#x2F;mounts| grep ext4&#x2F;dev&#x2F;sdb &#x2F; ext4 rw">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2023-07-29T09:08:29.000Z">
-<meta property="article:modified_time" content="2026-01-11T13:38:28.186Z">
+<meta property="article:modified_time" content="2026-10-14T15:45:27.588Z">
 <meta property="article:author" content="Yiyang Chen">
 <meta name="twitter:card" content="summary">
 
@@ -43,6 +43,22 @@
 
 
 
+
+
+
+
+
+  
+<script src="/js/utils.js" defer></script><script src="/js/motion.js" defer></script><script src="/js/sidebar.js" defer></script><script src="/js/next-boot.js" defer></script>
+
+  
+
+
+
+
+
+
+  
 
 
 
@@ -126,7 +142,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">28</span>
+          <span class="site-state-item-count">29</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -136,7 +152,7 @@
         <span class="site-state-item-name">categories</span></a>
       </div>
       <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">8</span>
         <span class="site-state-item-name">tags</span>
       </div>
   </nav>
@@ -210,7 +226,7 @@
         <i class="far fa-calendar-check"></i>
       </span>
       <span class="post-meta-item-text">Edited on</span>
-      <time title="Modified: 2026-01-11 21:38:28" itemprop="dateModified" datetime="2026-01-11T21:38:28+08:00">2026-01-11</time>
+      <time title="Modified: 2026-10-14 23:45:27" itemprop="dateModified" datetime="2026-10-14T23:45:27+08:00">2026-10-14</time>
     </span>
     <span class="post-meta-item">
       <span class="post-meta-item-icon">
@@ -253,7 +269,7 @@
 <h3 id="proc-fs-ext4-device-options"><a href="#proc-fs-ext4-device-options" class="headerlink" title="&#x2F;proc&#x2F;fs&#x2F;ext4&#x2F;{device}&#x2F;options"></a>&#x2F;proc&#x2F;fs&#x2F;ext4&#x2F;{device}&#x2F;options</h3><p>在ext4文件系统被挂载的时候，会在<code>__ext4_fill_super()</code>里调用<code>ext4_register_sysfs()</code>来注册procfs的条目：</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// fs/ext4/sysfs.c</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">ext4_register_sysfs</span><span class="params">(<span class="keyword">struct</span> super_block *sb)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="comment">// ...</span></span><br><span class="line">	<span class="keyword">if</span> (sbi-&gt;s_proc) &#123;</span><br><span class="line">		proc_create_single_data(<span class="string">&quot;options&quot;</span>, S_IRUGO, sbi-&gt;s_proc,</span><br><span class="line">				ext4_seq_options_show, sb);</span><br><span class="line">		<span class="comment">// ...</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>展示数据的函数为<code>ext4_seq_options_show()</code>，最终也是调用了<code>_ext4_show_options()</code>，不过最后一个参数<code>nodefs</code>为1，导致和<code>/proc/&#123;pid&#125;/mounts</code>的输出不一致。</p>
+<p>展示数据的函数为<code>ext4_seq_options_show()</code>，最终也是调用了<code>_ext4_show_options()</code>，不过最后一个参数<code>nodefs</code>为1，导致和<code>/proc/{pid}/mounts</code>的输出不一致。</p>
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// fs/ext4/super.c</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">ext4_seq_options_show</span><span class="params">(<span class="keyword">struct</span> seq_file *seq, <span class="type">void</span> *offset)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="class"><span class="keyword">struct</span> <span class="title">super_block</span> *<span class="title">sb</span> =</span> seq-&gt;private;</span><br><span class="line">	<span class="type">int</span> rc;</span><br><span class="line"></span><br><span class="line">	seq_puts(seq, sb_rdonly(sb) ? <span class="string">&quot;ro&quot;</span> : <span class="string">&quot;rw&quot;</span>);</span><br><span class="line">	rc = _ext4_show_options(seq, sb, <span class="number">1</span>);</span><br><span class="line">	seq_puts(seq, <span class="string">&quot;\n&quot;</span>);</span><br><span class="line">	<span class="keyword">return</span> rc;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>其中，导致差异的点有两个，一个是导致sep为’,’还是’\n’；另一个是nodefs为0的情况下，会省略一些选项的输出。</p>
@@ -263,7 +279,7 @@
 <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!nodefs &amp;&amp; !(m-&gt;mount_opt &amp; (sbi-&gt;s_mount_opt ^ def_mount_opt)))</span><br><span class="line">	<span class="keyword">continue</span>; <span class="comment">/* skip if same as the default */</span></span><br></pre></td></tr></table></figure>
 
 <p>这里default_options应该就是文档里描述的那些。我先入为主的以为这个就是磁盘上super_block的s_default_opts字段，于是通过tune_2fs查看了下，发现并不是。</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ sudo tune2fs -l /dev/sdb</span><br><span class="line">tune2fs 1.46.5 (30-Dec-2021)</span><br><span class="line">// ...</span><br><span class="line">Default mount options:    user_xattr acl</span><br><span class="line">// ...</span><br></pre></td></tr></table></figure>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ <span class="built_in">sudo</span> tune2fs -l /dev/sdb</span><br><span class="line">tune2fs 1.46.5 (30-Dec-2021)</span><br><span class="line">// ...</span><br><span class="line">Default mount options:    user_xattr acl</span><br><span class="line">// ...</span><br></pre></td></tr></table></figure>
 
 <p>这里只有user_xattr和acl，理论上其他的那些options当nodefs为0时也会输出，比如delalloc。但是却并没有。所以，还得探究下这个<code>sbi-&gt;s_def_mount_opt</code>字段究竟是如何被设置的。</p>
 <h2 id="默认挂载选项"><a href="#默认挂载选项" class="headerlink" title="默认挂载选项"></a>默认挂载选项</h2><p>熟悉linux文件系统的都知道，vfs会有个通用的super block，每个文件系统也会有自己的super block，它们在磁盘和在内存上都会有些许差距。对于ext4来说，它在磁盘上的super block布局为</p>
@@ -282,7 +298,7 @@
 
 <p>可以看到，在挂载的过程中，<code>sbi-&gt;s_def_mount_opt</code>和<code>es-&gt;s_mount_opts</code>并非简单的对应关系，ext4会对<code>sbi-&gt;s_def_mount_opt</code>进行额外的设置。</p>
 <h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>Ext4文件系统的mount option设置来源有几个地方，一是通过mkfs时在磁盘上的superblock写入，二是挂载时的参数。但是这些和内存中文件系统相关的mount options和default mount options都不是简单的对应关系，ext4会根据其他的信息设置options。</p>
-<p>查看ext4挂载选项认准<code>/proc/fs/ext4/&#123;device&#125;/options</code>。</p>
+<p>查看ext4挂载选项认准<code>/proc/fs/ext4/{device}/options</code>。</p>
 
     </div>
 
@@ -353,28 +369,10 @@
 <noscript>
   <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
 </noscript>
-
-
-  
-  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
-<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/sidebar.js"></script><script src="/js/next-boot.js"></script>
-
-  
-
-
-
-
-
-
-  
-
-
-
-
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
 
-<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"cyyzero","repo":"cyyzero.github.io","client_id":"1185801249b8bbce5127","client_secret":"fbbb24c3e0613419f2505f94baa921f61606bac1","admin_user":"cyyzero","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"94f9df52a3faad454c1dbdf0ba5f0cb7"}</script>
-<script src="/js/third-party/comments/gitalk.js"></script>
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"github_id":"cyyzero","repo":"cyyzero.github.io","client_id":"1185801249b8bbce5127","client_secret":"fbbb24c3e0613419f2505f94baa921f61606bac1","admin_user":"cyyzero","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"body":null,"js":{"url":"https://cdn.jsdelivr.net/npm/gitalk@1.8.0/dist/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"94f9df52a3faad454c1dbdf0ba5f0cb7"}</script>
+<script src="/js/third-party/comments/gitalk.js" defer></script>
 
 </body>
 </html>
